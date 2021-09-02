@@ -1,0 +1,41 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="nprime.reg.sbi.faceCaptureApi.SimpleCaptureFragment">
+
+    <nprime.reg.sbi.faceCaptureApi.AutoFitTextureView
+        android:id="@+id/texture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+    <nprime.reg.sbi.faceCaptureApi.OverlayView
+        android:id="@+id/overlay_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignStart="@id/texture"
+        android:layout_alignEnd="@id/texture"
+        android:layout_alignTop="@id/texture"
+        android:layout_alignBottom="@id/texture"/>
+
+    <TextView
+        android:id="@+id/statuc_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="#0071c5"
+        android:textSize="16sp"
+        android:text="Look into the camera"
+        android:layout_marginTop="50dp" />
+
+    <Button
+        android:id="@+id/btn_capture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Capture"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="25dp"/>
+</RelativeLayout>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Face Mock Registration SBI</string>
+    <string name="no_data_text">For testing, get Info and Capture results</string>
+</resources>

@@ -1,5 +1,6 @@
 package nprime.reg.mocksbi.camera;
 
+import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -10,16 +11,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ImageView;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.Base64;
+import java.io.*;
+import java.util.*;
 
-import nprime.reg.mocksbi.face.R;
+import com.google.android.gms.common.util.IOUtils;
+import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
 
 /**
@@ -33,16 +29,50 @@ public class RCaptureActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rcapture);
+        String modality = getIntent().getStringExtra("modality");
+        int bioSubId = getIntent().getIntExtra("bioSubId", 1);
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 try {
-                    ImageView img = findViewById(R.id.img);
-                    img.setImageResource(R.drawable.img1);
-                    String encodedIso = getIsoDataFromAssets("encodedIsoImg1.txt");
-                    byte[] isoFaceRecord = Base64.getUrlDecoder().decode(encodedIso.trim());
-                    captureSuccessful(isoFaceRecord, 30);
+                    Map<String, Uri> uris = new HashMap<>();
+                    switch (modality.toLowerCase()) {
+                        case "face":
+                            ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.face);
+                            uris.put("face", getBioAttributeURI("Face.iso"));
+                            break;
+                        case "finger":
+                            switch (bioSubId) {
+                                case 1:
+                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.left);
+                                    uris.put("Left IndexFinger", getBioAttributeURI("Left_Index.iso"));
+                                    uris.put("Left MiddleFinger", getBioAttributeURI("Left_Middle.iso"));
+                                    uris.put("Left RingFinger", getBioAttributeURI("Left_Ring.iso"));
+                                    uris.put("Left LittleFinger", getBioAttributeURI("Left_Little.iso"));
+                                    break;
+                                case 2:
+                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.right);
+                                    uris.put("Right IndexFinger", getBioAttributeURI("Right_Index.iso"));
+                                    uris.put("Right MiddleFinger", getBioAttributeURI("Right_Middle.iso"));
+                                    uris.put("Right RingFinger", getBioAttributeURI("Right_Ring.iso"));
+                                    uris.put("Right LittleFinger", getBioAttributeURI("Right_Little.iso"));
+                                    break;
+                                case 3:
+                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.iris);
+                                    uris.put("Left Thumb", getBioAttributeURI("Left_Thumb.iso"));
+                                    uris.put("Right Thumb", getBioAttributeURI("Right_Thumb.iso"));
+                                    break;
+                            }
+                            break;
+                        case "iris":
+                            ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.img1);
+                            uris.put("Left", getBioAttributeURI("Left_Iris.iso"));
+                            uris.put("Right", getBioAttributeURI("Right_Iris.iso"));
+                            break;
+                    }
+
+                    captureSuccessful(uris, modality, 30);
                 }catch (Exception e){
                     e.printStackTrace();
                     captureFailed(-301, e.getMessage());
@@ -51,11 +81,19 @@ public class RCaptureActivity extends AppCompatActivity {
         }, PREVIEW_TIME_DELAY);
     }
 
-    public void captureSuccessful(byte[] isoFaceRecord, int quality) {
+    private Uri getBioAttributeURI(String file) {
+        byte[] isoRecord = getIsoDataFromAssets(file);
         Uri isoUri = Uri.fromFile(getTempFile(RCaptureActivity.this));
-        saveByteArray(isoFaceRecord, isoUri);
+        saveByteArray(isoRecord, isoUri);
+        return isoUri;
+    }
+
+    public void captureSuccessful(Map<String, Uri> uris, String modality, int quality) {
         Intent intent = new Intent();
-        intent.setData(isoUri);
+        for(String attribute : uris.keySet()) {
+            intent.putExtra(attribute, uris.get(attribute));
+        }
+        intent.putExtra("modality", modality);
         intent.putExtra("Status", FaceCaptureResult.CAPTURE_SUCCESS);
         intent.putExtra("Quality", quality);
         setResult(Activity.RESULT_OK, intent);
@@ -93,19 +131,11 @@ public class RCaptureActivity extends AppCompatActivity {
         }
     }
 
-    private String getIsoDataFromAssets(String assetFileName){
-        String encodedIsoData = null;
-        try {
-            InputStream respData = getAssets().open(assetFileName);
-            BufferedReader r = new BufferedReader(new InputStreamReader(respData));
-            StringBuilder total = new StringBuilder();
-            for (String line; (line = r.readLine()) != null; ) {
-                total.append(line).append('\n');
-            }
-            encodedIsoData = total.toString();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        return encodedIsoData;
+    private byte[] getIsoDataFromAssets(String assetFileName){
+       try(InputStream in = getAssets().open(assetFileName)) {
+            return IOUtils.toByteArray(in);
+        } catch (IOException e) {
+           throw new RuntimeException(e);
+       }
     }
 }

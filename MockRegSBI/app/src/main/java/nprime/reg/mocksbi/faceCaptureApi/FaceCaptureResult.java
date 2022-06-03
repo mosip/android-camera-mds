@@ -2,6 +2,9 @@ package nprime.reg.mocksbi.faceCaptureApi;
 
 import android.graphics.Bitmap;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author NPrime Technologies
  */
@@ -21,7 +24,37 @@ public class FaceCaptureResult
 	public static final int ISO_2011_INVALID = -7;
 	
 	Bitmap capturedImage = null;
-	byte[] isoFaceRecord = null;
+
+	Map<String, byte[]> biometricRecords = new HashMap<>();
+
+	private String modality;
+
+	public int getBioSubId() {
+		return bioSubId;
+	}
+
+	public void setBioSubId(int bioSubId) {
+		this.bioSubId = bioSubId;
+	}
+
+	private int bioSubId;
+
+	public String getModality() {
+		return modality;
+	}
+
+	public void setModality(String modality) {
+		this.modality = modality;
+	}
+
+	public Map<String, byte[]> getBiometricRecords() {
+		return biometricRecords;
+	}
+
+	public void setBiometricRecords(Map<String, byte[]> biometricRecords) {
+		this.biometricRecords = biometricRecords;
+	}
+
 	int qualityScore = 0;
 
 	int status = CAPTURE_FAILED;
@@ -33,14 +66,7 @@ public class FaceCaptureResult
 		this.capturedImage = capturedImage;
 	}
 	
-	
-	public byte[] getIsoFaceRecord() {
-		return isoFaceRecord;
-	}
-	public void setIsoFaceRecord(byte[] isoFaceRecord) {
-		this.isoFaceRecord = isoFaceRecord;
-	}
-	
+
 	public int getStatus() {
 		return status;
 	}

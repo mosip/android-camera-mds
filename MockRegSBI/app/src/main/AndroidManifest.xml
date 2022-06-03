@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nprime.reg.mocksbi.face">
+    package="nprime.reg.mocksbi">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
@@ -26,8 +26,12 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="sbi.reg.device" />
-                <action android:name="${applicationId}.info" />
-                <action android:name="${applicationId}.rcapture" />
+                <action android:name="nprime.reg.mocksbi.face.info" />
+                <action android:name="nprime.reg.mocksbi.face.rcapture" />
+                <action android:name="nprime.reg.mocksbi.finger.info" />
+                <action android:name="nprime.reg.mocksbi.finger.rcapture" />
+                <action android:name="nprime.reg.mocksbi.iris.info" />
+                <action android:name="nprime.reg.mocksbi.iris.rcapture" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -36,7 +40,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="nprime.reg.mocksbi.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true"
             android:readPermission="true">

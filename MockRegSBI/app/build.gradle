@@ -7,7 +7,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "nprime.reg.mocksbi.face"
+        applicationId "nprime.reg.mocksbi"
         minSdkVersion 26
         targetSdkVersion 30
         versionCode 1

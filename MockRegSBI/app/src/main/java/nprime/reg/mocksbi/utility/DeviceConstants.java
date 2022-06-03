@@ -26,7 +26,9 @@ public class DeviceConstants {
     public static final String FIRMWAREVER = "1.0.1";
     public static final String DEVICEMODEL = "AndroidFaceCamera";
     public static final String DEVICEMAKE = "Android";
-    public static final String DEVICESUBTYPE = "Full face";
+    public static final String FACE_DEVICESUBTYPE = "Full face";
+    public static final String FINGER_DEVICESUBTYPE = "Slap";
+    public static final String IRIS_DEVICESUBTYPE = "Double";
     public static final String PROVIDERNAME = "NPrime";
     public static final String PROVIDERID = "Nprime_DP";
     public static final String REGSERVER_VERSION = "0.9.5";

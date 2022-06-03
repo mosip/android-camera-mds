@@ -45,7 +45,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
-import nprime.reg.mocksbi.face.R;
+import nprime.reg.mocksbi.R;
 
 /**
  * @author NPrime Technologies
@@ -139,7 +139,7 @@ public class ClientActivity extends AppCompatActivity {
                         fOut.flush();
                         fOut.close();
 
-                        Uri uri = FileProvider.getUriForFile(ClientActivity.this, "nprime.reg.mocksbi.face.fileprovider", txtFile);
+                        Uri uri = FileProvider.getUriForFile(ClientActivity.this, "nprime.reg.mocksbi.fileprovider", txtFile);
                         Intent share = new Intent(Intent.ACTION_SEND);
                         share.setType("plain/*");
                         share.putExtra(Intent.EXTRA_STREAM, uri);
@@ -173,7 +173,7 @@ public class ClientActivity extends AppCompatActivity {
             if(isIntentSafe) {
                 String packageName = null;
                 for (ResolveInfo activity : activities) {
-                    if(activity.activityInfo.applicationInfo.packageName.equals("nprime.reg.mocksbi.face")){
+                    if(activity.activityInfo.applicationInfo.packageName.equals("nprime.reg.mocksbi")){
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DiscoverRequestDto discoverRequestDto = new DiscoverRequestDto();
@@ -207,7 +207,7 @@ public class ClientActivity extends AppCompatActivity {
         if(isIntentSafe) {
             String packageName = null;
             for (ResolveInfo activity : activities) {
-                if(activity.activityInfo.applicationInfo.packageName.equals(appID)) {
+                if(appID.startsWith(activity.activityInfo.applicationInfo.packageName)) {
                     packageName = activity.activityInfo.applicationInfo.packageName;
                     intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                     startActivityForResult(intent, REQUEST_INFO);
@@ -257,7 +257,7 @@ public class ClientActivity extends AppCompatActivity {
 
                 String packageName;
                 for (ResolveInfo activity : activities) {
-                    if(activity.activityInfo.applicationInfo.packageName.equals(appID)) {
+                    if(appID.startsWith(activity.activityInfo.applicationInfo.packageName)) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(captureRequestDto));

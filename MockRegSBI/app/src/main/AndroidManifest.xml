@@ -25,13 +25,13 @@
             android:name="nprime.reg.mocksbi.mds.MDServiceActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="sbi.reg.device" />
-                <action android:name="nprime.reg.mocksbi.face.info" />
-                <action android:name="nprime.reg.mocksbi.face.rcapture" />
-                <action android:name="nprime.reg.mocksbi.finger.info" />
-                <action android:name="nprime.reg.mocksbi.finger.rcapture" />
-                <action android:name="nprime.reg.mocksbi.iris.info" />
-                <action android:name="nprime.reg.mocksbi.iris.rcapture" />
+                <action android:name="io.sbi.device" />
+                <action android:name="nprime.reg.mocksbi.face.Info" />
+                <action android:name="nprime.reg.mocksbi.face.rCapture" />
+                <action android:name="nprime.reg.mocksbi.finger.Info" />
+                <action android:name="nprime.reg.mocksbi.finger.rCapture" />
+                <action android:name="nprime.reg.mocksbi.iris.Info" />
+                <action android:name="nprime.reg.mocksbi.iris.rCapture" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

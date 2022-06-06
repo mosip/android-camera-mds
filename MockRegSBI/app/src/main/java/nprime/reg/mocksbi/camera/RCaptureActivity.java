@@ -24,7 +24,7 @@ import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
 
 public class RCaptureActivity extends AppCompatActivity {
 
-    private static final long PREVIEW_TIME_DELAY = 2000;
+    private static final long PREVIEW_TIME_DELAY = 1000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,20 +59,20 @@ public class RCaptureActivity extends AppCompatActivity {
                                     uris.put("Right LittleFinger", getBioAttributeURI("Right_Little.iso"));
                                     break;
                                 case 3:
-                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.iris);
+                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.thumbs);
                                     uris.put("Left Thumb", getBioAttributeURI("Left_Thumb.iso"));
                                     uris.put("Right Thumb", getBioAttributeURI("Right_Thumb.iso"));
                                     break;
                             }
                             break;
                         case "iris":
-                            ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.img1);
+                            ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.iris);
                             uris.put("Left", getBioAttributeURI("Left_Iris.iso"));
                             uris.put("Right", getBioAttributeURI("Right_Iris.iso"));
                             break;
                     }
 
-                    captureSuccessful(uris, modality, 30);
+                    captureSuccessful(uris, modality, 30, bioSubId);
                 }catch (Exception e){
                     e.printStackTrace();
                     captureFailed(-301, e.getMessage());
@@ -88,7 +88,7 @@ public class RCaptureActivity extends AppCompatActivity {
         return isoUri;
     }
 
-    public void captureSuccessful(Map<String, Uri> uris, String modality, int quality) {
+    public void captureSuccessful(Map<String, Uri> uris, String modality, int quality, int bioSubId) {
         Intent intent = new Intent();
         for(String attribute : uris.keySet()) {
             intent.putExtra(attribute, uris.get(attribute));
@@ -96,6 +96,7 @@ public class RCaptureActivity extends AppCompatActivity {
         intent.putExtra("modality", modality);
         intent.putExtra("Status", FaceCaptureResult.CAPTURE_SUCCESS);
         intent.putExtra("Quality", quality);
+        intent.putExtra("bioSubId", bioSubId);
         setResult(Activity.RESULT_OK, intent);
         finish();
     }

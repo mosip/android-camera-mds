@@ -14,10 +14,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mdm.DataObjects.CaptureRequestDto;
+import com.mdm.DataObjects.DeviceInformation;
 import com.mdm.DataObjects.DiscoverRequestDto;
 
+import nprime.reg.mocksbi.dto.CaptureResponse;
+import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.Error;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -27,9 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import nprime.reg.mocksbi.camera.RCaptureActivity;
 import nprime.reg.mocksbi.R;
@@ -76,10 +80,10 @@ public class MDServiceActivity extends AppCompatActivity {
         }
         String actionType = getIntent().getAction();
         switch (actionType) {
-            case "sbi.reg.device": {
+            case "io.sbi.device": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
-                    String responseBody = null;
+                    Object responseBody = null;
                     DiscoverRequestDto discoverRequestDto = null;
                     byte[] input = getIntent().getByteArrayExtra("input");
 
@@ -112,55 +116,50 @@ public class MDServiceActivity extends AppCompatActivity {
                         }
 
                     } else {
-                        Map<String, Object> responseMap = new HashMap<>();
-                        Map<String, Object> errorMap = new LinkedHashMap<>();
-                        errorMap.put("errorCode", "301");
-                        errorMap.put("errorInfo", "Invalid type");
-                        responseMap.put("error", errorMap);
-                        responseBody = new JSONObject(responseMap).toString();
+                        responseBody = Arrays.asList(new DeviceInfoResponse(null, new Error("301", "Invalid type")));
                     }
                     generateResponse(responseBody, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /device. MOSIPDISC completed");
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.face.info": {
+            case "nprime.reg.mocksbi.face.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "nprime.reg.mocksbi.face" + ".info";
-                    String strDeviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Face);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Face);
 
-                    generateResponse(strDeviceInfo, false);
+                    generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.finger.info": {
+            case "nprime.reg.mocksbi.finger.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "nprime.reg.mocksbi.finger" + ".info";
-                    String strDeviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Finger);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Finger);
 
-                    generateResponse(strDeviceInfo, false);
+                    generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.iris.info": {
+            case "nprime.reg.mocksbi.iris.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "nprime.reg.mocksbi.iris" + ".info";
-                    String strDeviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Iris);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Iris);
 
-                    generateResponse(strDeviceInfo, false);
+                    generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.face.rcapture": {
+            case "nprime.reg.mocksbi.face.rCapture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -172,13 +171,12 @@ public class MDServiceActivity extends AppCompatActivity {
                         errorMap.put("errorInfo", "Invalid input");
                         Map<String, Object> responseMap = new HashMap<>();
                         responseMap.put("error", errorMap);
-                        String rCaptureResponse = new JSONObject(responseMap).toString();
-                        generateResponse(rCaptureResponse, true);
+                        generateResponse(new JSONObject(responseMap), true);
                     }
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.finger.rcapture": {
+            case "nprime.reg.mocksbi.finger.rCapture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -190,13 +188,12 @@ public class MDServiceActivity extends AppCompatActivity {
                         errorMap.put("errorInfo", "Invalid input");
                         Map<String, Object> responseMap = new HashMap<>();
                         responseMap.put("error", errorMap);
-                        String rCaptureResponse = new JSONObject(responseMap).toString();
-                        generateResponse(rCaptureResponse, true);
+                        generateResponse(new JSONObject(responseMap), true);
                     }
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.iris.rcapture": {
+            case "nprime.reg.mocksbi.iris.rCapture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -208,8 +205,7 @@ public class MDServiceActivity extends AppCompatActivity {
                         errorMap.put("errorInfo", "Invalid input");
                         Map<String, Object> responseMap = new HashMap<>();
                         responseMap.put("error", errorMap);
-                        String rCaptureResponse = new JSONObject(responseMap).toString();
-                        generateResponse(rCaptureResponse, true);
+                        generateResponse(new JSONObject(responseMap), true);
                     }
                 }).start();
                 break;
@@ -258,7 +254,8 @@ public class MDServiceActivity extends AppCompatActivity {
             currentStatus = DeviceConstants.ServiceStatus.BUSY;
 
             //currentStatus = DeviceConstants.ServiceStatus.READY;
-            startCameraActivity(captureRequestDto.timeout, bioType);
+            startCameraActivity(captureRequestDto.timeout, bioType,
+                    captureRequestDto.mosipBioRequest.get(0).deviceSubId);
             //invokeCaptureCompressEncryptSign(captureRequestDto);
         }catch (Exception e){
             e.printStackTrace();
@@ -268,23 +265,26 @@ public class MDServiceActivity extends AppCompatActivity {
             errorMap.put("errorInfo", "Invalid input data");
             Map<String, Object> responseMap = new HashMap<>();
             responseMap.put("error", errorMap);
-            String rCaptureResponse = new JSONObject(responseMap).toString();
-            generateResponse(rCaptureResponse, true);
+            generateResponse(responseMap, true);
         }
     }
 
-    private void startCameraActivity(int captureTimeout, DeviceConstants.BioType bioType) {
+    private void startCameraActivity(int captureTimeout, DeviceConstants.BioType bioType, String bioSubId) {
         Intent intent = new Intent(this, RCaptureActivity.class);
         intent.putExtra("CaptureTimeout", captureTimeout);
         intent.putExtra("modality", bioType.getType());
+        intent.putExtra("bioSubId", Integer.parseInt(bioSubId));
         startActivityForResult(intent, RequestCodeCapture);
     }
 
-    private void generateResponse(String responseXml, boolean isError)
-    {
+    private void generateResponse(Object responseXml, boolean isError) {
         Intent intent = new Intent();
-        intent.putExtra("Response", responseXml);
-        if(isError || (null == responseXml || responseXml.isEmpty())){
+        try {
+            intent.putExtra("response", new ObjectMapper().writeValueAsBytes(responseXml));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        if(isError || (null == responseXml)){
             setResult(Activity.RESULT_CANCELED, intent);
         }else {
             setResult(Activity.RESULT_OK, intent);
@@ -292,10 +292,10 @@ public class MDServiceActivity extends AppCompatActivity {
         finish();
     }
 
-    private void generateRCaptureResponse(String responseXml, boolean isError)
+    private void generateRCaptureResponse(CaptureResponse responseXml, boolean isError)
     {
         Intent intent = new Intent();
-        if(null != responseXml && !responseXml.isEmpty()) {
+        if(null != responseXml) {
             try {
                 File outputPath = new File(this.getFilesDir(), "output/");
                 if (!outputPath.exists()) {
@@ -308,19 +308,19 @@ public class MDServiceActivity extends AppCompatActivity {
                 }
                 File file = new File(clientFolderPath, "resp_" + System.currentTimeMillis() + ".txt");
                 final OutputStream os = new FileOutputStream(file);
-                os.write(responseXml.getBytes(StandardCharsets.UTF_8));
+                os.write(ob.writeValueAsBytes(responseXml));
                 os.flush();
                 os.close();
                 Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "nprime.reg.mocksbi.fileprovider", file);
                 getApplicationContext().grantUriPermission(getCallingPackage(), respUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setData(respUri);
+                intent.putExtra("response", respUri);
             } catch (final Exception e) {
                 e.printStackTrace();
             }
         }
 
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        if(isError || (null == responseXml || responseXml.isEmpty())){
+        if(isError || (null == responseXml)){
             setResult(Activity.RESULT_CANCELED, intent);
         }else {
             setResult(Activity.RESULT_OK, intent);
@@ -328,12 +328,12 @@ public class MDServiceActivity extends AppCompatActivity {
         finish();
     }
 
-    private String discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType){
+    private List<DeviceInformation> discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType){
         return ResponseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType);
     }
 
-    public String getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType,
-                                      DeviceConstants.BioType bioType) {
+    public List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType,
+                                                        DeviceConstants.BioType bioType) {
         return ResponseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType);
     }
 
@@ -347,10 +347,10 @@ public class MDServiceActivity extends AppCompatActivity {
                         FaceCaptureResult captureResult = new FaceCaptureResult();
                         captureResult.setModality(data.getStringExtra("modality"));
                         captureResult.setBioSubId(data.getIntExtra("bioSubId", 1));
-                        switch (captureResult.getModality()) {
+                        switch (captureResult.getModality().toLowerCase()) {
                             case "face":
                                 try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("face"))) {
-                                    captureResult.getBiometricRecords().put("face", readBytes(is));
+                                    captureResult.getBiometricRecords().put("", readBytes(is));
                                 }
                                 break;
                             case "finger":
@@ -406,7 +406,7 @@ public class MDServiceActivity extends AppCompatActivity {
                         captureResult.setStatus(data.getIntExtra("Status", FaceCaptureResult.CAPTURE_CANCELLED));
                         captureResult.setQualityScore(data.getIntExtra("Quality", 0));
 
-                        String responseXml = ResponseGenHelper
+                        CaptureResponse responseXml = ResponseGenHelper
                                 .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto);
                         generateRCaptureResponse(responseXml, false);
                     } catch (Exception e) {
@@ -422,7 +422,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     captureResult.setQualityScore(data.getIntExtra("Quality", 0));
                 }
 
-                String responseXml = ResponseGenHelper
+                CaptureResponse responseXml = ResponseGenHelper
                         .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto);
                 generateRCaptureResponse(responseXml, false);
             }

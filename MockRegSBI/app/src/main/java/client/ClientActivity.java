@@ -23,13 +23,20 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 import com.mdm.DataObjects.CaptureRequestDeviceDetailDto;
 import com.mdm.DataObjects.CaptureRequestDto;
+import com.mdm.DataObjects.DeviceInformation;
 import com.mdm.DataObjects.DiscoverRequestDto;
 
+import nprime.reg.mocksbi.dto.CaptureDetail;
+import nprime.reg.mocksbi.dto.CaptureResponse;
+import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.Error;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -163,7 +170,7 @@ public class ClientActivity extends AppCompatActivity {
     private void discover(){
         try{
             Intent intent = new Intent();
-            intent.setAction("sbi.reg.device");
+            intent.setAction("io.sbi.device");
 
             PackageManager packageManager = this.getPackageManager();
             List<ResolveInfo> activities = packageManager.queryIntentActivities(intent,PackageManager.MATCH_DEFAULT_ONLY);
@@ -177,7 +184,7 @@ public class ClientActivity extends AppCompatActivity {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DiscoverRequestDto discoverRequestDto = new DiscoverRequestDto();
-                        discoverRequestDto.type = "Face";
+                        discoverRequestDto.type = "Finger";
 
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(discoverRequestDto));
                         startActivityForResult(intent, REQUEST_DISCOVER);
@@ -197,7 +204,7 @@ public class ClientActivity extends AppCompatActivity {
 
     private void info(){
         Intent intent = new Intent();
-        intent.setAction(appID + ".info");
+        intent.setAction(appID + ".Info");
 
         PackageManager packageManager = this.getPackageManager();
         List<ResolveInfo> activities = packageManager.queryIntentActivities(intent,PackageManager.MATCH_DEFAULT_ONLY);
@@ -222,7 +229,7 @@ public class ClientActivity extends AppCompatActivity {
     private void capture(){
         try {
             Intent intent = new Intent();
-            intent.setAction(appID + ".rcapture");
+            intent.setAction(appID + ".rCapture");
 
             PackageManager packageManager = this.getPackageManager();
             List<ResolveInfo> activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -243,12 +250,12 @@ public class ClientActivity extends AppCompatActivity {
                 captureRequestDto.domainUri = "https://extint1.mosip.net";
                 captureRequestDto.transactionId = "1626630971975";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
-                bio.type = "Face";
-                bio.count = 1;
+                bio.type = "Finger";
+                bio.count = 4;
                 bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
                 bio.deviceId = serialNo;
-                bio.deviceSubId = "0";
+                bio.deviceSubId = "2";
                 bio.previousHash = "";
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);
@@ -342,13 +349,13 @@ public class ClientActivity extends AppCompatActivity {
             if(Activity.RESULT_OK == resultCode){
                 try{
                     if(null != data) {
-                        if (data.hasExtra("Response")) {
-                            String response = data.getStringExtra("Response");
-                            JSONArray respJsonArray = new JSONArray(response);
-                            JSONObject respJsonObject = respJsonArray.getJSONObject(0);
-                            JSONObject errorObject = respJsonObject.getJSONObject("error");
-                            if (0 == errorObject.getInt("errorCode")) {
-                                String encodedDigitalID = respJsonObject.getString("digitalId");
+                        if (data.hasExtra("response")) {
+                            byte[] response = data.getByteArrayExtra("response");
+                            List<DeviceInformation> list = new ObjectMapper().readValue(response,
+                                    new TypeReference<List<DeviceInformation>>(){});
+
+                            if (!list.isEmpty()) {
+                                String encodedDigitalID = list.get(0).digitalId;
                                 if(!encodedDigitalID.isEmpty()) {
                                     byte[] digitalIdBytes = Base64.getUrlDecoder().decode(encodedDigitalID);
                                     JSONObject digitalIDObj = new JSONObject(new String(digitalIdBytes));
@@ -358,8 +365,8 @@ public class ClientActivity extends AppCompatActivity {
                                     if (digitalIDObj.has("model")) {
                                         modelId.setText(digitalIDObj.getString("model"));
                                     }
-                                    if (respJsonObject.has("deviceStatus")) {
-                                        deviceStatus.setText(respJsonObject.getString("deviceStatus"));
+                                    if (list.get(0).deviceStatus != null) {
+                                        deviceStatus.setText(list.get(0).deviceStatus);
                                     }
                                     String strDeviceId = digitalIDObj.getString("serialNo");
                                     if (!strDeviceId.isEmpty()) {
@@ -368,12 +375,12 @@ public class ClientActivity extends AppCompatActivity {
                                     } else {
                                         deviceIdRow.setVisibility(View.GONE);
                                     }
-                                    appID = respJsonObject.getString("callbackId");
+                                    appID = list.get(0).callbackId;
                                 }else{
                                     Toast.makeText(ClientActivity.this, "Digital ID error", Toast.LENGTH_SHORT).show();
                                 }
                             }else {
-                                Toast.makeText(ClientActivity.this, errorObject.toString(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ClientActivity.this, "Discover failed - No Devices", Toast.LENGTH_SHORT).show();
                             }
                         }else {
                             Toast.makeText(ClientActivity.this, "Discover failed", Toast.LENGTH_SHORT).show();
@@ -390,12 +397,13 @@ public class ClientActivity extends AppCompatActivity {
             if(Activity.RESULT_OK == resultCode){
                 try {
                     if(null != data) {
-                        if (data.hasExtra("Response")) {
-                            String response = data.getStringExtra("Response");
-                            JSONArray respJsonArray = new JSONArray(response);
-                            JSONObject errorObject = respJsonArray.getJSONObject(0).getJSONObject("error");
-                            if (0 == errorObject.getInt("errorCode")) {
-                                String deviceInfo = (respJsonArray.getJSONObject(0)).getString("deviceInfo");
+                        if (data.hasExtra("response")) {
+                            byte[] response = data.getByteArrayExtra("response");
+                            List<DeviceInfoResponse> list = new ObjectMapper().readValue(response,
+                                    new TypeReference<List<DeviceInfoResponse>>(){});
+                            Error errorObject = list.get(0).error;
+                            if ("0".equals(errorObject.errorCode)) {
+                                String deviceInfo = list.get(0).deviceInfo ;
                                 byte[] payload = getPayloadBufferFromJwt(deviceInfo);
 
                                 JSONObject infoObject = new JSONObject(new String(payload));
@@ -411,14 +419,14 @@ public class ClientActivity extends AppCompatActivity {
                                 if(infoObject.has("deviceStatus")){
                                     deviceStatus.setText(infoObject.getString("deviceStatus"));
                                 }
-                                showResponse("Info response :", response);
-                                responseData = response;
+                                showResponse("Info response :", list.get(0).toString());
+                                responseData = list.get(0).toString();
                             }else{
-                                showResponse("Info response", response);
+                                showResponse("Info response", list.get(0).toString());
                                 deviceId.setText("");
                                 deviceIdRow.setVisibility(View.GONE);
                                 deviceStatus.setText("Not Ready");
-                                responseData = response;
+                                responseData = list.get(0).toString();
                             }
                         }else {
                             showEmptyScreen();
@@ -440,7 +448,7 @@ public class ClientActivity extends AppCompatActivity {
         }else if(REQUEST_CAPTURE == requestCode){
             if(Activity.RESULT_OK == resultCode){
                 if(null != data) {
-                    Uri uri = data.getData();
+                    Uri uri = data.getParcelableExtra("response");
                     if (null != uri) {
                         new Thread(){
                             @Override
@@ -448,24 +456,20 @@ public class ClientActivity extends AppCompatActivity {
                                 try{
                                     sendMessage(HANDLER_DISPLAY_PROGRESS_BAR_SCREEN, null);
                                     InputStream respData = getContentResolver().openInputStream(uri);
-                                    BufferedReader r = new BufferedReader(new InputStreamReader(respData));
-                                    StringBuilder total = new StringBuilder();
-                                    for (String line; (line = r.readLine()) != null; ) {
-                                        total.append(line).append('\n');
-                                    }
-                                    String response = total.toString();
-                                    JSONObject resposeObject = new JSONObject(response);
-                                    if(resposeObject.has("biometrics")) {
-                                        JSONArray biometricsArray = resposeObject.getJSONArray("biometrics");
-                                        JSONObject errObject = (biometricsArray.getJSONObject(0)).getJSONObject("error");
-                                        responseData = response;
-                                        sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, response);
-                                        if (!errObject.getString("errorCode").equals("0")) {
+                                    byte[] bytes = IOUtils.toByteArray(respData);
+                                    CaptureResponse resposeObject = new ObjectMapper().readValue(bytes, CaptureResponse.class);
+                                    //JSONObject resposeObject = new JSONObject(response);
+                                    if(resposeObject.biometrics != null && !resposeObject.biometrics.isEmpty()) {
+                                        List<CaptureDetail> biometrics = resposeObject.biometrics;
+                                        Error errObject = (biometrics.get(0)).error;
+                                        responseData = resposeObject.toString();
+                                        sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, responseData);
+                                        if (!errObject.errorCode.equals("0")) {
                                             sendMessage(HANDLER_DISPLAY_TOAST, errObject.toString());
                                         }
                                     }else{
-                                        responseData = response;
-                                        sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, response);
+                                        responseData = resposeObject.toString();
+                                        sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, responseData);
                                         //textBox.setText();
                                         //deviceId.setText("");
                                         //deviceIdRow.setVisibility(View.GONE);

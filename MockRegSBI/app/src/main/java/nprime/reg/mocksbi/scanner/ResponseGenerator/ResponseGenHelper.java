@@ -1,15 +1,13 @@
 package nprime.reg.mocksbi.scanner.ResponseGenerator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mdm.DataObjects.BioMetricsDataDto;
-import com.mdm.DataObjects.CaptureRequestDeviceDetailDto;
-import com.mdm.DataObjects.CaptureRequestDto;
-import com.mdm.DataObjects.DeviceInformation;
-import com.mdm.DataObjects.NewBioAuthDto;
+import com.mdm.DataObjects.*;
 
+import nprime.reg.mocksbi.dto.CaptureDetail;
+import nprime.reg.mocksbi.dto.CaptureResponse;
+import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.Error;
 import org.bouncycastle.util.Strings;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -17,14 +15,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
 import nprime.reg.mocksbi.faceCaptureApi.KeysNotFoundException;
@@ -41,36 +36,23 @@ import nprime.reg.mocksbi.utility.Logger;
 
 public class ResponseGenHelper 
 {
-	public static int nErrorCode = 0;
 
 	static final String REGISTRATION = "Registration";
-	static final String SPEC_VERSION = "specVersion";
-	static final String DATA = "data";
-	static final String HASH = "hash";
-	static final String BIOMETRICS = "biometrics";
-	static final String errorCode = "errorCode";
-	static final String errorInfo = "errorInfo";
-	static final String error = "error";
 
 
 	static ObjectMapper oB = null;
 
-	public static String getDeviceDriverInfo(
+	public static List<DeviceInfoResponse> getDeviceDriverInfo(
 			DeviceConstants.ServiceStatus currentStatus,
-			String szTimeStamp, String requestType)
+			String szTimeStamp, String requestType, DeviceConstants.BioType bioType)
 	{
-		String outputDeviceInfo;
 		List<String> listOfModalities = Collections.singletonList("FAC");
 
 		CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
-
-		Map<String, Object> statusMap = new HashMap<>();
-		List<Map<String, Object>> infoList = new ArrayList<>();
+		List<DeviceInfoResponse> infoList = new ArrayList<>();
 		try
 		{
-
-			statusMap.put("errorCode", "0");
-			statusMap.put("errorInfo", "Success");
+			Error error = new Error("0", "Success");
 
 			DeviceKeystore deviceKeystore = new DeviceKeystore();
 			X509Certificate certificate = deviceKeystore.getX509Certificate();
@@ -84,8 +66,7 @@ public class ResponseGenHelper
 			byte[] headerData = devCommonDeviceAPI.getHeaderfromCert(certStr);
 
 			listOfModalities.forEach(value -> {
-				Map<String, Object> data = new HashMap<>();
-				byte[] deviceInfoData = getDeviceInfo(deviceKeystore, currentStatus, szTimeStamp, requestType);
+				byte[] deviceInfoData = getDeviceInfo(deviceKeystore, currentStatus, szTimeStamp, requestType, bioType);
 
 				String enCodedHeader =  java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(headerData);
 				String enCodedPayLoad = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(deviceInfoData);
@@ -100,108 +81,76 @@ public class ResponseGenHelper
 
 				String encodedDeviceInfo = enCodedHeader + "." + enCodedPayLoad + "." + enCodedSignature;//.replace("=", "");
 
-				data.put("deviceInfo", encodedDeviceInfo);
-				data.put("error", statusMap);
-				infoList.add(data);
+				infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
 			});
-			outputDeviceInfo = new JSONArray(infoList).toString();
 		}
 		catch (KeysNotFoundException keyException){
 			//DeviceMain.deviceMain.deviceCommonDeviceAPI.showAlwaysOnTopMessage("Face SBI", "Device Key not found, Please restart MDS.");
 			Logger.e(DeviceConstants.LOG_TAG, "Device Key not found, Please restart MDS.");
 
-			Map<String, Object> errorMap = new LinkedHashMap<>();
-			errorMap.put(errorCode, DeviceErrorCodes.MDS_DEVICEKEYS_NOT_FOUND);
-			errorMap.put(errorInfo, keyException.getMessage());
-			Map<String, Object> responseMap = new HashMap<>();
-			responseMap.put(error, errorMap);
-			infoList.add(responseMap);
-			outputDeviceInfo = new JSONArray(infoList).toString();
+			infoList.add(new DeviceInfoResponse(null, new Error(DeviceErrorCodes.MDS_DEVICEKEYS_NOT_FOUND,
+					keyException.getMessage())));
 		}		
 		catch (CertificateException cex){
 			//DeviceMain.deviceMain.deviceCommonDeviceAPI.showAlwaysOnTopMessage("Face SBI", "Invalid Device Certificate, Please restart MDS.");
 			Logger.e(DeviceConstants.LOG_TAG, "Invalid Device Certificate, Please restart MDS.");
 
-			Map<String, Object> errorMap = new LinkedHashMap<>();
-			errorMap.put(errorCode, DeviceErrorCodes.MDS_INVALID_CERTIFICATE);
-			errorMap.put(errorInfo, cex.getMessage());
-			Map<String, Object> responseMap = new HashMap<>();
-			responseMap.put(error, errorMap);
-			infoList.add(responseMap);
-			outputDeviceInfo = new JSONArray(infoList).toString();
+			infoList.add(new DeviceInfoResponse(null, new Error(DeviceErrorCodes.MDS_INVALID_CERTIFICATE,
+					cex.getMessage())));
 		}
 		catch(Exception ex)
 		{
 			ex.printStackTrace();
-			Map<String, Object> errorMap = new LinkedHashMap<>();
-			errorMap.put(errorCode, "UNKNOWN");
-			errorMap.put(errorInfo, ex.getMessage());
-			Map<String, Object> responseMap = new HashMap<>();
-			responseMap.put(error, errorMap);
-			infoList.add(responseMap);
-			outputDeviceInfo = new JSONArray(infoList).toString();
+			infoList.add(new DeviceInfoResponse(null, new Error("UNKNOWN",
+					ex.getMessage())));
 		}
-		return  outputDeviceInfo;
+		return  infoList;
 	}
 
-	public static String getDeviceDiscovery(
+	public static List<DeviceInformation> getDeviceDiscovery(
 			DeviceConstants.ServiceStatus currentStatus,
-			String szTimeStamp, String requestType) {
-		String discoveryData = "";
-
+			String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
+		List<DeviceInformation> list = new ArrayList();
 		try
 		{
-			JSONObject jsonobject = new JSONObject();
-			JSONArray jsonarray = new JSONArray();
-			JSONArray jsonDSubid = new JSONArray();
+			DeviceInformation jsonobject = new DeviceInformation();
 			String serialNumber;
 			CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
 			serialNumber = devCommonDeviceAPI.getSerialNumber();
-			jsonobject.put("deviceId",  serialNumber);
-			jsonobject.put("deviceStatus",  currentStatus.getType());
-			jsonobject.put("certification", DeviceConstants.CERTIFICATIONLEVEL);
-			jsonobject.put("serviceVersion", DeviceConstants.MDSVERSION);
+			jsonobject.deviceId = serialNumber;
+			jsonobject.deviceStatus = currentStatus.getType();
+			jsonobject.certification = DeviceConstants.CERTIFICATIONLEVEL;
+			jsonobject.serviceVersion = DeviceConstants.MDSVERSION;
 
-			jsonDSubid.put(0);		
-			jsonobject.put("deviceSubId", jsonDSubid);			
-			jsonobject.put("callbackId", requestType);
+			switch (bioType) {
+				case Face: jsonobject.deviceSubId = new int[]{0};break;
+				case Finger: jsonobject.deviceSubId = new int[]{1,2,3}; break;
+				case Iris: jsonobject.deviceSubId = new int[]{3};break;
+			}
 
-			String payLoad = getDigitalID(serialNumber, szTimeStamp);
+			jsonobject.callbackId = requestType;
+			String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
 			String digID = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes()); //Base64.encodeToString(payLoad.getBytes(), Base64.NO_PADDING); //
 
-			jsonobject.put("digitalId", digID);
-			jsonobject.put("deviceCode", serialNumber);
+			jsonobject.digitalId = digID;
+			jsonobject.deviceCode = serialNumber;
+			jsonobject.specVersion = new String[] {DeviceConstants.REGSERVER_VERSION};
+			jsonobject.purpose = DeviceConstants.usageStage.getDeviceUsage();
 
-			jsonarray.put(DeviceConstants.REGSERVER_VERSION);
-			jsonobject.put("specVersion", jsonarray);
-
-			jsonobject.put("purpose", DeviceConstants.usageStage.getDeviceUsage());
-
-			JSONObject jsonerror = new JSONObject();
-			jsonerror.put("errorCode", "0");
-			jsonerror.put("errorInfo", "Success");
-			jsonobject.put("error", jsonerror);
-
-
-
-			discoveryData = jsonobject.toString();  
-		}
-		catch(JSONException ex)
-		{
-			Logger.e(DeviceConstants.LOG_TAG, "Face SBI :: " + "Failed to process JSON");
+			//jsonobject.error = new Error("0", "Success"));
+			list.add(jsonobject);
 		}
 		catch(Exception ex)
 		{
 			Logger.e(DeviceConstants.LOG_TAG, "Face SBI :: " + "Failed to process exception");
 		}
-
-		return "[" + discoveryData + "]";
+		return list;
 	}	
 
 	private static byte[] getDeviceInfo(
 			DeviceKeystore deviceKeystore,
 			DeviceConstants.ServiceStatus currentStatus,
-			String szTimeStamp, String requestType)
+			String szTimeStamp, String requestType, DeviceConstants.BioType bioType)
 	{
 		byte[] deviceInfoData = null;
 		try{
@@ -215,7 +164,7 @@ public class ResponseGenHelper
 			String serialNumber = devCommonDeviceAPI.getSerialNumber();
 
 			DeviceInformation info = new DeviceInformation();
-			info.callbackId = requestType;
+			info.callbackId = requestType.replace(".Info", "");
 			info.certification = DeviceConstants.CERTIFICATIONLEVEL;
 			info.deviceCode = serialNumber;
 			info.deviceId = serialNumber;
@@ -228,7 +177,7 @@ public class ResponseGenHelper
 			//Base64.encodeToString(certificate.getEncoded(), Base64.NO_WRAP);
 
 			String enCodedHeader =  java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(devCommonDeviceAPI.getHeaderfromCert(certStr));//.replace("=", ""); //Base64.encodeToString(devCommonDeviceAPI.getHeaderfromCert(certStr), Base64.NO_PADDING);
-			String payLoad = getDigitalID(serialNumber, szTimeStamp);
+			String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
 			String enCodedPayLoad = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes());//.replace("=", ""); //Base64.encodeToString(payLoad.getBytes(), Base64.NO_PADDING);
 			byte [] inSignString = (enCodedHeader + "." + enCodedPayLoad).getBytes();
 
@@ -261,7 +210,7 @@ public class ResponseGenHelper
 	}
 
 
-	public static String getDigitalID(String serialNumber, String szTS) {		
+	public static String getDigitalID(String serialNumber, String szTS, DeviceConstants.BioType bioType) {
 		String digiID;
 		JSONObject jsonobject = new JSONObject();
 
@@ -269,8 +218,20 @@ public class ResponseGenHelper
 			jsonobject.put("serialNo", serialNumber);
 			jsonobject.put("make", DeviceConstants.DEVICEMAKE);
 			jsonobject.put("model", DeviceConstants.DEVICEMODEL);
-			jsonobject.put("type", DeviceConstants.BioType.Face.getType());
-			jsonobject.put("deviceSubType", DeviceConstants.DEVICESUBTYPE);
+			switch (bioType) {
+				case Face:
+					jsonobject.put("type", DeviceConstants.BioType.Face.getType());
+					jsonobject.put("deviceSubType", DeviceConstants.FACE_DEVICESUBTYPE);
+					break;
+				case Finger:
+					jsonobject.put("type", DeviceConstants.BioType.Finger.getType());
+					jsonobject.put("deviceSubType", DeviceConstants.FINGER_DEVICESUBTYPE);
+					break;
+				case Iris:
+					jsonobject.put("type", DeviceConstants.BioType.Iris.getType());
+					jsonobject.put("deviceSubType", DeviceConstants.IRIS_DEVICESUBTYPE);
+					break;
+			}
 			jsonobject.put("deviceProvider", DeviceConstants.PROVIDERNAME);
 			jsonobject.put("deviceProviderId", DeviceConstants.PROVIDERID);
 			jsonobject.put("dateTime", szTS);
@@ -304,7 +265,192 @@ public class ResponseGenHelper
 		}
 	}
 
-	public static String getRCaptureBiometricsMOSIP(FaceCaptureResult fcResult,
+	public static CaptureResponse getRCaptureBiometricsMOSIP(FaceCaptureResult fcResult,
+													CaptureRequestDto captureRequestDto) {
+
+		CaptureResponse responseMap = new CaptureResponse();
+		try {
+
+			if (oB == null)
+				oB = new ObjectMapper();
+			CommonDeviceAPI mdCommonDeviceAPI = new CommonDeviceAPI();
+
+			//if (FaceCaptureResult.CAPTURE_SUCCESS == fcResult.getStatus()){
+			if (DeviceConstants.environmentList.contains(captureRequestDto.env)
+					&& captureRequestDto.purpose.equalsIgnoreCase(REGISTRATION)) {
+
+				List<CaptureDetail> listOfBiometric = new ArrayList<>();
+				//String previousHash = HMACUtils.digestAsPlainText(HMACUtils.generateHash(""));
+				String previousHash = mdCommonDeviceAPI.digestAsPlainText(mdCommonDeviceAPI.Sha256("".getBytes()));
+
+				for (CaptureRequestDeviceDetailDto bio : captureRequestDto.mosipBioRequest) {
+					switch (bio.type.toLowerCase()) {
+						case "face":
+							NewBioAuthDto bioResponse = getBioResponse(mdCommonDeviceAPI, bio.type, "",
+									captureRequestDto, fcResult, bio);
+							CaptureDetail biometricData = getAuthMinimalResponse(
+									captureRequestDto.specVersion, bioResponse, previousHash, fcResult);
+							listOfBiometric.add(biometricData);
+							previousHash = biometricData.hash;
+							break;
+						case "finger":
+							switch (bio.deviceSubId) {
+								case "1" :
+									CaptureDetail left_index = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Left IndexFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(left_index);
+									previousHash = (String) left_index.hash;
+									CaptureDetail left_middle = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Left MiddleFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(left_middle);
+									previousHash = (String) left_middle.hash;
+									CaptureDetail left_ring = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Left RingFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(left_ring);
+									previousHash = (String) left_ring.hash;
+									CaptureDetail left_little = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Left LittleFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(left_little);
+									previousHash = (String) left_little.hash;
+									break;
+								case "2":
+									CaptureDetail right_index = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Right IndexFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(right_index);
+									previousHash = (String) right_index.hash;
+									CaptureDetail right_middle = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Right MiddleFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(right_middle);
+									previousHash = (String) right_middle.hash;
+									CaptureDetail right_ring = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Right RingFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(right_ring);
+									previousHash = (String) right_ring.hash;
+									CaptureDetail right_little = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Right LittleFinger", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(right_little);
+									previousHash = (String) right_little.hash;
+									break;
+								case "3":
+									CaptureDetail left_thumb = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Left Thumb", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(left_thumb);
+									previousHash = (String) left_thumb.hash;
+									CaptureDetail right_thumb = getAuthMinimalResponse(
+											captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+													"Right Thumb", captureRequestDto, fcResult, bio), previousHash, fcResult);
+									listOfBiometric.add(right_thumb);
+									previousHash = (String) right_thumb.hash;
+									break;
+							}
+							break;
+						case "iris":
+							CaptureDetail left_iris = getAuthMinimalResponse(
+									captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+											"Left", captureRequestDto, fcResult, bio), previousHash, fcResult);
+							listOfBiometric.add(left_iris);
+							previousHash = (String) left_iris.hash;
+							CaptureDetail right_iris = getAuthMinimalResponse(
+									captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
+											"Right", captureRequestDto, fcResult, bio), previousHash, fcResult);
+							listOfBiometric.add(right_iris);
+							previousHash = (String) right_iris.hash;
+							break;
+					}
+				}
+				responseMap.biometrics = listOfBiometric;
+
+			} else {
+				CaptureDetail captureDetail = new CaptureDetail();
+				captureDetail.error = new Error("101", "Invalid Environment / Purpose");
+				responseMap.biometrics = Arrays.asList(captureDetail);
+			}
+		}
+		catch (KeysNotFoundException kexception){
+			//DeviceMain.deviceMain.deviceCommonDeviceAPI.showAlwaysOnTopMessage("Face SBI", "Device Key not found, Please restart MDS.");
+			Logger.e(DeviceConstants.LOG_TAG, "Device Key not found, Please restart MDS.");
+
+			CaptureDetail captureDetail = new CaptureDetail();
+			captureDetail.specVersion = DeviceConstants.REGSERVER_VERSION;
+			captureDetail.error = new Error(DeviceErrorCodes.MDS_DEVICEKEYS_NOT_FOUND, kexception.getMessage());
+			responseMap.biometrics = Arrays.asList(captureDetail);
+		}
+		catch (CertificateException cex){
+			//DeviceMain.deviceMain.deviceCommonDeviceAPI.showAlwaysOnTopMessage("Face SBI", "Invalid Device Certificate, Please restart MDS.");
+			Logger.e(DeviceConstants.LOG_TAG, "Invalid Device Certificate, Please restart MDS.");
+
+			CaptureDetail captureDetail = new CaptureDetail();
+			captureDetail.specVersion = DeviceConstants.REGSERVER_VERSION;
+			captureDetail.error = new Error(DeviceErrorCodes.MDS_INVALID_CERTIFICATE, cex.getMessage());
+			responseMap.biometrics = Arrays.asList(captureDetail);
+		}
+		catch (Exception exception) {
+			CaptureDetail captureDetail = new CaptureDetail();
+			captureDetail.specVersion = DeviceConstants.REGSERVER_VERSION;
+			captureDetail.error = new Error("UNKNOWN", exception.getMessage());
+		}
+		return responseMap;
+	}
+
+	private static NewBioAuthDto getBioResponse(CommonDeviceAPI mdCommonDeviceAPI, String bioType, String bioSubType,
+												CaptureRequestDto captureRequestDto, FaceCaptureResult captureResult,
+												CaptureRequestDeviceDetailDto bioRequest) throws CertificateEncodingException, KeysNotFoundException {
+		String timestamp = CryptoUtility.getTimestamp();
+		NewBioAuthDto bioResponse = new NewBioAuthDto();
+		bioResponse.setBioSubType(bioSubType);
+		bioResponse.setBioType(bioType);
+		bioResponse.setDeviceCode(mdCommonDeviceAPI.getSerialNumber());
+		//Device service version should be read from file
+		bioResponse.setDeviceServiceVersion(DeviceConstants.MDSVERSION);
+		bioResponse.setEnv(captureRequestDto.env);
+		bioResponse.setPurpose(DeviceConstants.usageStage.getDeviceUsage());
+		bioResponse.setRequestedScore(String.valueOf(bioRequest.requestedScore));
+		bioResponse.setQualityScore(String.valueOf(captureResult.getQualityScore()));
+		bioResponse.setTransactionId(captureRequestDto.transactionId);
+
+		DeviceKeystore deviceKeystore = new DeviceKeystore();
+		X509Certificate certificate = deviceKeystore.getX509Certificate();
+
+		if (null == certificate){
+			throw new KeysNotFoundException("Device Key not found");
+		}
+
+		String certStr =  java.util.Base64.getEncoder().encodeToString(certificate.getEncoded());
+		String enCodedHeader = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+				mdCommonDeviceAPI.getHeaderfromCert(certStr));
+
+		String payLoad = getDigitalID(mdCommonDeviceAPI.getSerialNumber(), timestamp, DeviceConstants.BioType.Face);
+		String enCodedPayLoad = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes());
+		byte [] inSignString = (enCodedHeader + "." + enCodedPayLoad).getBytes();
+
+		byte[] signature = "".getBytes();
+		if (isValidDeviceforCertificate()){
+			signature = deviceKeystore.getSignature(inSignString);
+		}
+		String enCodedSignature = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(signature);
+
+		String digitalID = enCodedHeader + "." + enCodedPayLoad + "." + enCodedSignature;
+		bioResponse.setDigitalId(digitalID);
+
+		bioResponse.setTimestamp(timestamp);
+		//bioResponse.setCount("1");
+
+		bioResponse.setBioValue(java.util.Base64.getUrlEncoder().withoutPadding()
+				.encodeToString((captureResult.getBiometricRecords().get(bioSubType) == null) ?
+						"".getBytes(StandardCharsets.UTF_8) : captureResult.getBiometricRecords().get(bioSubType)));
+		return bioResponse;
+	}
+
+	/*public static String getRCaptureBiometricsMOSIPTest(FaceCaptureResult fcResult,
 													CaptureRequestDto captureRequestDto) {
 
 		Map<String, Object> responseMap = new HashMap<>();
@@ -377,7 +523,7 @@ public class ResponseGenHelper
 							String enCodedHeader = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
 									mdCommonDeviceAPI.getHeaderfromCert(certStr));
 
-							String payLoad = getDigitalID(serialNumber, dto.getTimestamp());
+							String payLoad = getDigitalID(serialNumber, dto.getTimestamp(), DeviceConstants.BioType.Face);
 							String enCodedPayLoad = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes());
 							byte [] inSignString = (enCodedHeader + "." + enCodedPayLoad).getBytes();
 
@@ -477,14 +623,12 @@ public class ResponseGenHelper
 			rCaptureResponse = new JSONObject(responseMap).toString();
 		}
 		return rCaptureResponse;
-	}
+	}*/
 
 
-	private static Map<String, Object>
-	getAuthMinimalResponse(String specVersion, NewBioAuthDto data,
-						   String previousHash, FaceCaptureResult fcResult) {
-		Map<String, Object> biometricData = new LinkedHashMap<>();
-		Map<String, Object> errorMap = new HashMap<>();
+	private static CaptureDetail getAuthMinimalResponse(String specVersion, NewBioAuthDto data,
+														String previousHash, FaceCaptureResult fcResult) {
+		CaptureDetail biometricData = new CaptureDetail();
 		CommonDeviceAPI mdCommonDeviceAPI = new CommonDeviceAPI();
 		try {
 
@@ -492,19 +636,16 @@ public class ResponseGenHelper
 				oB = new ObjectMapper();
 
 			if (FaceCaptureResult.CAPTURE_SUCCESS == fcResult.getStatus()){
-				errorMap.put("errorCode", "0");
-				errorMap.put("errorInfo", "Success");
+				biometricData.error = new Error("0", "Success");
 			}
 			else if (FaceCaptureResult.CAPTURE_TIMEOUT == fcResult.getStatus()){
-				errorMap.put(errorCode, DeviceErrorCodes.MDS_CAPTURE_TIMEOUT);
-				errorMap.put(errorInfo, "Capture Timeout");
+				biometricData.error = new Error(DeviceErrorCodes.MDS_CAPTURE_TIMEOUT, "Capture Timeout");
 			}
 			else{
-				errorMap.put(errorCode, DeviceErrorCodes.MDS_CAPTURE_FAILED);
-				errorMap.put(errorInfo, "Capture Failed");
+				biometricData.error = new Error(DeviceErrorCodes.MDS_CAPTURE_FAILED,  "Capture Failed");
 			}
 
-			biometricData.put(SPEC_VERSION, specVersion);
+			biometricData.specVersion = specVersion;
 			X509Certificate certificate = new DeviceKeystore().getX509Certificate();
 			String certStr =  java.util.Base64.getEncoder().encodeToString(certificate.getEncoded());
 
@@ -520,7 +661,7 @@ public class ResponseGenHelper
 
 			String dataBlock = enCodedHeader + "." + enCodedPayload + "." + enCodedSignature;
 
-			biometricData.put(DATA, dataBlock);
+			biometricData.data = dataBlock;
 			byte[] previousBioDataHash;
 			byte[] currentBioDataHash;
 
@@ -538,15 +679,11 @@ public class ResponseGenHelper
 			System.arraycopy(currentBioDataHash, 0, finalBioDataHash, previousBioDataHash.length, currentBioDataHash.length);
 			String finalHashDataHex = CryptoUtility.toHex (CryptoUtility.generateHash(finalBioDataHash));
 
-			biometricData.put(HASH, finalHashDataHex);
-			biometricData.put(error, errorMap);
+			biometricData.hash =  finalHashDataHex;
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Map<String, String> map = new HashMap<>();
-			map.put(errorCode, "UNKNOWN");
-			map.put(errorInfo, ex.getMessage());
-			biometricData.put(error, map);
+			biometricData.error = new Error("UNKNOWN", ex.getMessage());
 		}
 		return biometricData;
 	}

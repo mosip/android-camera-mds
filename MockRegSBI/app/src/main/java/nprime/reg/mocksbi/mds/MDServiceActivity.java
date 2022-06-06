@@ -14,10 +14,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mdm.DataObjects.CaptureRequestDto;
+import com.mdm.DataObjects.DeviceInformation;
 import com.mdm.DataObjects.DiscoverRequestDto;
 
+import nprime.reg.mocksbi.dto.CaptureResponse;
+import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.Error;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -27,12 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import nprime.reg.mocksbi.camera.RCaptureActivity;
-import nprime.reg.mocksbi.face.R;
+import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
 import nprime.reg.mocksbi.scanner.ResponseGenerator.ResponseGenHelper;
 import nprime.reg.mocksbi.utility.CommonDeviceAPI;
@@ -76,10 +80,10 @@ public class MDServiceActivity extends AppCompatActivity {
         }
         String actionType = getIntent().getAction();
         switch (actionType) {
-            case "sbi.reg.device": {
+            case "io.sbi.device": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
-                    String responseBody;
+                    Object responseBody = null;
                     DiscoverRequestDto discoverRequestDto = null;
                     byte[] input = getIntent().getByteArrayExtra("input");
 
@@ -94,49 +98,114 @@ public class MDServiceActivity extends AppCompatActivity {
                         }
                     }
 
-                    if (null != discoverRequestDto && (discoverRequestDto.type.equalsIgnoreCase("face") ||
-                            discoverRequestDto.type.equalsIgnoreCase("biometric device"))) {
-                        String requestType = getPackageName();//"nprime.reg.mocksbi.face";
-                        responseBody = discoverDevice(currentStatus, szTs, requestType);
+                    if (null != discoverRequestDto) {
+                        switch (discoverRequestDto.type.toLowerCase()) {
+                            case "face" :
+                                responseBody = discoverDevice(currentStatus, szTs, "nprime.reg.mocksbi.face", DeviceConstants.BioType.Face);
+                                break;
+                            case "finger":
+                                responseBody = discoverDevice(currentStatus, szTs, "nprime.reg.mocksbi.finger",
+                                        DeviceConstants.BioType.Finger);
+                                break;
+                            case "iris":
+                                responseBody = discoverDevice(currentStatus, szTs, "nprime.reg.mocksbi.iris",
+                                        DeviceConstants.BioType.Iris);
+                                break;
+                            case "biometric device":
+                                break;
+                        }
+
                     } else {
-                        Map<String, Object> responseMap = new HashMap<>();
-                        Map<String, Object> errorMap = new LinkedHashMap<>();
-                        errorMap.put("errorCode", "301");
-                        errorMap.put("errorInfo", "Invalid type");
-                        responseMap.put("error", errorMap);
-                        responseBody = new JSONObject(responseMap).toString();
+                        responseBody = Arrays.asList(new DeviceInfoResponse(null, new Error("301", "Invalid type")));
                     }
                     generateResponse(responseBody, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /device. MOSIPDISC completed");
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.face.info": {
+            case "nprime.reg.mocksbi.face.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "nprime.reg.mocksbi.face" + ".info";
-                    String strDeviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Face);
 
-                    generateResponse(strDeviceInfo, false);
+                    generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.face.rcapture": {
+            case "nprime.reg.mocksbi.finger.Info": {
+                new Thread(() -> {
+                    String szTs = new CommonDeviceAPI().getISOTimeStamp();
+
+                    String requestType = "nprime.reg.mocksbi.finger" + ".info";
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Finger);
+
+                    generateResponse(deviceInfo, false);
+                    Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
+                }).start();
+                break;
+            }
+            case "nprime.reg.mocksbi.iris.Info": {
+                new Thread(() -> {
+                    String szTs = new CommonDeviceAPI().getISOTimeStamp();
+
+                    String requestType = "nprime.reg.mocksbi.iris" + ".info";
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Iris);
+
+                    generateResponse(deviceInfo, false);
+                    Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
+                }).start();
+                break;
+            }
+            case "nprime.reg.mocksbi.face.rCapture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
                     if (null != input) {
-                        capture(input);
+                        capture(input, DeviceConstants.BioType.Face);
                     }else {
                         Map<String, Object> errorMap = new LinkedHashMap<>();
                         errorMap.put("errorCode", "101");
                         errorMap.put("errorInfo", "Invalid input");
                         Map<String, Object> responseMap = new HashMap<>();
                         responseMap.put("error", errorMap);
-                        String rCaptureResponse = new JSONObject(responseMap).toString();
-                        generateResponse(rCaptureResponse, true);
+                        generateResponse(new JSONObject(responseMap), true);
+                    }
+                }).start();
+                break;
+            }
+            case "nprime.reg.mocksbi.finger.rCapture": {
+                new Thread(() -> {
+                    cleanUriFileData();
+                    byte[] input = getIntent().getByteArrayExtra("input");
+                    if (null != input) {
+                        capture(input, DeviceConstants.BioType.Finger);
+                    }else {
+                        Map<String, Object> errorMap = new LinkedHashMap<>();
+                        errorMap.put("errorCode", "101");
+                        errorMap.put("errorInfo", "Invalid input");
+                        Map<String, Object> responseMap = new HashMap<>();
+                        responseMap.put("error", errorMap);
+                        generateResponse(new JSONObject(responseMap), true);
+                    }
+                }).start();
+                break;
+            }
+            case "nprime.reg.mocksbi.iris.rCapture": {
+                new Thread(() -> {
+                    cleanUriFileData();
+                    byte[] input = getIntent().getByteArrayExtra("input");
+                    if (null != input) {
+                        capture(input, DeviceConstants.BioType.Iris);
+                    }else {
+                        Map<String, Object> errorMap = new LinkedHashMap<>();
+                        errorMap.put("errorCode", "101");
+                        errorMap.put("errorInfo", "Invalid input");
+                        Map<String, Object> responseMap = new HashMap<>();
+                        responseMap.put("error", errorMap);
+                        generateResponse(new JSONObject(responseMap), true);
                     }
                 }).start();
                 break;
@@ -170,7 +239,7 @@ public class MDServiceActivity extends AppCompatActivity {
         }
     }
 
-    private void capture(byte[] input) {
+    private void capture(byte[] input, DeviceConstants.BioType bioType) {
         try {
             if (ActivityCompat.checkSelfPermission(MDServiceActivity.this, Manifest.permission.CAMERA)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -185,7 +254,8 @@ public class MDServiceActivity extends AppCompatActivity {
             currentStatus = DeviceConstants.ServiceStatus.BUSY;
 
             //currentStatus = DeviceConstants.ServiceStatus.READY;
-            startCameraActivity(captureRequestDto.timeout);
+            startCameraActivity(captureRequestDto.timeout, bioType,
+                    captureRequestDto.mosipBioRequest.get(0).deviceSubId);
             //invokeCaptureCompressEncryptSign(captureRequestDto);
         }catch (Exception e){
             e.printStackTrace();
@@ -195,22 +265,26 @@ public class MDServiceActivity extends AppCompatActivity {
             errorMap.put("errorInfo", "Invalid input data");
             Map<String, Object> responseMap = new HashMap<>();
             responseMap.put("error", errorMap);
-            String rCaptureResponse = new JSONObject(responseMap).toString();
-            generateResponse(rCaptureResponse, true);
+            generateResponse(responseMap, true);
         }
     }
 
-    private void startCameraActivity(int captureTimeout) {
+    private void startCameraActivity(int captureTimeout, DeviceConstants.BioType bioType, String bioSubId) {
         Intent intent = new Intent(this, RCaptureActivity.class);
         intent.putExtra("CaptureTimeout", captureTimeout);
+        intent.putExtra("modality", bioType.getType());
+        intent.putExtra("bioSubId", Integer.parseInt(bioSubId));
         startActivityForResult(intent, RequestCodeCapture);
     }
 
-    private void generateResponse(String responseXml, boolean isError)
-    {
+    private void generateResponse(Object responseXml, boolean isError) {
         Intent intent = new Intent();
-        intent.putExtra("Response", responseXml);
-        if(isError || (null == responseXml || responseXml.isEmpty())){
+        try {
+            intent.putExtra("response", new ObjectMapper().writeValueAsBytes(responseXml));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        if(isError || (null == responseXml)){
             setResult(Activity.RESULT_CANCELED, intent);
         }else {
             setResult(Activity.RESULT_OK, intent);
@@ -218,10 +292,10 @@ public class MDServiceActivity extends AppCompatActivity {
         finish();
     }
 
-    private void generateRCaptureResponse(String responseXml, boolean isError)
+    private void generateRCaptureResponse(CaptureResponse responseXml, boolean isError)
     {
         Intent intent = new Intent();
-        if(null != responseXml && !responseXml.isEmpty()) {
+        if(null != responseXml) {
             try {
                 File outputPath = new File(this.getFilesDir(), "output/");
                 if (!outputPath.exists()) {
@@ -234,19 +308,19 @@ public class MDServiceActivity extends AppCompatActivity {
                 }
                 File file = new File(clientFolderPath, "resp_" + System.currentTimeMillis() + ".txt");
                 final OutputStream os = new FileOutputStream(file);
-                os.write(responseXml.getBytes(StandardCharsets.UTF_8));
+                os.write(ob.writeValueAsBytes(responseXml));
                 os.flush();
                 os.close();
-                Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "nprime.reg.mocksbi.face.fileprovider", file);
+                Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "nprime.reg.mocksbi.fileprovider", file);
                 getApplicationContext().grantUriPermission(getCallingPackage(), respUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setData(respUri);
+                intent.putExtra("response", respUri);
             } catch (final Exception e) {
                 e.printStackTrace();
             }
         }
 
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        if(isError || (null == responseXml || responseXml.isEmpty())){
+        if(isError || (null == responseXml)){
             setResult(Activity.RESULT_CANCELED, intent);
         }else {
             setResult(Activity.RESULT_OK, intent);
@@ -254,12 +328,13 @@ public class MDServiceActivity extends AppCompatActivity {
         finish();
     }
 
-    private String discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType){
-        return ResponseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType);
+    private List<DeviceInformation> discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType){
+        return ResponseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType);
     }
 
-    public String getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType) {
-        return ResponseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType);
+    public List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType,
+                                                        DeviceConstants.BioType bioType) {
+        return ResponseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType);
     }
 
     @Override
@@ -269,16 +344,69 @@ public class MDServiceActivity extends AppCompatActivity {
             if(Activity.RESULT_OK == resultCode){
                 new Thread(() -> {
                     try {
-                        Uri isoUri = data.getData();
-                        InputStream is = getContentResolver().openInputStream(isoUri);
-                        byte[] isoRecord = readBytes(is);
-
                         FaceCaptureResult captureResult = new FaceCaptureResult();
-                        captureResult.setIsoFaceRecord(isoRecord);
+                        captureResult.setModality(data.getStringExtra("modality"));
+                        captureResult.setBioSubId(data.getIntExtra("bioSubId", 1));
+                        switch (captureResult.getModality().toLowerCase()) {
+                            case "face":
+                                try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("face"))) {
+                                    captureResult.getBiometricRecords().put("", readBytes(is));
+                                }
+                                break;
+                            case "finger":
+                                switch (captureResult.getBioSubId()) {
+                                    case 1:
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left IndexFinger"))) {
+                                            captureResult.getBiometricRecords().put("Left IndexFinger", readBytes(is));
+                                        }
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left MiddleFinger"))) {
+                                            captureResult.getBiometricRecords().put("Left MiddleFinger", readBytes(is));
+                                        }
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left RingFinger"))) {
+                                            captureResult.getBiometricRecords().put("Left RingFinger", readBytes(is));
+                                        }
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left LittleFinger"))) {
+                                            captureResult.getBiometricRecords().put("Left LittleFinger", readBytes(is));
+                                        }
+                                        break;
+                                    case 2:
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right IndexFinger"))) {
+                                            captureResult.getBiometricRecords().put("Right IndexFinger", readBytes(is));
+                                        }
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right MiddleFinger"))) {
+                                            captureResult.getBiometricRecords().put("Right MiddleFinger", readBytes(is));
+                                        }
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right RingFinger"))) {
+                                            captureResult.getBiometricRecords().put("Right RingFinger", readBytes(is));
+                                        }
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right LittleFinger"))) {
+                                            captureResult.getBiometricRecords().put("Right LittleFinger", readBytes(is));
+                                        }
+                                        break;
+                                    case 3:
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left Thumb"))) {
+                                            captureResult.getBiometricRecords().put("Left Thumb", readBytes(is));
+                                        }
+                                        try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right Thumb"))) {
+                                            captureResult.getBiometricRecords().put("Right Thumb", readBytes(is));
+                                        }
+                                        break;
+                                }
+                                break;
+                            case "iris":
+                                try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left"))) {
+                                    captureResult.getBiometricRecords().put("Left", readBytes(is));
+                                }
+                                try(InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right"))) {
+                                    captureResult.getBiometricRecords().put("Right", readBytes(is));
+                                }
+                                break;
+                        }
+
                         captureResult.setStatus(data.getIntExtra("Status", FaceCaptureResult.CAPTURE_CANCELLED));
                         captureResult.setQualityScore(data.getIntExtra("Quality", 0));
 
-                        String responseXml = ResponseGenHelper
+                        CaptureResponse responseXml = ResponseGenHelper
                                 .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto);
                         generateRCaptureResponse(responseXml, false);
                     } catch (Exception e) {
@@ -287,16 +415,14 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
             }else{
                 FaceCaptureResult captureResult = new FaceCaptureResult();
-                captureResult.setIsoFaceRecord("".getBytes(StandardCharsets.UTF_8));
                 captureResult.setStatus(FaceCaptureResult.CAPTURE_CANCELLED);
                 captureResult.setQualityScore(0);
                 if(null != data) {
-                    captureResult.setIsoFaceRecord("".getBytes(StandardCharsets.UTF_8));
                     captureResult.setStatus(data.getIntExtra("Status", FaceCaptureResult.CAPTURE_CANCELLED));
                     captureResult.setQualityScore(data.getIntExtra("Quality", 0));
                 }
 
-                String responseXml = ResponseGenHelper
+                CaptureResponse responseXml = ResponseGenHelper
                         .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto);
                 generateRCaptureResponse(responseXml, false);
             }

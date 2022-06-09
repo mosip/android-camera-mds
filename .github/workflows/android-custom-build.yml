@@ -24,7 +24,7 @@ jobs:
           cd MockRegSBI
           chmod +x gradlew
           ./gradlew assembleDebug
-          ls app\build\outputs\apk\debug
+          ls app/build/outputs/apk/debug
           find -name '*.apk'
       - name: Upload Artifact
         uses: actions/upload-artifact@v2

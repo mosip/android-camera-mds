@@ -1,6 +1,5 @@
 package nprime.reg.mocksbi.camera;
 
-import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;

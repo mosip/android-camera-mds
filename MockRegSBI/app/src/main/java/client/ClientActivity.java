@@ -37,15 +37,12 @@ import nprime.reg.mocksbi.dto.CaptureDetail;
 import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
 import nprime.reg.mocksbi.dto.Error;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -240,7 +237,6 @@ public class ClientActivity extends AppCompatActivity {
                     Toast.makeText(ClientActivity.this, "Perform info request", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                //String captureInput = "{\"env\":\"Staging\",\"purpose\":\"Registration\",\"specVersion\":\"0.9.5\",\"timeout\":10000,\"captureTime\":\"2021-07-18T17:56:11Z\",\"domainUri\":\"https://extint1.mosip.net\",\"transactionId\":\"1626630971975\",\"bio\":[{\"type\":\"Finger\",\"count\":1,\"bioSubType\":[\"UNKNOWN\"],\"requestedScore\":40,\"deviceId\":\"" + serialNo + "\",\"deviceSubId\":0,\"previousHash\":\"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855\"}],\"customOpts\":null}";
                 CaptureRequestDto captureRequestDto = new CaptureRequestDto();
                 captureRequestDto.env = "Production";
                 captureRequestDto.purpose = "Registration";

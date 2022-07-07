@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textbox"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:scrollbars="vertical"
+        android:padding="8dp"
+        android:textSize="14sp"
+        android:textColor="@color/design_default_color_on_secondary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/discover"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/discover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Discover"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/info"
+        app:layout_constraintBottom_toTopOf="@id/share" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Info"
+        android:enabled="false"
+        app:layout_constraintStart_toEndOf="@id/discover"
+        app:layout_constraintBaseline_toBaselineOf="@id/discover"
+        app:layout_constraintEnd_toStartOf="@id/capture"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/capture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rcapture"
+        android:enabled="false"
+        app:layout_constraintStart_toEndOf="@id/info"
+        app:layout_constraintBaseline_toBaselineOf="@id/info"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/capture"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/logo"
+        android:text="Share"/>
+
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="128dp"
+        android:layout_height="64dp"
+        android:onClick="nprimeWebsite"
+        android:src="@drawable/nprime_logo_transparent"
+        app:layout_constraintBottom_toTopOf="@id/nprime_name_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nprime_name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="nprimeWebsite"
+        android:text="NPrime Technologies Pvt Ltd"
+        android:textColor="@color/nprime_blue"
+        app:layout_constraintBottom_toTopOf="@id/nprime_link_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/nprime_link_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="9dp"
+        android:onClick="nprimeWebsite"
+        android:text="www.nprime.in"
+        android:textColor="@color/nprime_blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

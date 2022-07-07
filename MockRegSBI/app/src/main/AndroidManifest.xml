@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="nprime.reg.mocksbi">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher_camera"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_camera_round"
+        android:supportsRtl="true"
+        android:theme="@style/NPrimeTheme">
+        <activity
+            android:name="client.ClientActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="nprime.reg.mocksbi.mds.MDServiceActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="io.sbi.device" />
+                <action android:name="nprime.reg.mocksbi.face.Info" />
+                <action android:name="nprime.reg.mocksbi.face.rCapture" />
+                <action android:name="nprime.reg.mocksbi.finger.Info" />
+                <action android:name="nprime.reg.mocksbi.finger.rCapture" />
+                <action android:name="nprime.reg.mocksbi.iris.Info" />
+                <action android:name="nprime.reg.mocksbi.iris.rCapture" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="nprime.reg.mocksbi.camera.RCaptureActivity" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="nprime.reg.mocksbi.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:readPermission="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>

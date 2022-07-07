@@ -24,6 +24,7 @@ import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
 public class RCaptureActivity extends AppCompatActivity {
 
     private static final long PREVIEW_TIME_DELAY = 1000;
+    private static final int QUALITY_SCORE = 90;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +72,7 @@ public class RCaptureActivity extends AppCompatActivity {
                             break;
                     }
 
-                    captureSuccessful(uris, modality, 30, bioSubId);
+                    captureSuccessful(uris, modality, QUALITY_SCORE, bioSubId);
                 }catch (Exception e){
                     e.printStackTrace();
                     captureFailed(-301, e.getMessage());

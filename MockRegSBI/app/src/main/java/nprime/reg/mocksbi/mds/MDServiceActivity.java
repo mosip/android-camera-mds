@@ -23,6 +23,7 @@ import com.mdm.DataObjects.DiscoverRequestDto;
 import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
 import nprime.reg.mocksbi.dto.Error;
+import nprime.reg.mocksbi.secureLib.DeviceKeystore;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -334,12 +335,14 @@ public class MDServiceActivity extends AppCompatActivity {
 
     public List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType,
                                                         DeviceConstants.BioType bioType) {
-        return ResponseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType);
+        DeviceKeystore keystore = new DeviceKeystore(this);
+        return ResponseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType, keystore);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        DeviceKeystore keystore = new DeviceKeystore(this);
         if(RequestCodeCapture == requestCode){
             if(Activity.RESULT_OK == resultCode){
                 new Thread(() -> {
@@ -405,9 +408,8 @@ public class MDServiceActivity extends AppCompatActivity {
 
                         captureResult.setStatus(data.getIntExtra("Status", FaceCaptureResult.CAPTURE_CANCELLED));
                         captureResult.setQualityScore(data.getIntExtra("Quality", 0));
-
                         CaptureResponse responseXml = ResponseGenHelper
-                                .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto);
+                                .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
                         generateRCaptureResponse(responseXml, false);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -423,7 +425,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 }
 
                 CaptureResponse responseXml = ResponseGenHelper
-                        .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto);
+                        .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
                 generateRCaptureResponse(responseXml, false);
             }
         }

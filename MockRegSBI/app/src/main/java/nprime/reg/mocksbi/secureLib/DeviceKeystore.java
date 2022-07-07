@@ -1,19 +1,17 @@
 package nprime.reg.mocksbi.secureLib;
 
-import android.util.Base64;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import android.content.Context;
 import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.cert.CertificateException;
+import  java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
-import nprime.reg.mocksbi.utility.DeviceConstants;
+import nprime.reg.mocksbi.R;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.lang.JoseException;
 
 /**
  * @author NPrime Technologies
@@ -21,57 +19,51 @@ import nprime.reg.mocksbi.utility.DeviceConstants;
 
 public class DeviceKeystore {
 
-	public DeviceKeystore() {
+	private Context context;
+	private static String signAlgorithm="RS256";
+
+	public DeviceKeystore(Context context) {
+		this.context = context;
 	}
 
-	public byte[] getSignature(byte[] inputData) {
+	public String getJwt(byte[] data) {
+		String keystorePwd = "mosipface";
+		String keyAlias = "Device";
+		PrivateKey privateKey = null;
+		Certificate x509Certificate = null;
 
-		byte[] signatureBytes = null;
-		try {
-
-			InputStream inputStream = new ByteArrayInputStream((Base64.decode(DeviceConstants.MOCK_MDS_KEYSTORE,Base64.DEFAULT)));
-			KeyStore trustStore = KeyStore.getInstance("BKS");
-			trustStore.load(inputStream,"mock@123".toCharArray());
-			PrivateKey privateKey = (PrivateKey) trustStore.getKey("nprime", "mock@123".toCharArray());
-			if (null != privateKey) {
-				Signature sig = Signature.getInstance("SHA256WithRSA");
-				sig.initSign(privateKey);
-				sig.update(inputData);
-
-				signatureBytes = sig.sign();
-
-				//Verification
-				sig.initVerify(getX509Certificate().getPublicKey());
-				sig.update(inputData);
-
-				if (!sig.verify(signatureBytes)){
-					signatureBytes = null;
-				}
-			}
+		try(InputStream inputStream = context.getResources().openRawResource(R.raw.deviceqa4)) {
+			KeyStore keystore = KeyStore.getInstance("PKCS12");
+			keystore.load(inputStream, keystorePwd.toCharArray());
+			privateKey = (PrivateKey)keystore.getKey(keyAlias, keystorePwd.toCharArray());
+			x509Certificate = keystore.getCertificate(keyAlias);
 		} catch (Exception e) {
-			e.printStackTrace();
-			signatureBytes = null;
+			throw new RuntimeException(e);
 		}
-
-		return signatureBytes;
+		return getJwt(data, privateKey, (X509Certificate)x509Certificate);
 	}
 
-	public X509Certificate getX509Certificate(){
+	private static String getJwt(byte[] data, PrivateKey privateKey, X509Certificate x509Certificate) {
+		String jwsToken = null;
+		JsonWebSignature jws = new JsonWebSignature();
 
-		X509Certificate  x509Cert = null;
+		if(x509Certificate != null) {
+			List<X509Certificate> certList = new ArrayList<>();
+			certList.add(x509Certificate);
+			X509Certificate[] certArray = certList.toArray(new X509Certificate[] {});
+			jws.setCertificateChainHeaderValue(certArray);
+		}
+
+		jws.setPayloadBytes(data);
+		jws.setAlgorithmHeaderValue(signAlgorithm);
+		jws.setHeader(org.jose4j.jwx.HeaderParameterNames.TYPE, "JWT");
+		jws.setKey(privateKey);
+		jws.setDoKeyValidation(false);
 		try {
-
-			//******************
-			InputStream inputStream = new ByteArrayInputStream((Base64.decode(DeviceConstants.MOCK_MDS_KEYSTORE,Base64.DEFAULT)));
-			KeyStore trustStore = KeyStore.getInstance("BKS");
-			trustStore.load(inputStream,"mock@123".toCharArray());
-			x509Cert = (X509Certificate)trustStore.getCertificate("nprime");
-
-			//TODO get cert from keyrotation info and check thumbprints of both certs
-		} catch (KeyStoreException | CertificateException |
-				NoSuchAlgorithmException | IOException e) {
+			jwsToken = jws.getCompactSerialization();
+		} catch (JoseException e) {
 			e.printStackTrace();
 		}
-		return x509Cert;
+		return jwsToken;
 	}
 }

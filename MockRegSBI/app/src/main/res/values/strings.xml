@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">Mock Registration SBI</string>
     <string name="no_data_text">For testing, get Info and Capture results</string>
+    <string name="key_alias">Key Alias</string>
+    <string name="key_store_password">Key Store Password</string>
+    <string name="add_p12">Add P12</string>
+    <string name="face_score">Face Score</string>
+    <string name="finger_score">Finger Score</string>
+    <string name="iris_score">Iris Score</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="reset">Reset</string>
 </resources>

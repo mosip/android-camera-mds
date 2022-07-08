@@ -512,4 +512,9 @@ public class ClientActivity extends AppCompatActivity {
         updateIntent.setData(Uri.parse("https://www.nprime.in/"));
         startActivity(updateIntent);
     }
+
+    public void openSettings(View view) {
+        Intent intent = new Intent(this, ConfigurationActivity.class);
+        startActivity(intent);
+    }
 }

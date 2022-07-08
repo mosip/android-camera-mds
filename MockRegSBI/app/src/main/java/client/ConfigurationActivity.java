@@ -1,28 +1,34 @@
 package client;
 
-import android.annotation.SuppressLint;
+import static nprime.reg.mocksbi.constants.ClientConstants.FACE_SCORE;
+import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_SCORE;
+import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_SCORE;
+import static nprime.reg.mocksbi.constants.ClientConstants.KEY_ALIAS;
+import static nprime.reg.mocksbi.constants.ClientConstants.KEY_STORE_PASSWORD;
+import static nprime.reg.mocksbi.constants.ClientConstants.LAST_UPLOAD_DATE;
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.slider.Slider;
 
 import nprime.reg.mocksbi.R;
+import nprime.reg.mocksbi.utility.DateUtil;
+
+/**
+ * @author Anshul.Vanawat
+ */
 
 public class ConfigurationActivity extends AppCompatActivity {
 
-    private static final String KEY_ALIAS = "key_alias";
-    private static final String KEY_STORE_PASSWORD = "key_store_password";
-    private static final String FACE_SCORE = "face_score";
-    private static final String IRIS_SCORE = "iris_score";
-    private static final String FINGER_SCORE = "finger_score";
+    private static final String LAST_UPLOADED_STRING = "Last Upload : ";
 
     private EditText keyAliasEditText;
     private EditText keyStorePasswordEditText;
@@ -38,14 +44,20 @@ public class ConfigurationActivity extends AppCompatActivity {
     private int currentFaceScore;
     private int currentFingerScore;
     private int currentIrisScore;
+    private String lastUploadDate;
 
     SharedPreferences sharedPreferences;
+
+    private FileChooserFragment fileChooserFragment;
+
+    DateUtil dateUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        dateUtil = new DateUtil(this);
 
         keyAliasEditText = findViewById(R.id.key_alias);
         keyStorePasswordEditText = findViewById(R.id.key_store_password);
@@ -56,42 +68,50 @@ public class ConfigurationActivity extends AppCompatActivity {
         fingerScoreTextView = findViewById(R.id.tx_finger_score);
         irisScoreTextView = findViewById(R.id.tx_iris_score);
 
-        faceSlider.addOnChangeListener(new Slider.OnChangeListener() {
-            @SuppressLint("RestrictedApi")
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                int intVal = (int) value;
-                faceScoreTextView.setText(String.valueOf(intVal));
-            }
+        currentKeyAlias = sharedPreferences.getString(KEY_ALIAS, "");
+        currentKeyPassword = sharedPreferences.getString(KEY_STORE_PASSWORD, "");
+        currentFaceScore = sharedPreferences.getInt(FACE_SCORE, 30);
+        currentFingerScore = sharedPreferences.getInt(FINGER_SCORE, 30);
+        currentIrisScore = sharedPreferences.getInt(IRIS_SCORE, 30);
+        lastUploadDate = sharedPreferences.getString(LAST_UPLOAD_DATE, "");
+
+        Bundle bundle = new Bundle();
+        bundle.putString(LAST_UPLOAD_DATE, lastUploadDate);
+
+        FragmentManager fragmentManager = this.getSupportFragmentManager();
+        fileChooserFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.fragmentContainerView);
+        if (fileChooserFragment != null)
+            fileChooserFragment.setArguments(bundle);
+
+        faceSlider.addOnChangeListener((slider, value, fromUser) -> {
+            int intVal = (int) value;
+            faceScoreTextView.setText(String.valueOf(intVal));
         });
 
-        fingerSlider.addOnChangeListener(new Slider.OnChangeListener() {
-            @SuppressLint("RestrictedApi")
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                int intVal = (int) value;
-                fingerScoreTextView.setText(String.valueOf(intVal));
-            }
+        fingerSlider.addOnChangeListener((slider, value, fromUser) -> {
+            int intVal = (int) value;
+            fingerScoreTextView.setText(String.valueOf(intVal));
         });
 
-        irisSlider.addOnChangeListener(new Slider.OnChangeListener() {
-            @SuppressLint("RestrictedApi")
-            @Override
-            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                int intVal = (int) value;
-                irisScoreTextView.setText(String.valueOf(intVal));
-            }
+        irisSlider.addOnChangeListener((slider, value, fromUser) -> {
+            int intVal = (int) value;
+            irisScoreTextView.setText(String.valueOf(intVal));
         });
 
         resetScreen();
     }
 
     public void onSave(View view) {
+        if (!saveFile()) {
+            return;
+        }
+
         currentKeyAlias = keyAliasEditText.getText().toString();
         currentKeyPassword = keyStorePasswordEditText.getText().toString();
         currentFaceScore = (int) faceSlider.getValue();
         currentFingerScore = (int) fingerSlider.getValue();
         currentIrisScore = (int) irisSlider.getValue();
+        lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(KEY_ALIAS, currentKeyAlias);
@@ -99,6 +119,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(FACE_SCORE, currentFaceScore);
         editor.putInt(FINGER_SCORE, currentFingerScore);
         editor.putInt(IRIS_SCORE, currentIrisScore);
+        editor.putString(LAST_UPLOAD_DATE, LAST_UPLOADED_STRING + lastUploadDate);
         editor.apply();
 
         //navigate back to previous activity
@@ -109,21 +130,32 @@ public class ConfigurationActivity extends AppCompatActivity {
         resetScreen();
     }
 
-    private void resetScreen(){
-        currentKeyAlias = sharedPreferences.getString(KEY_ALIAS, "");
-        currentKeyPassword = sharedPreferences.getString(KEY_STORE_PASSWORD, "");
-        currentFaceScore = sharedPreferences.getInt(FACE_SCORE, 30);
-        currentFingerScore = sharedPreferences.getInt(FINGER_SCORE, 30);
-        currentIrisScore = sharedPreferences.getInt(IRIS_SCORE, 30);
-
+    private void resetScreen() {
         keyAliasEditText.setText(currentKeyAlias);
         keyStorePasswordEditText.setText(currentKeyPassword);
         faceSlider.setValue(currentFaceScore);
         fingerSlider.setValue(currentFingerScore);
         irisSlider.setValue(currentIrisScore);
+        fileChooserFragment.resetSelection(lastUploadDate);
     }
 
-    public void onAddP12(View view) {
-        Toast.makeText(this, "Implementation Pending", Toast.LENGTH_SHORT).show();
+    private boolean saveFile() {
+//        if (data != null) {
+//            Uri fileUri = data.getData();
+//
+//            String filePath = null;
+//            try {
+//                filePath = FileUtils.getPath(this.getContext(), fileUri);
+//
+//                File file = new File(filePath);
+//                String d = getData(file);
+//                SaveFile(d);
+//                this.editTextPath.setText(filePath);
+//            } catch (Exception e) {
+//                Log.e(LOG_TAG, "Error: " + e);
+//                Toast.makeText(this.getContext(), "Error: " + e, Toast.LENGTH_SHORT).show();
+//            }
+//        }
+        return true;
     }
 }

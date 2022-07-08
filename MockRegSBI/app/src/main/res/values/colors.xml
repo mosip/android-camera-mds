@@ -10,4 +10,5 @@
     <color name="nprime_primary">#0071c5</color>
     <color name="cancel">#C5007D</color>
     <color name="okay">#00C587</color>
+    <color name="cardBackgroundColor">#cdcdcd</color>
 </resources>

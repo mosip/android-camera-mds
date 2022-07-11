@@ -48,6 +48,7 @@ dependencies {
     implementation files('libs/bcprov-jdk15on-149.jar')
     implementation files('libs/commons-codec-1.4.jar')
     implementation files('libs/MdsDao.jar')
+    implementation "androidx.work:work-runtime:2.7.1"	
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

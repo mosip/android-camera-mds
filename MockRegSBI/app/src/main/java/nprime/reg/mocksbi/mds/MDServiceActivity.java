@@ -4,6 +4,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import android.Manifest;
 import android.app.Activity;
@@ -51,6 +54,7 @@ public class MDServiceActivity extends AppCompatActivity {
     private static final int RequestCodeCapture = 1;
 
     private static final int PERMISSION_CAMERA = 2;
+    private static final int URI_EXPIRY_TIME_IN_SEC = 10;	
 
     private ObjectMapper ob;
 
@@ -314,6 +318,9 @@ public class MDServiceActivity extends AppCompatActivity {
                 Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "nprime.reg.mocksbi.fileprovider", file);
                 getApplicationContext().grantUriPermission(getCallingPackage(), respUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intent.putExtra("response", respUri);
+				
+                //Initiating One Time work request to revoke permission and delete file
+                initWorkRequest(respUri, file.getAbsolutePath());				
             } catch (final Exception e) {
                 e.printStackTrace();
             }
@@ -328,6 +335,20 @@ public class MDServiceActivity extends AppCompatActivity {
         finish();
     }
 
+    private void initWorkRequest(Uri uri, String fileName){
+        Data inputData = new Data.Builder()
+                .putString("FileName", fileName)
+                .putString("Uri", uri.toString())
+                .build();
+        OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest
+                .Builder(FileUriWorker.class)
+                .setInputData(inputData)
+                .setInitialDelay(URI_EXPIRY_TIME_IN_SEC, TimeUnit.SECONDS)
+                .build();
+
+        WorkManager.getInstance(getApplicationContext()).enqueue(oneTimeWorkRequest);
+    }
+	
     private List<DeviceInformation> discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType){
         return ResponseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType);
     }

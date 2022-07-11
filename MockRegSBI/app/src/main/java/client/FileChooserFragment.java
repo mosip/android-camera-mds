@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,13 +36,12 @@ public class FileChooserFragment extends Fragment {
     private TextView editTextPath;
     Uri selectedFileUri;
 
-    private static final String LOG_TAG = "AndroidExample";
-
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_file_chooser, container, false);
 
         editTextPath = rootView.findViewById(R.id.last_upload_date);
+        assert getArguments() != null;
         String lastUploadedDate = getArguments().getString(ClientConstants.LAST_UPLOAD_DATE);
         editTextPath.setText(lastUploadedDate);
 
@@ -51,22 +51,17 @@ public class FileChooserFragment extends Fragment {
     }
 
     private void askPermissionAndBrowseFile() {
-        // With Android Level >= 23, you have to ask the user
-        // for permission to access External Storage.
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) { // Level 23
+        // Check if we have Call permission
+        int permission = ActivityCompat.checkSelfPermission(this.getContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE);
 
-            // Check if we have Call permission
-            int permission = ActivityCompat.checkSelfPermission(this.getContext(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE);
-
-            if (permission != PackageManager.PERMISSION_GRANTED) {
-                // If don't have permission so prompt the user.
-                this.requestPermissions(
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        MY_REQUEST_CODE_PERMISSION
-                );
-                return;
-            }
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // If don't have permission so prompt the user.
+            this.requestPermissions(
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_REQUEST_CODE_PERMISSION
+            );
+            return;
         }
         this.doBrowseFile();
     }
@@ -108,9 +103,8 @@ public class FileChooserFragment extends Fragment {
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
                         selectedFileUri = data.getData();
-                        String filePath = FileUtils.getPath(this.getContext(), selectedFileUri);
-                        File file = new File(filePath);
-                        editTextPath.setText(file.getName());
+                        Pair<String, String> fileNameAndSize = FileUtils.getFileNameAndSize(getContext(), selectedFileUri);
+                        editTextPath.setText(String.format("%s (%s)", fileNameAndSize.first, fileNameAndSize.second));
                     }
                 }
                 break;

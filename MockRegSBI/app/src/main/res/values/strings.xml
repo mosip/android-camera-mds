@@ -15,4 +15,5 @@
     <string name="p12_configuration">P12 Configuration</string>
     <string name="modality_config">Modality Config</string>
     <string name="_30">30</string>
+    <string name="validate_certificate">Validate Certificate</string>
 </resources>

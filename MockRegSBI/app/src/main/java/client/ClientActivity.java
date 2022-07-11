@@ -37,6 +37,7 @@ import nprime.reg.mocksbi.dto.CaptureDetail;
 import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
 import nprime.reg.mocksbi.dto.Error;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 import nprime.reg.mocksbi.R;
+import nprime.reg.mocksbi.secureLib.DeviceKeystore;
 
 /**
  * @author NPrime Technologies
@@ -109,9 +111,9 @@ public class ClientActivity extends AppCompatActivity {
         btnInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(null == appID){
+                if (null == appID) {
                     discover();
-                }else {
+                } else {
                     textBox.setText("");
                     info();
                 }
@@ -148,10 +150,10 @@ public class ClientActivity extends AppCompatActivity {
                         share.setType("plain/*");
                         share.putExtra(Intent.EXTRA_STREAM, uri);
                         startActivity(Intent.createChooser(share, "Share file"));
-                    }else{
+                    } else {
                         showEmptyScreen();
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -164,20 +166,20 @@ public class ClientActivity extends AppCompatActivity {
         btnCapture.setEnabled(serialNo != null);
     }
 
-    private void discover(){
-        try{
+    private void discover() {
+        try {
             Intent intent = new Intent();
             intent.setAction("io.sbi.device");
 
             PackageManager packageManager = this.getPackageManager();
-            List<ResolveInfo> activities = packageManager.queryIntentActivities(intent,PackageManager.MATCH_DEFAULT_ONLY);
+            List<ResolveInfo> activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             //activities.sort(new ResolveInfo.DisplayNameComparator(packageManager));
             final boolean isIntentSafe = activities.size() > 0;
 
-            if(isIntentSafe) {
+            if (isIntentSafe) {
                 String packageName = null;
                 for (ResolveInfo activity : activities) {
-                    if(activity.activityInfo.applicationInfo.packageName.equals("nprime.reg.mocksbi")){
+                    if (activity.activityInfo.applicationInfo.packageName.equals("nprime.reg.mocksbi")) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DiscoverRequestDto discoverRequestDto = new DiscoverRequestDto();
@@ -188,42 +190,42 @@ public class ClientActivity extends AppCompatActivity {
                         break;
                     }
                 }
-                if(null == packageName){
+                if (null == packageName) {
                     Toast.makeText(ClientActivity.this, "Supported app not found", Toast.LENGTH_SHORT).show();
                 }
-            }else {
+            } else {
                 Toast.makeText(ClientActivity.this, "Supported apps not found", Toast.LENGTH_SHORT).show();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void info(){
+    private void info() {
         Intent intent = new Intent();
         intent.setAction(appID + ".Info");
 
         PackageManager packageManager = this.getPackageManager();
-        List<ResolveInfo> activities = packageManager.queryIntentActivities(intent,PackageManager.MATCH_DEFAULT_ONLY);
-        Collections.sort(activities,new ResolveInfo.DisplayNameComparator(packageManager));
+        List<ResolveInfo> activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        Collections.sort(activities, new ResolveInfo.DisplayNameComparator(packageManager));
         final boolean isIntentSafe = activities.size() > 0;
 
-        if(isIntentSafe) {
+        if (isIntentSafe) {
             String packageName = null;
             for (ResolveInfo activity : activities) {
-                if(appID.startsWith(activity.activityInfo.applicationInfo.packageName)) {
+                if (appID.startsWith(activity.activityInfo.applicationInfo.packageName)) {
                     packageName = activity.activityInfo.applicationInfo.packageName;
                     intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                     startActivityForResult(intent, REQUEST_INFO);
                     break;
                 }
             }
-        }else {
+        } else {
             Toast.makeText(ClientActivity.this, "Supported apps not found", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void capture(){
+    private void capture() {
         try {
             Intent intent = new Intent();
             intent.setAction(appID + ".rCapture");
@@ -260,7 +262,7 @@ public class ClientActivity extends AppCompatActivity {
 
                 String packageName;
                 for (ResolveInfo activity : activities) {
-                    if(appID.startsWith(activity.activityInfo.applicationInfo.packageName)) {
+                    if (appID.startsWith(activity.activityInfo.applicationInfo.packageName)) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(captureRequestDto));
@@ -271,22 +273,23 @@ public class ClientActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(ClientActivity.this, "Supported apps not found", Toast.LENGTH_SHORT).show();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void showResponse(String responseLabel, String data){
+    private void showResponse(String responseLabel, String data) {
         emptyScreen.setVisibility(View.GONE);
         progressBarScreen.setVisibility(View.GONE);
         responseScreen.setVisibility(View.VISIBLE);
         textBoxLabel.setText(responseLabel);
-        if(data.length() > 1000){
+        if (data.length() > 1000) {
             data = data.substring(0, 900) + "....||...." + data.substring(data.length() - 90, data.length());
         }
         textBox.setText(data);
     }
-    private void showEmptyScreen(){
+
+    private void showEmptyScreen() {
         textBoxLabel.setText("Response : ");
         textBox.setText("");
         responseScreen.setVisibility(View.GONE);
@@ -294,7 +297,8 @@ public class ClientActivity extends AppCompatActivity {
         emptyScreen.setVisibility(View.VISIBLE);
         responseData = null;
     }
-    private void showProgressBarScreen(){
+
+    private void showProgressBarScreen() {
         emptyScreen.setVisibility(View.GONE);
         responseScreen.setVisibility(View.GONE);
         progressBarScreen.setVisibility(View.VISIBLE);
@@ -309,27 +313,27 @@ public class ClientActivity extends AppCompatActivity {
         handler.sendMessage(message);
     }
 
-    private final Handler handler = new Handler(Looper.getMainLooper()){
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
-                case HANDLER_DISPLAY_CAPTURE_RESPONSE :
+            switch (msg.what) {
+                case HANDLER_DISPLAY_CAPTURE_RESPONSE:
                     String captureData = (String) msg.obj;
                     showResponse("Capture Response", captureData);
                     break;
-                case HANDLER_DISPLAY_TOAST :
-                    String toastText = (String)msg.obj;
+                case HANDLER_DISPLAY_TOAST:
+                    String toastText = (String) msg.obj;
                     Toast.makeText(ClientActivity.this, toastText, Toast.LENGTH_SHORT).show();
                     break;
-                case HANDLER_DISPLAY_EMPTY_SCREEN :
+                case HANDLER_DISPLAY_EMPTY_SCREEN:
                     showEmptyScreen();
                     break;
-                case HANDLER_DISPLAY_INFO_RESPONSE :
+                case HANDLER_DISPLAY_INFO_RESPONSE:
                     String infoData = (String) msg.obj;
                     showResponse("Info Response", infoData);
                     break;
-                case HANDLER_DISPLAY_PROGRESS_BAR_SCREEN :
+                case HANDLER_DISPLAY_PROGRESS_BAR_SCREEN:
                     showProgressBarScreen();
                     break;
                 default:
@@ -341,18 +345,19 @@ public class ClientActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(REQUEST_DISCOVER == requestCode){
-            if(Activity.RESULT_OK == resultCode){
-                try{
-                    if(null != data) {
+        if (REQUEST_DISCOVER == requestCode) {
+            if (Activity.RESULT_OK == resultCode) {
+                try {
+                    if (null != data) {
                         if (data.hasExtra("response")) {
                             byte[] response = data.getByteArrayExtra("response");
                             List<DeviceInformation> list = new ObjectMapper().readValue(response,
-                                    new TypeReference<List<DeviceInformation>>(){});
+                                    new TypeReference<List<DeviceInformation>>() {
+                                    });
 
                             if (!list.isEmpty()) {
                                 String encodedDigitalID = list.get(0).digitalId;
-                                if(!encodedDigitalID.isEmpty()) {
+                                if (!encodedDigitalID.isEmpty()) {
                                     byte[] digitalIdBytes = Base64.getUrlDecoder().decode(encodedDigitalID);
                                     JSONObject digitalIDObj = new JSONObject(new String(digitalIdBytes));
                                     if (digitalIDObj.has("make")) {
@@ -372,34 +377,35 @@ public class ClientActivity extends AppCompatActivity {
                                         deviceIdRow.setVisibility(View.GONE);
                                     }
                                     appID = list.get(0).callbackId;
-                                }else{
+                                } else {
                                     Toast.makeText(ClientActivity.this, "Digital ID error", Toast.LENGTH_SHORT).show();
                                 }
-                            }else {
+                            } else {
                                 Toast.makeText(ClientActivity.this, "Discover failed - No Devices", Toast.LENGTH_SHORT).show();
                             }
-                        }else {
+                        } else {
                             Toast.makeText(ClientActivity.this, "Discover failed", Toast.LENGTH_SHORT).show();
                         }
-                    }else {
+                    } else {
                         Toast.makeText(ClientActivity.this, "Discover failed", Toast.LENGTH_SHORT).show();
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             initViews();
-        }else if(REQUEST_INFO == requestCode){
-            if(Activity.RESULT_OK == resultCode){
+        } else if (REQUEST_INFO == requestCode) {
+            if (Activity.RESULT_OK == resultCode) {
                 try {
-                    if(null != data) {
+                    if (null != data) {
                         if (data.hasExtra("response")) {
                             byte[] response = data.getByteArrayExtra("response");
                             List<DeviceInfoResponse> list = new ObjectMapper().readValue(response,
-                                    new TypeReference<List<DeviceInfoResponse>>(){});
+                                    new TypeReference<List<DeviceInfoResponse>>() {
+                                    });
                             Error errorObject = list.get(0).error;
                             if ("0".equals(errorObject.errorCode)) {
-                                String deviceInfo = list.get(0).deviceInfo ;
+                                String deviceInfo = list.get(0).deviceInfo;
                                 byte[] payload = getPayloadBufferFromJwt(deviceInfo);
 
                                 JSONObject infoObject = new JSONObject(new String(payload));
@@ -412,50 +418,50 @@ public class ClientActivity extends AppCompatActivity {
                                     deviceIdRow.setVisibility(View.VISIBLE);
                                     deviceId.setText(serialNo);
                                 }
-                                if(infoObject.has("deviceStatus")){
+                                if (infoObject.has("deviceStatus")) {
                                     deviceStatus.setText(infoObject.getString("deviceStatus"));
                                 }
                                 showResponse("Info response :", list.get(0).toString());
                                 responseData = list.get(0).toString();
-                            }else{
+                            } else {
                                 showResponse("Info response", list.get(0).toString());
                                 deviceId.setText("");
                                 deviceIdRow.setVisibility(View.GONE);
                                 deviceStatus.setText("Not Ready");
                                 responseData = list.get(0).toString();
                             }
-                        }else {
+                        } else {
                             showEmptyScreen();
                             Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
                             //textBox.setText("Info response not found");
                         }
-                    }else {
+                    } else {
                         showEmptyScreen();
                         Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
                         //textBox.setText("Info rsponse not found");
                     }
-                }catch (JSONException e){
+                } catch (JSONException e) {
                     e.printStackTrace();
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             initViews();
-        }else if(REQUEST_CAPTURE == requestCode){
-            if(Activity.RESULT_OK == resultCode){
-                if(null != data) {
+        } else if (REQUEST_CAPTURE == requestCode) {
+            if (Activity.RESULT_OK == resultCode) {
+                if (null != data) {
                     Uri uri = data.getParcelableExtra("response");
                     if (null != uri) {
-                        new Thread(){
+                        new Thread() {
                             @Override
                             public void run() {
-                                try{
+                                try {
                                     sendMessage(HANDLER_DISPLAY_PROGRESS_BAR_SCREEN, null);
                                     InputStream respData = getContentResolver().openInputStream(uri);
                                     byte[] bytes = IOUtils.toByteArray(respData);
                                     CaptureResponse resposeObject = new ObjectMapper().readValue(bytes, CaptureResponse.class);
                                     //JSONObject resposeObject = new JSONObject(response);
-                                    if(resposeObject.biometrics != null && !resposeObject.biometrics.isEmpty()) {
+                                    if (resposeObject.biometrics != null && !resposeObject.biometrics.isEmpty()) {
                                         List<CaptureDetail> biometrics = resposeObject.biometrics;
                                         Error errObject = (biometrics.get(0)).error;
                                         responseData = resposeObject.toString();
@@ -463,7 +469,7 @@ public class ClientActivity extends AppCompatActivity {
                                         if (!errObject.errorCode.equals("0")) {
                                             sendMessage(HANDLER_DISPLAY_TOAST, errObject.toString());
                                         }
-                                    }else{
+                                    } else {
                                         responseData = resposeObject.toString();
                                         sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, responseData);
                                         //textBox.setText();
@@ -471,25 +477,25 @@ public class ClientActivity extends AppCompatActivity {
                                         //deviceIdRow.setVisibility(View.GONE);
                                         //deviceStatus.setText("Not Ready");
                                     }
-                                }catch (Exception e){
+                                } catch (Exception e) {
                                     sendMessage(HANDLER_DISPLAY_EMPTY_SCREEN, null);
                                     sendMessage(HANDLER_DISPLAY_TOAST, "Capture error");
                                     e.printStackTrace();
                                 }
                             }
                         }.start();
-                    }else {
+                    } else {
                         showEmptyScreen();
                         Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
                         //textBox.setText("Capture response not found");
                     }
                     //String response = data.getStringExtra("Response");
-                }else {
+                } else {
                     showEmptyScreen();
                     Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
                     //textBox.setText("Capture response not found");
                 }
-            }else{
+            } else {
                 showEmptyScreen();
             }
         }
@@ -516,5 +522,14 @@ public class ClientActivity extends AppCompatActivity {
     public void openSettings(View view) {
         Intent intent = new Intent(this, ConfigurationActivity.class);
         startActivity(intent);
+    }
+
+    public void validateCertificate(View view) {
+        DeviceKeystore keystore = new DeviceKeystore(this);
+        if (keystore.checkCertificateCredentials()) {
+            Toast.makeText(this, "Certificate credentials are valid.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Certificate validation failed.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -137,8 +137,10 @@
         android:text="Settings"
         app:layout_constraintBottom_toTopOf="@+id/card2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/card" />
+        app:layout_constraintTop_toBottomOf="@+id/card"
+        app:layout_constraintVertical_bias="0.289" />
 
     <com.google.android.material.card.MaterialCardView
             android:id="@+id/card2"
@@ -301,6 +303,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/validate_cert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/validate_certificate"
+        android:onClick="validateCertificate"
+        app:layout_constraintBottom_toTopOf="@+id/card2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/settingBtn"
+        app:layout_constraintVertical_bias="0.736" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

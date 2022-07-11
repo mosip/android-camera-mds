@@ -5,15 +5,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.widget.ImageView;
 
 import java.io.*;
 import java.util.*;
 
 import com.google.android.gms.common.util.IOUtils;
+
+import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
 
@@ -24,7 +28,11 @@ import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
 public class RCaptureActivity extends AppCompatActivity {
 
     private static final long PREVIEW_TIME_DELAY = 1000;
-    private static final int QUALITY_SCORE = 90;
+
+    private int faceQualityScore;
+    private int fingerQualityScore;
+    private int irisQualityScore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,15 +40,23 @@ public class RCaptureActivity extends AppCompatActivity {
         String modality = getIntent().getStringExtra("modality");
         int bioSubId = getIntent().getIntExtra("bioSubId", 1);
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
+        fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
+        irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
+
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 try {
                     Map<String, Uri> uris = new HashMap<>();
+                    int qualityScore = 30;
                     switch (modality.toLowerCase()) {
                         case "face":
                             ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.face);
                             uris.put("face", getBioAttributeURI("Face.iso"));
+                            qualityScore = faceQualityScore;
                             break;
                         case "finger":
                             switch (bioSubId) {
@@ -64,15 +80,17 @@ public class RCaptureActivity extends AppCompatActivity {
                                     uris.put("Right Thumb", getBioAttributeURI("Right_Thumb.iso"));
                                     break;
                             }
+                            qualityScore = fingerQualityScore;
                             break;
                         case "iris":
                             ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.iris);
                             uris.put("Left", getBioAttributeURI("Left_Iris.iso"));
                             uris.put("Right", getBioAttributeURI("Right_Iris.iso"));
+                            qualityScore = irisQualityScore;
                             break;
                     }
 
-                    captureSuccessful(uris, modality, QUALITY_SCORE, bioSubId);
+                    captureSuccessful(uris, modality, qualityScore, bioSubId);
                 }catch (Exception e){
                     e.printStackTrace();
                     captureFailed(-301, e.getMessage());

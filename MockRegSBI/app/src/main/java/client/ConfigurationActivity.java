@@ -8,11 +8,14 @@ import static nprime.reg.mocksbi.constants.ClientConstants.KEY_STORE_PASSWORD;
 import static nprime.reg.mocksbi.constants.ClientConstants.LAST_UPLOAD_DATE;
 
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -20,7 +23,9 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.material.slider.Slider;
 
 import nprime.reg.mocksbi.R;
+import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.utility.DateUtil;
+import nprime.reg.mocksbi.utility.FileUtils;
 
 /**
  * @author Anshul.Vanawat
@@ -28,6 +33,7 @@ import nprime.reg.mocksbi.utility.DateUtil;
 
 public class ConfigurationActivity extends AppCompatActivity {
 
+    private static final String TAG = ConfigurationActivity.class.getName();
     private static final String LAST_UPLOADED_STRING = "Last Upload : ";
 
     private EditText keyAliasEditText;
@@ -102,7 +108,10 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     public void onSave(View view) {
-        if (!saveFile()) {
+        Uri fileUri = fileChooserFragment.getSelectedUri();
+
+        if (fileUri != null && !saveFile(fileUri)) {
+            Toast.makeText(this, "Failed to save file! Please try again.", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -123,6 +132,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.apply();
 
         //navigate back to previous activity
+        Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
         finish();
     }
 
@@ -139,23 +149,13 @@ public class ConfigurationActivity extends AppCompatActivity {
         fileChooserFragment.resetSelection(lastUploadDate);
     }
 
-    private boolean saveFile() {
-//        if (data != null) {
-//            Uri fileUri = data.getData();
-//
-//            String filePath = null;
-//            try {
-//                filePath = FileUtils.getPath(this.getContext(), fileUri);
-//
-//                File file = new File(filePath);
-//                String d = getData(file);
-//                SaveFile(d);
-//                this.editTextPath.setText(filePath);
-//            } catch (Exception e) {
-//                Log.e(LOG_TAG, "Error: " + e);
-//                Toast.makeText(this.getContext(), "Error: " + e, Toast.LENGTH_SHORT).show();
-//            }
-//        }
-        return true;
+    private boolean saveFile(Uri fileUri) {
+        try {
+            FileUtils.SaveFileInAppStorage(getApplicationContext(), fileUri, ClientConstants.P12_FILE_NAME);
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error: " + e);
+            return false;
+        }
     }
 }

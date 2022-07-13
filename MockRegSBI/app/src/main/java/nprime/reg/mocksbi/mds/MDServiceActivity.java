@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import nprime.reg.mocksbi.camera.RCaptureActivity;
 import nprime.reg.mocksbi.R;
@@ -45,6 +46,7 @@ import nprime.reg.mocksbi.scanner.ResponseGenerator.ResponseGenHelper;
 import nprime.reg.mocksbi.utility.CommonDeviceAPI;
 import nprime.reg.mocksbi.utility.DeviceConstants;
 import nprime.reg.mocksbi.utility.Logger;
+import nprime.reg.mocksbi.workmanager.FileUriWorker;
 
 /**
  * @author NPrime Technologies

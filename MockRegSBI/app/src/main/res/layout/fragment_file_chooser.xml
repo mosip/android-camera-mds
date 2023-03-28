@@ -12,9 +12,9 @@
         android:layout_marginEnd="10dp"
         android:layout_weight="1"
         android:ems="10"
-        android:text="@string/face_score"
+        android:text="@string/file_path"
         android:textColor="@color/black"
-        android:textSize="20dp" />
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/button_browse"

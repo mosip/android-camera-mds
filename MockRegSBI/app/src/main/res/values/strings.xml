@@ -16,4 +16,19 @@
     <string name="modality_config">Modality Config</string>
     <string name="_30">30</string>
     <string name="validate_certificate">Validate Certificate</string>
+    <string name="face">Face</string>
+    <string name="device_status">Device Status</string>
+    <string name="response_delay">Response Delay</string>
+    <string name="milliseconds">Milliseconds</string>
+    <string name="file_path">File path</string>
+    <string name="score">Score</string>
+    <string name="finger">Finger</string>
+    <string name="iris">Iris</string>
+    <string name="response_delay_in_ms">Response Delay(in ms)</string>
+    <string-array name="device_status_list">
+        <item>Ready</item>
+        <item>Busy</item>
+        <item>Not Ready</item>
+        <item>Not Registered</item>
+    </string-array>
 </resources>

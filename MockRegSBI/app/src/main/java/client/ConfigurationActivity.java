@@ -1,7 +1,13 @@
 package client;
 
+import static nprime.reg.mocksbi.constants.ClientConstants.FACE_DEVICE_STATUS;
+import static nprime.reg.mocksbi.constants.ClientConstants.FACE_RESPONSE_DELAY;
 import static nprime.reg.mocksbi.constants.ClientConstants.FACE_SCORE;
+import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_DEVICE_STATUS;
+import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_RESPONSE_DELAY;
 import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_SCORE;
+import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_DEVICE_STATUS;
+import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_RESPONSE_DELAY;
 import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_SCORE;
 import static nprime.reg.mocksbi.constants.ClientConstants.KEY_ALIAS;
 import static nprime.reg.mocksbi.constants.ClientConstants.KEY_STORE_PASSWORD;
@@ -13,7 +19,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +53,13 @@ public class ConfigurationActivity extends AppCompatActivity {
     private TextView faceScoreTextView;
     private TextView fingerScoreTextView;
     private TextView irisScoreTextView;
+    private Spinner faceDeviceStatus;
+    private Spinner fingerDeviceStatus;
+    private Spinner irisDeviceStatus;
+    private EditText faceResponseDelayEditText;
+    private EditText fingerResponseDelayEditText;
+    private EditText irisResponseDelayEditText;
+
 
     private String currentKeyAlias;
     private String currentKeyPassword;
@@ -51,11 +67,16 @@ public class ConfigurationActivity extends AppCompatActivity {
     private int currentFingerScore;
     private int currentIrisScore;
     private String lastUploadDate;
+    private String currentFaceDeviceStatus;
+    private String currentFingerDeviceStatus;
+    private String currentIrisDeviceStatus;
+    private int currentFaceResponseDelay;
+    private int currentFingerResponseDelay;
+    private int currentIrisResponseDelay;
+
 
     SharedPreferences sharedPreferences;
-
     private FileChooserFragment fileChooserFragment;
-
     DateUtil dateUtil;
 
     @Override
@@ -73,13 +94,33 @@ public class ConfigurationActivity extends AppCompatActivity {
         faceScoreTextView = findViewById(R.id.tx_face_score);
         fingerScoreTextView = findViewById(R.id.tx_finger_score);
         irisScoreTextView = findViewById(R.id.tx_iris_score);
+        faceDeviceStatus = findViewById(R.id.face_device_status);
+        fingerDeviceStatus = findViewById(R.id.finger_device_status);
+        irisDeviceStatus = findViewById(R.id.iris_device_status);
+        faceResponseDelayEditText = findViewById(R.id.face_response_delay_millis);
+        fingerResponseDelayEditText = findViewById(R.id.finger_response_delay_millis);
+        irisResponseDelayEditText = findViewById(R.id.iris_response_delay_millis);
 
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.device_status_list, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        faceDeviceStatus.setAdapter(adapter);
+        fingerDeviceStatus.setAdapter(adapter);
+        irisDeviceStatus.setAdapter(adapter);
+
+        //default values
         currentKeyAlias = sharedPreferences.getString(KEY_ALIAS, "");
         currentKeyPassword = sharedPreferences.getString(KEY_STORE_PASSWORD, "");
         currentFaceScore = sharedPreferences.getInt(FACE_SCORE, 30);
         currentFingerScore = sharedPreferences.getInt(FINGER_SCORE, 30);
         currentIrisScore = sharedPreferences.getInt(IRIS_SCORE, 30);
         lastUploadDate = sharedPreferences.getString(LAST_UPLOAD_DATE, "");
+        currentFaceDeviceStatus = sharedPreferences.getString(FACE_DEVICE_STATUS, "Ready");
+        currentFingerDeviceStatus = sharedPreferences.getString(FINGER_DEVICE_STATUS, "Ready");
+        currentIrisDeviceStatus = sharedPreferences.getString(IRIS_DEVICE_STATUS, "Ready");
+
+        currentFaceResponseDelay = sharedPreferences.getInt(FACE_RESPONSE_DELAY, 0);
+        currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, 0);
+        currentIrisResponseDelay = sharedPreferences.getInt(IRIS_RESPONSE_DELAY, 0);
 
         Bundle bundle = new Bundle();
         bundle.putString(LAST_UPLOAD_DATE, lastUploadDate);
@@ -113,6 +154,8 @@ public class ConfigurationActivity extends AppCompatActivity {
         if (fileUri != null && !saveFile(fileUri)) {
             Toast.makeText(this, "Failed to save file! Please try again.", Toast.LENGTH_LONG).show();
             return;
+        } else {
+            lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
         }
 
         currentKeyAlias = keyAliasEditText.getText().toString();
@@ -120,7 +163,12 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFaceScore = (int) faceSlider.getValue();
         currentFingerScore = (int) fingerSlider.getValue();
         currentIrisScore = (int) irisSlider.getValue();
-        lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
+        currentFaceDeviceStatus = faceDeviceStatus.getSelectedItem().toString();
+        currentFingerDeviceStatus = fingerDeviceStatus.getSelectedItem().toString();
+        currentIrisDeviceStatus = irisDeviceStatus.getSelectedItem().toString();
+        currentFaceResponseDelay = Integer.parseInt(faceResponseDelayEditText.getText().toString());
+        currentFingerResponseDelay = Integer.parseInt(fingerResponseDelayEditText.getText().toString());
+        currentIrisResponseDelay = Integer.parseInt(irisResponseDelayEditText.getText().toString());
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(KEY_ALIAS, currentKeyAlias);
@@ -129,6 +177,13 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(FINGER_SCORE, currentFingerScore);
         editor.putInt(IRIS_SCORE, currentIrisScore);
         editor.putString(LAST_UPLOAD_DATE, LAST_UPLOADED_STRING + lastUploadDate);
+        editor.putString(FACE_DEVICE_STATUS, currentFaceDeviceStatus);
+        editor.putString(FINGER_DEVICE_STATUS, currentFingerDeviceStatus);
+        editor.putString(IRIS_DEVICE_STATUS, currentIrisDeviceStatus);
+        editor.putInt(FACE_RESPONSE_DELAY, currentFaceResponseDelay);
+        editor.putInt(FINGER_RESPONSE_DELAY, currentFingerResponseDelay);
+        editor.putInt(IRIS_RESPONSE_DELAY, currentIrisResponseDelay);
+
         editor.apply();
 
         //navigate back to previous activity
@@ -147,6 +202,12 @@ public class ConfigurationActivity extends AppCompatActivity {
         fingerSlider.setValue(currentFingerScore);
         irisSlider.setValue(currentIrisScore);
         fileChooserFragment.resetSelection(lastUploadDate);
+        setSpinner(faceDeviceStatus, currentFaceDeviceStatus);
+        setSpinner(fingerDeviceStatus, currentFingerDeviceStatus);
+        setSpinner(irisDeviceStatus, currentIrisDeviceStatus);
+        faceResponseDelayEditText.setText(String.format("%d", currentFaceResponseDelay));
+        fingerResponseDelayEditText.setText(String.format("%d", currentFingerResponseDelay));
+        irisResponseDelayEditText.setText(String.format("%d", currentIrisResponseDelay));
     }
 
     private boolean saveFile(Uri fileUri) {
@@ -157,5 +218,10 @@ public class ConfigurationActivity extends AppCompatActivity {
             Log.e(TAG, "Error: " + e);
             return false;
         }
+    }
+
+    private void setSpinner(Spinner spinner, String value) {
+        int position = ((ArrayAdapter<CharSequence>) spinner.getAdapter()).getPosition(value);
+        spinner.setSelection(position);
     }
 }

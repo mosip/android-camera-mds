@@ -25,10 +25,4 @@
     <string name="finger">Finger</string>
     <string name="iris">Iris</string>
     <string name="response_delay_in_ms">Response Delay(in ms)</string>
-    <string-array name="device_status_list">
-        <item>Ready</item>
-        <item>Busy</item>
-        <item>Not Ready</item>
-        <item>Not Registered</item>
-    </string-array>
 </resources>

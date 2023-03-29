@@ -4,9 +4,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -30,9 +32,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.camera.RCaptureActivity;
+import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.dto.CaptureRequestDto;
 import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
@@ -61,7 +65,9 @@ public class MDServiceActivity extends AppCompatActivity {
     public static Context applicationContext;
 
     CaptureRequestDto captureRequestDto = null;
-    private DeviceConstants.ServiceStatus currentStatus = DeviceConstants.ServiceStatus.NOTREADY;
+    DeviceConstants.ServiceStatus currentFaceStatus = DeviceConstants.ServiceStatus.READY;
+    DeviceConstants.ServiceStatus currentFingerStatus = DeviceConstants.ServiceStatus.READY;
+    DeviceConstants.ServiceStatus currentIrisStatus = DeviceConstants.ServiceStatus.READY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,13 +81,22 @@ public class MDServiceActivity extends AppCompatActivity {
             return;
         }
         applicationContext = this.getApplicationContext();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+
+        currentFaceStatus = getDeviceStatusEnum(
+                sharedPreferences.getString(ClientConstants.FACE_DEVICE_STATUS
+                        , DeviceConstants.ServiceStatus.READY.toString()));
+        currentFingerStatus = getDeviceStatusEnum(
+                sharedPreferences.getString(ClientConstants.FINGER_DEVICE_STATUS
+                        , DeviceConstants.ServiceStatus.READY.toString()));
+        currentIrisStatus = getDeviceStatusEnum(
+                sharedPreferences.getString(ClientConstants.IRIS_DEVICE_STATUS
+                        , DeviceConstants.ServiceStatus.READY.toString()));
+
         handleIntents();
     }
 
     private void handleIntents() {
-        if (currentStatus != DeviceConstants.ServiceStatus.BUSY) {
-            currentStatus = DeviceConstants.ServiceStatus.READY;
-        }
         String actionType = getIntent().getAction();
         switch (actionType) {
             case "io.sbi.device": {
@@ -105,14 +120,14 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != discoverRequestDto) {
                         switch (discoverRequestDto.type.toLowerCase()) {
                             case "face":
-                                responseBody = discoverDevice(currentStatus, szTs, "nprime.reg.mocksbi.face", DeviceConstants.BioType.Face);
+                                responseBody = discoverDevice(currentFaceStatus, szTs, "nprime.reg.mocksbi.face", DeviceConstants.BioType.Face);
                                 break;
                             case "finger":
-                                responseBody = discoverDevice(currentStatus, szTs, "nprime.reg.mocksbi.finger",
+                                responseBody = discoverDevice(currentFingerStatus, szTs, "nprime.reg.mocksbi.finger",
                                         DeviceConstants.BioType.Finger);
                                 break;
                             case "iris":
-                                responseBody = discoverDevice(currentStatus, szTs, "nprime.reg.mocksbi.iris",
+                                responseBody = discoverDevice(currentIrisStatus, szTs, "nprime.reg.mocksbi.iris",
                                         DeviceConstants.BioType.Iris);
                                 break;
                             case "biometric device":
@@ -132,7 +147,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "nprime.reg.mocksbi.face" + ".info";
-                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Face);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentFaceStatus, szTs, requestType, DeviceConstants.BioType.Face);
 
                     generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
@@ -144,7 +159,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "nprime.reg.mocksbi.finger" + ".info";
-                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Finger);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentFingerStatus, szTs, requestType, DeviceConstants.BioType.Finger);
 
                     generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
@@ -156,7 +171,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
                     String requestType = "nprime.reg.mocksbi.iris" + ".info";
-                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentStatus, szTs, requestType, DeviceConstants.BioType.Iris);
+                    List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentIrisStatus, szTs, requestType, DeviceConstants.BioType.Iris);
 
                     generateResponse(deviceInfo, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /info. MOSIPDINFO completed");
@@ -255,12 +270,9 @@ public class MDServiceActivity extends AppCompatActivity {
                 ob = new ObjectMapper();
             }
             captureRequestDto = ob.readValue(input, CaptureRequestDto.class);
-            currentStatus = DeviceConstants.ServiceStatus.BUSY;
 
-            //currentStatus = DeviceConstants.ServiceStatus.READY;
             startCameraActivity(captureRequestDto.timeout, bioType,
                     captureRequestDto.bio.get(0).deviceSubId);
-            //invokeCaptureCompressEncryptSign(captureRequestDto);
         } catch (Exception e) {
             e.printStackTrace();
             Logger.e(DeviceConstants.LOG_TAG, "Failed to initiate capture");
@@ -449,5 +461,18 @@ public class MDServiceActivity extends AppCompatActivity {
 
         // and then we can return your byte array.
         return byteBuffer.toByteArray();
+    }
+
+    private DeviceConstants.ServiceStatus getDeviceStatusEnum(String deviceStatus) {
+        if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.READY.getType())) {
+            return DeviceConstants.ServiceStatus.READY;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.BUSY.getType())) {
+            return DeviceConstants.ServiceStatus.BUSY;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREADY.getType())) {
+            return DeviceConstants.ServiceStatus.NOTREADY;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREGISTERED.getType())) {
+            return DeviceConstants.ServiceStatus.NOTREGISTERED;
+        }
+        return null;
     }
 }

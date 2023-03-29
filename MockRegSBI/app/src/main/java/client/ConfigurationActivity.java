@@ -19,7 +19,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -43,7 +42,7 @@ import nprime.reg.mocksbi.utility.FileUtils;
 public class ConfigurationActivity extends AppCompatActivity {
 
     private static final String TAG = ConfigurationActivity.class.getName();
-    private static final String LAST_UPLOADED_STRING = "Last Upload : ";
+    private static final String LAST_UPDATE = "Last update : ";
 
     private EditText keyAliasEditText;
     private EditText keyStorePasswordEditText;
@@ -176,7 +175,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(FACE_SCORE, currentFaceScore);
         editor.putInt(FINGER_SCORE, currentFingerScore);
         editor.putInt(IRIS_SCORE, currentIrisScore);
-        editor.putString(LAST_UPLOAD_DATE, LAST_UPLOADED_STRING + lastUploadDate);
+        editor.putString(LAST_UPLOAD_DATE, LAST_UPDATE + lastUploadDate);
         editor.putString(FACE_DEVICE_STATUS, currentFaceDeviceStatus);
         editor.putString(FINGER_DEVICE_STATUS, currentFingerDeviceStatus);
         editor.putString(IRIS_DEVICE_STATUS, currentIrisDeviceStatus);

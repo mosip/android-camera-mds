@@ -28,13 +28,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
-import com.mdm.DataObjects.CaptureRequestDeviceDetailDto;
-import com.mdm.DataObjects.CaptureRequestDto;
-import com.mdm.DataObjects.DeviceInformation;
-import com.mdm.DataObjects.DiscoverRequestDto;
 
 import nprime.reg.mocksbi.dto.CaptureDetail;
+import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
+import nprime.reg.mocksbi.dto.CaptureRequestDto;
 import nprime.reg.mocksbi.dto.CaptureResponse;
+import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
+import nprime.reg.mocksbi.dto.DeviceInfo;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
 import nprime.reg.mocksbi.dto.Error;
 
@@ -182,7 +182,7 @@ public class ClientActivity extends AppCompatActivity {
                     if (activity.activityInfo.applicationInfo.packageName.equals("nprime.reg.mocksbi")) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
-                        DiscoverRequestDto discoverRequestDto = new DiscoverRequestDto();
+                        DeviceDiscoveryRequestDetail discoverRequestDto = new DeviceDiscoveryRequestDetail();
                         discoverRequestDto.type = "Finger";
 
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(discoverRequestDto));
@@ -249,7 +249,7 @@ public class ClientActivity extends AppCompatActivity {
                 captureRequestDto.transactionId = "1626630971975";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
                 bio.type = "Finger";
-                bio.count = 4;
+                bio.count = "4";
                 bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
                 bio.deviceId = serialNo;
@@ -257,7 +257,7 @@ public class ClientActivity extends AppCompatActivity {
                 bio.previousHash = "";
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);
-                captureRequestDto.mosipBioRequest = mosipBioRequest;
+                captureRequestDto.bio = mosipBioRequest;
                 captureRequestDto.customOpts = null;
 
                 String packageName;
@@ -351,8 +351,8 @@ public class ClientActivity extends AppCompatActivity {
                     if (null != data) {
                         if (data.hasExtra("response")) {
                             byte[] response = data.getByteArrayExtra("response");
-                            List<DeviceInformation> list = new ObjectMapper().readValue(response,
-                                    new TypeReference<List<DeviceInformation>>() {
+                            List<DeviceInfo> list = new ObjectMapper().readValue(response,
+                                    new TypeReference<List<DeviceInfo>>() {
                                     });
 
                             if (!list.isEmpty()) {

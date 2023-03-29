@@ -47,7 +47,6 @@ dependencies {
     implementation files('libs/android-sun-jarsign-support-1.1.jar')
     implementation files('libs/bcprov-jdk15on-149.jar')
     implementation files('libs/commons-codec-1.4.jar')
-    implementation files('libs/MdsDao.jar')
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

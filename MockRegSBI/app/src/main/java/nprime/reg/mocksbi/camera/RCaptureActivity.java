@@ -38,7 +38,8 @@ public class RCaptureActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rcapture);
         String modality = getIntent().getStringExtra("modality");
-        int bioSubId = getIntent().getIntExtra("bioSubId", 1);
+        String bioSubId = getIntent().getStringExtra("bioSubId") != null ? getIntent().getStringExtra("bioSubId") : "1";
+
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
@@ -60,21 +61,21 @@ public class RCaptureActivity extends AppCompatActivity {
                             break;
                         case "finger":
                             switch (bioSubId) {
-                                case 1:
+                                case "1":
                                     ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.left);
                                     uris.put("Left IndexFinger", getBioAttributeURI("Left_Index.iso"));
                                     uris.put("Left MiddleFinger", getBioAttributeURI("Left_Middle.iso"));
                                     uris.put("Left RingFinger", getBioAttributeURI("Left_Ring.iso"));
                                     uris.put("Left LittleFinger", getBioAttributeURI("Left_Little.iso"));
                                     break;
-                                case 2:
+                                case "2":
                                     ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.right);
                                     uris.put("Right IndexFinger", getBioAttributeURI("Right_Index.iso"));
                                     uris.put("Right MiddleFinger", getBioAttributeURI("Right_Middle.iso"));
                                     uris.put("Right RingFinger", getBioAttributeURI("Right_Ring.iso"));
                                     uris.put("Right LittleFinger", getBioAttributeURI("Right_Little.iso"));
                                     break;
-                                case 3:
+                                case "3":
                                     ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.thumbs);
                                     uris.put("Left Thumb", getBioAttributeURI("Left_Thumb.iso"));
                                     uris.put("Right Thumb", getBioAttributeURI("Right_Thumb.iso"));
@@ -106,7 +107,7 @@ public class RCaptureActivity extends AppCompatActivity {
         return isoUri;
     }
 
-    public void captureSuccessful(Map<String, Uri> uris, String modality, int quality, int bioSubId) {
+    public void captureSuccessful(Map<String, Uri> uris, String modality, int quality, String bioSubId) {
         Intent intent = new Intent();
         for(String attribute : uris.keySet()) {
             intent.putExtra(attribute, uris.get(attribute));

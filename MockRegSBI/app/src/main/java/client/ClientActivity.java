@@ -52,6 +52,7 @@ import java.util.List;
 
 import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.secureLib.DeviceKeystore;
+import nprime.reg.mocksbi.utility.DeviceConstants;
 
 /**
  * @author NPrime Technologies
@@ -70,7 +71,7 @@ public class ClientActivity extends AppCompatActivity {
     private static final int HANDLER_DISPLAY_PROGRESS_BAR_SCREEN = 4;
 
 
-    MaterialButton btnInfo, btnCapture;
+    MaterialButton btnInfo, btnRCapture, btnDiscover, btnCapture;
     MaterialTextView textBox, manufacturer, modelId, deviceId, deviceStatus, textBoxLabel;
     ImageButton btnShareResponse;
     TableRow deviceIdRow;
@@ -91,6 +92,8 @@ public class ClientActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
         btnInfo = findViewById(R.id.info);
+        btnRCapture = findViewById(R.id.rcapture);
+        btnDiscover = findViewById(R.id.discover);
         btnCapture = findViewById(R.id.capture);
         textBoxLabel = findViewById(R.id.response_label);
         textBox = findViewById(R.id.textbox);
@@ -104,65 +107,66 @@ public class ClientActivity extends AppCompatActivity {
         progressBarScreen = findViewById(R.id.client_progress_layout);
         btnShareResponse = findViewById(R.id.share_response);
 
-
         textBox.setMovementMethod(new ScrollingMovementMethod());
 
         initViews();
-        btnInfo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (null == appID) {
-                    discover();
-                } else {
-                    textBox.setText("");
-                    info();
-                }
-            }
-        });
-
-        btnCapture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnInfo.setOnClickListener(view -> {
+            if (null == appID) {
+                discover();
+            } else {
                 textBox.setText("");
-                capture();
+                info();
             }
         });
 
-        btnShareResponse.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    //String data = textBox.getText().toString();
-                    if (null != responseData && !responseData.isEmpty()) {
-                        String path = ClientActivity.this.getFilesDir().getAbsolutePath();
-                        File file = new File(path);
-                        File txtFile = new File(file, "response.txt");
+        btnRCapture.setOnClickListener(view -> {
+            textBox.setText("");
+            rCapture();
+        });
 
-                        FileOutputStream fOut = new FileOutputStream(txtFile);
-                        OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-                        myOutWriter.append(responseData);
-                        myOutWriter.close();
-                        fOut.flush();
-                        fOut.close();
 
-                        Uri uri = FileProvider.getUriForFile(ClientActivity.this, "nprime.reg.mocksbi.fileprovider", txtFile);
-                        Intent share = new Intent(Intent.ACTION_SEND);
-                        share.setType("plain/*");
-                        share.putExtra(Intent.EXTRA_STREAM, uri);
-                        startActivity(Intent.createChooser(share, "Share file"));
-                    } else {
-                        showEmptyScreen();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+        btnDiscover.setOnClickListener(view -> {
+            textBox.setText("");
+            discover();
+        });
+
+        btnCapture.setOnClickListener(view -> {
+            textBox.setText("");
+            rCapture();
+        });
+
+        btnShareResponse.setOnClickListener(view -> {
+            try {
+                //String data = textBox.getText().toString();
+                if (null != responseData && !responseData.isEmpty()) {
+                    String path = ClientActivity.this.getFilesDir().getAbsolutePath();
+                    File file = new File(path);
+                    File txtFile = new File(file, "response.txt");
+
+                    FileOutputStream fOut = new FileOutputStream(txtFile);
+                    OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+                    myOutWriter.append(responseData);
+                    myOutWriter.close();
+                    fOut.flush();
+                    fOut.close();
+
+                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "nprime.reg.mocksbi.fileprovider", txtFile);
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType("plain/*");
+                    share.putExtra(Intent.EXTRA_STREAM, uri);
+                    startActivity(Intent.createChooser(share, "Share file"));
+                } else {
+                    showEmptyScreen();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
         discover();
     }
 
     private void initViews() {
-        //btnInfo.setEnabled(appID != null);
+        btnRCapture.setEnabled(serialNo != null);
         btnCapture.setEnabled(serialNo != null);
     }
 
@@ -225,7 +229,7 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
-    private void capture() {
+    private void rCapture() {
         try {
             Intent intent = new Intent();
             intent.setAction(appID + ".rCapture");
@@ -240,12 +244,12 @@ public class ClientActivity extends AppCompatActivity {
                     return;
                 }
                 CaptureRequestDto captureRequestDto = new CaptureRequestDto();
-                captureRequestDto.env = "Production";
-                captureRequestDto.purpose = "Registration";
-                captureRequestDto.specVersion = "0.9.5";
+                captureRequestDto.env = DeviceConstants.ENVIRONMENT;
+                captureRequestDto.purpose = DeviceConstants.DeviceUsage.Registration.toString();
+                captureRequestDto.specVersion = DeviceConstants.MDSVERSION;
                 captureRequestDto.timeout = 10000;
                 captureRequestDto.captureTime = "2021-07-18T17:56:11Z";
-                captureRequestDto.domainUri = "https://extint1.mosip.net";
+                captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;
                 captureRequestDto.transactionId = "1626630971975";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
                 bio.type = "Finger";
@@ -351,7 +355,8 @@ public class ClientActivity extends AppCompatActivity {
                     if (null != data) {
                         if (data.hasExtra("response")) {
                             byte[] response = data.getByteArrayExtra("response");
-                            List<DeviceInfo> list = new ObjectMapper().readValue(response,
+                            ObjectMapper ob = new ObjectMapper();
+                            List<DeviceInfo> list = ob.readValue(response,
                                     new TypeReference<List<DeviceInfo>>() {
                                     });
 
@@ -377,6 +382,7 @@ public class ClientActivity extends AppCompatActivity {
                                         deviceIdRow.setVisibility(View.GONE);
                                     }
                                     appID = list.get(0).callbackId;
+                                    showResponse("Discover response :", ob.writeValueAsString(list.get(0)));
                                 } else {
                                     Toast.makeText(ClientActivity.this, "Digital ID error", Toast.LENGTH_SHORT).show();
                                 }

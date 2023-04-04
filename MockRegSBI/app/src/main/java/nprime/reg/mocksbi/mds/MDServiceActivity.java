@@ -9,13 +9,13 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,7 +55,7 @@ import nprime.reg.mocksbi.utility.Logger;
  */
 
 public class MDServiceActivity extends AppCompatActivity {
-    private static final int RequestCodeCapture = 1;
+    private static final int RequestCodeRCapture = 1;
 
     private static final int PERMISSION_CAMERA = 2;
 
@@ -183,7 +183,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
                     if (null != input) {
-                        capture(input, DeviceConstants.BioType.Face);
+                        rCapture(input, DeviceConstants.BioType.Face);
                     } else {
                         Map<String, Object> errorMap = new LinkedHashMap<>();
                         errorMap.put("errorCode", "101");
@@ -200,7 +200,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
                     if (null != input) {
-                        capture(input, DeviceConstants.BioType.Finger);
+                        rCapture(input, DeviceConstants.BioType.Finger);
                     } else {
                         Map<String, Object> errorMap = new LinkedHashMap<>();
                         errorMap.put("errorCode", "101");
@@ -217,7 +217,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
                     if (null != input) {
-                        capture(input, DeviceConstants.BioType.Iris);
+                        rCapture(input, DeviceConstants.BioType.Iris);
                     } else {
                         Map<String, Object> errorMap = new LinkedHashMap<>();
                         errorMap.put("errorCode", "101");
@@ -258,7 +258,7 @@ public class MDServiceActivity extends AppCompatActivity {
         }
     }
 
-    private void capture(byte[] input, DeviceConstants.BioType bioType) {
+    private void rCapture(byte[] input, DeviceConstants.BioType bioType) {
         try {
             if (ActivityCompat.checkSelfPermission(MDServiceActivity.this, Manifest.permission.CAMERA)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -271,7 +271,7 @@ public class MDServiceActivity extends AppCompatActivity {
             }
             captureRequestDto = ob.readValue(input, CaptureRequestDto.class);
 
-            startCameraActivity(captureRequestDto.timeout, bioType,
+            startCameraActivityRCapture(captureRequestDto.timeout, bioType,
                     captureRequestDto.bio.get(0).deviceSubId);
         } catch (Exception e) {
             e.printStackTrace();
@@ -285,21 +285,25 @@ public class MDServiceActivity extends AppCompatActivity {
         }
     }
 
-    private void startCameraActivity(int captureTimeout, DeviceConstants.BioType bioType, String bioSubId) {
+    private void startCameraActivityRCapture(int captureTimeout, DeviceConstants.BioType bioType, String bioSubId) {
         Intent intent = new Intent(this, RCaptureActivity.class);
         intent.putExtra("CaptureTimeout", captureTimeout);
         intent.putExtra("modality", bioType.getType());
-        intent.putExtra("bioSubId", Integer.parseInt(bioSubId));
-        startActivityForResult(intent, RequestCodeCapture);
+        intent.putExtra("bioSubId", bioSubId);
+        startActivityForResult(intent, RequestCodeRCapture);
     }
 
     private void generateResponse(Object responseXml, boolean isError) {
         Intent intent = new Intent();
         try {
-            intent.putExtra("response", new ObjectMapper().writeValueAsBytes(responseXml));
+            ObjectMapper ob = new ObjectMapper();
+            ob.configure(JsonParser.Feature.ALLOW_NUMERIC_LEADING_ZEROS, false);
+            byte[] responseBytes = ob.writeValueAsBytes(responseXml);
+            intent.putExtra("response", responseBytes);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+
         if (isError || (null == responseXml)) {
             setResult(Activity.RESULT_CANCELED, intent);
         } else {
@@ -357,13 +361,13 @@ public class MDServiceActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         DeviceKeystore keystore = new DeviceKeystore(this);
-        if (RequestCodeCapture == requestCode) {
+        if (RequestCodeRCapture == requestCode) {
             if (Activity.RESULT_OK == resultCode) {
                 new Thread(() -> {
                     try {
                         FaceCaptureResult captureResult = new FaceCaptureResult();
                         captureResult.setModality(data.getStringExtra("modality"));
-                        captureResult.setBioSubId(data.getIntExtra("bioSubId", 1));
+                        captureResult.setBioSubId(data.getStringExtra("bioSubId") != null ? data.getStringExtra("bioSubId") : "1");
                         switch (captureResult.getModality().toLowerCase()) {
                             case "face":
                                 try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("face"))) {
@@ -372,7 +376,7 @@ public class MDServiceActivity extends AppCompatActivity {
                                 break;
                             case "finger":
                                 switch (captureResult.getBioSubId()) {
-                                    case 1:
+                                    case "1":
                                         try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left IndexFinger"))) {
                                             captureResult.getBiometricRecords().put("Left IndexFinger", readBytes(is));
                                         }
@@ -386,7 +390,7 @@ public class MDServiceActivity extends AppCompatActivity {
                                             captureResult.getBiometricRecords().put("Left LittleFinger", readBytes(is));
                                         }
                                         break;
-                                    case 2:
+                                    case "2":
                                         try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right IndexFinger"))) {
                                             captureResult.getBiometricRecords().put("Right IndexFinger", readBytes(is));
                                         }
@@ -400,7 +404,7 @@ public class MDServiceActivity extends AppCompatActivity {
                                             captureResult.getBiometricRecords().put("Right LittleFinger", readBytes(is));
                                         }
                                         break;
-                                    case 3:
+                                    case "3":
                                         try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left Thumb"))) {
                                             captureResult.getBiometricRecords().put("Left Thumb", readBytes(is));
                                         }

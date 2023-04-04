@@ -296,11 +296,32 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/rcapture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="192dp"
+                android:text="Rcapture"
+                app:layout_constraintBottom_toTopOf="@id/logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/info" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
+                android:layout_marginBottom="192dp"
                 android:text="Info"
+                app:layout_constraintBottom_toTopOf="@id/logo"
+                app:layout_constraintEnd_toStartOf="@id/rcapture"
+                app:layout_constraintStart_toStartOf="parent" />
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/discover"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="132dp"
+                android:text="Discover"
                 app:layout_constraintBottom_toTopOf="@id/logo"
                 app:layout_constraintEnd_toStartOf="@id/capture"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -309,12 +330,11 @@
                 android:id="@+id/capture"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="15dp"
-                android:text="Rcapture"
+                android:layout_marginBottom="132dp"
+                android:text="Capture"
                 app:layout_constraintBottom_toTopOf="@id/logo"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/info" />
+                app:layout_constraintStart_toEndOf="@id/discover" />
 
             <ImageView
                 android:id="@+id/logo"

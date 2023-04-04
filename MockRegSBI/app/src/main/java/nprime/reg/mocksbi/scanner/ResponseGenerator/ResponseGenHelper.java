@@ -34,8 +34,11 @@ public class ResponseGenHelper {
 
     static final String REGISTRATION = "Registration";
 
-
     static ObjectMapper oB = null;
+
+    static {
+        oB = new ObjectMapper();
+    }
 
     public static List<DeviceInfoResponse> getDeviceDriverInfo(
             DeviceConstants.ServiceStatus currentStatus,
@@ -109,10 +112,6 @@ public class ResponseGenHelper {
             String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
         byte[] deviceInfoData = null;
         try {
-            if (oB == null) {
-                oB = new ObjectMapper();
-            }
-
             byte[] fwVersion;
             fwVersion = DeviceConstants.FIRMWAREVER.getBytes();
             CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
@@ -134,7 +133,6 @@ public class ResponseGenHelper {
             info.env = DeviceConstants.ENVIRONMENT; //DeviceConstants.Environment.Staging.getEnvironment();
 
             deviceInfoData = oB.writeValueAsString(info).getBytes();
-
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception ex) {
@@ -185,14 +183,11 @@ public class ResponseGenHelper {
 
         CaptureResponse responseMap = new CaptureResponse();
         try {
-
-            if (oB == null)
-                oB = new ObjectMapper();
             CommonDeviceAPI mdCommonDeviceAPI = new CommonDeviceAPI();
 
             //if (FaceCaptureResult.CAPTURE_SUCCESS == fcResult.getStatus()){
             if (DeviceConstants.environmentList.contains(captureRequestDto.env)
-                    && captureRequestDto.purpose.equalsIgnoreCase(REGISTRATION)) {
+                    && (captureRequestDto.purpose.equalsIgnoreCase(REGISTRATION) || captureRequestDto.purpose.equalsIgnoreCase("Auth"))) {
 
                 List<CaptureDetail> listOfBiometric = new ArrayList<>();
                 //String previousHash = HMACUtils.digestAsPlainText(HMACUtils.generateHash(""));
@@ -202,7 +197,8 @@ public class ResponseGenHelper {
                     switch (bio.type.toLowerCase()) {
                         case "face":
                             NewBioAuthDto bioResponse = getBioResponse(mdCommonDeviceAPI, bio.type, "",
-                                    captureRequestDto, fcResult, bio, keystore);
+                                    captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Face);
+                            bioResponse.setBioSubType(null);
                             CaptureDetail biometricData = getAuthMinimalResponse(
                                     captureRequestDto.specVersion, bioResponse, previousHash, fcResult, keystore);
                             listOfBiometric.add(biometricData);
@@ -213,25 +209,25 @@ public class ResponseGenHelper {
                                 case "1":
                                     CaptureDetail left_index = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Left IndexFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Left IndexFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(left_index);
                                     previousHash = (String) left_index.hash;
                                     CaptureDetail left_middle = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Left MiddleFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Left MiddleFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(left_middle);
                                     previousHash = (String) left_middle.hash;
                                     CaptureDetail left_ring = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Left RingFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Left RingFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(left_ring);
                                     previousHash = (String) left_ring.hash;
                                     CaptureDetail left_little = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Left LittleFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Left LittleFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(left_little);
                                     previousHash = (String) left_little.hash;
@@ -239,25 +235,25 @@ public class ResponseGenHelper {
                                 case "2":
                                     CaptureDetail right_index = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Right IndexFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Right IndexFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(right_index);
                                     previousHash = (String) right_index.hash;
                                     CaptureDetail right_middle = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Right MiddleFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Right MiddleFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(right_middle);
                                     previousHash = (String) right_middle.hash;
                                     CaptureDetail right_ring = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Right RingFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Right RingFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(right_ring);
                                     previousHash = (String) right_ring.hash;
                                     CaptureDetail right_little = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Right LittleFinger", captureRequestDto, fcResult, bio, keystore),
+                                                    "Right LittleFinger", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(right_little);
                                     previousHash = (String) right_little.hash;
@@ -265,13 +261,13 @@ public class ResponseGenHelper {
                                 case "3":
                                     CaptureDetail left_thumb = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Left Thumb", captureRequestDto, fcResult, bio, keystore),
+                                                    "Left Thumb", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(left_thumb);
                                     previousHash = (String) left_thumb.hash;
                                     CaptureDetail right_thumb = getAuthMinimalResponse(
                                             captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                                    "Right Thumb", captureRequestDto, fcResult, bio, keystore),
+                                                    "Right Thumb", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, fcResult, keystore);
                                     listOfBiometric.add(right_thumb);
                                     previousHash = (String) right_thumb.hash;
@@ -281,13 +277,13 @@ public class ResponseGenHelper {
                         case "iris":
                             CaptureDetail left_iris = getAuthMinimalResponse(
                                     captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                            "Left", captureRequestDto, fcResult, bio, keystore),
+                                            "Left", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Iris),
                                     previousHash, fcResult, keystore);
                             listOfBiometric.add(left_iris);
                             previousHash = (String) left_iris.hash;
                             CaptureDetail right_iris = getAuthMinimalResponse(
                                     captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI, bio.type,
-                                            "Right", captureRequestDto, fcResult, bio, keystore),
+                                            "Right", captureRequestDto, fcResult, bio, keystore, DeviceConstants.BioType.Iris),
                                     previousHash, fcResult, keystore);
                             listOfBiometric.add(right_iris);
                             previousHash = (String) right_iris.hash;
@@ -311,7 +307,8 @@ public class ResponseGenHelper {
 
     private static NewBioAuthDto getBioResponse(CommonDeviceAPI mdCommonDeviceAPI, String bioType, String bioSubType,
                                                 CaptureRequestDto captureRequestDto, FaceCaptureResult captureResult,
-                                                CaptureRequestDeviceDetailDto bioRequest, DeviceKeystore keystore) {
+                                                CaptureRequestDeviceDetailDto bioRequest, DeviceKeystore keystore,
+                                                DeviceConstants.BioType bioTypeAtt) {
 
         List<String> exceptions = Arrays.asList(captureRequestDto.bio.get(0).exception == null ?
                 new String[]{} : captureRequestDto.bio.get(0).exception);
@@ -326,11 +323,10 @@ public class ResponseGenHelper {
         bioResponse.setDeviceServiceVersion(DeviceConstants.MDSVERSION);
         bioResponse.setEnv(captureRequestDto.env);
         bioResponse.setPurpose(DeviceConstants.usageStage.getDeviceUsage());
-        bioResponse.setRequestedScore(bioRequest.requestedScore);
+        bioResponse.setRequestedScore(String.valueOf(bioRequest.requestedScore));
         bioResponse.setQualityScore(isMarkedAsException ? "0" : String.valueOf(captureResult.getQualityScore()));
         bioResponse.setTransactionId(captureRequestDto.transactionId);
-
-        String payLoad = getDigitalID(mdCommonDeviceAPI.getSerialNumber(), timestamp, DeviceConstants.BioType.Face);
+        String payLoad = getDigitalID(mdCommonDeviceAPI.getSerialNumber(), timestamp, bioTypeAtt);
         String digitalID = keystore.getJwt(payLoad.getBytes(StandardCharsets.UTF_8));
         bioResponse.setDigitalId(digitalID);
 
@@ -348,10 +344,6 @@ public class ResponseGenHelper {
                                                         String previousHash, FaceCaptureResult fcResult, DeviceKeystore keystore) {
         CaptureDetail biometricData = new CaptureDetail();
         try {
-
-            if (oB == null)
-                oB = new ObjectMapper();
-
             if (FaceCaptureResult.CAPTURE_SUCCESS == fcResult.getStatus()) {
                 biometricData.error = new Error("0", "Success");
             } else if (FaceCaptureResult.CAPTURE_TIMEOUT == fcResult.getStatus()) {

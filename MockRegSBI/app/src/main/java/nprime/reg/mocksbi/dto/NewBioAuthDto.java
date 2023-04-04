@@ -1,10 +1,13 @@
 package nprime.reg.mocksbi.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class NewBioAuthDto {
 
     private String digitalId;
     private String deviceCode;
     private String deviceServiceVersion;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String bioSubType;
     private String purpose;
     private String env;
@@ -12,7 +15,7 @@ public class NewBioAuthDto {
     private String bioValue;
     private String transactionId;
     private String timestamp;
-    private int requestedScore;
+    private String requestedScore;
     private String qualityScore;
     private String domainUri;
 
@@ -159,14 +162,14 @@ public class NewBioAuthDto {
     /**
      * @return the requestedScore
      */
-    public int getRequestedScore() {
+    public String getRequestedScore() {
         return requestedScore;
     }
 
     /**
      * @param requestedScore the requestedScore to set
      */
-    public void setRequestedScore(int requestedScore) {
+    public void setRequestedScore(String requestedScore) {
         this.requestedScore = requestedScore;
     }
 

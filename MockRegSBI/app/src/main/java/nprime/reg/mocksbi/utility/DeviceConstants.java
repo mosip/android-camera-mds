@@ -88,21 +88,19 @@ public class DeviceConstants {
         }
     }
 
-	/*public static enum Environment{
 
-		None("None"), Staging("Staging"), Developer("Developer"), PProd("Pre-Production"), Prod("Production");
-
-		private String type;
-
-	    public String getEnvironment(){
-	        return this.type;
-	    }
-
-	    // enum constructor - cannot be public or protected
-	    private Environment(String type){
-	        this.type = type;
-	    }
-	}*/
+    /**
+     * Device SubType Id Value
+     */
+    public final static int DEVICE_IRIS_SINGLE_SUB_TYPE_ID = 0;    // Single IMAGE
+    public final static int DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT = 1;    // LEFT IRIS IMAGE
+    public final static int DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT = 2;    // RIGHT IRIS IMAGE
+    public final static int DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH = 3;    // BOTH LEFT AND RIGHT IRIS IMAGE
+    public final static int DEVICE_FINGER_SINGLE_SUB_TYPE_ID = 0;    // Single IMAGE
+    public final static int DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT = 1;    // LEFT SLAP IMAGE
+    public final static int DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT = 2;    // RIGHT SLAP IMAGE
+    public final static int DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB = 3;// TWO THUMB IMAGE
+    public final static int DEVICE_FACE_SUB_TYPE_ID_FULLFACE = 0;    // TWO THUMB IMAGE
 
     public static List<String> environmentList = Arrays.asList("Staging", "Developer", "Pre-Production", "Production");
 

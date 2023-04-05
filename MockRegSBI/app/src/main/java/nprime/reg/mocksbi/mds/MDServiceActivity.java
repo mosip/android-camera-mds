@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -37,6 +38,8 @@ import java.util.Objects;
 import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.camera.RCaptureActivity;
 import nprime.reg.mocksbi.constants.ClientConstants;
+import nprime.reg.mocksbi.dto.CaptureDetail;
+import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
 import nprime.reg.mocksbi.dto.CaptureRequestDto;
 import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
@@ -59,7 +62,12 @@ public class MDServiceActivity extends AppCompatActivity {
 
     private static final int PERMISSION_CAMERA = 2;
 
-    private ObjectMapper ob;
+    private final ObjectMapper ob;
+
+    {
+        ob = new ObjectMapper();
+        ob.configure(JsonParser.Feature.ALLOW_NUMERIC_LEADING_ZEROS, false);
+    }
 
     public static long lastInitTimestamp = 0;
     public static Context applicationContext;
@@ -107,9 +115,6 @@ public class MDServiceActivity extends AppCompatActivity {
                     byte[] input = getIntent().getByteArrayExtra("input");
 
                     if (null != input) {
-                        if (null == ob) {
-                            ob = new ObjectMapper();
-                        }
                         try {
                             discoverRequestDto = ob.readValue(input, DeviceDiscoveryRequestDetail.class);
                         } catch (IOException e) {
@@ -266,10 +271,70 @@ public class MDServiceActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
                 return;
             }
-            if (null == ob) {
-                ob = new ObjectMapper();
-            }
             captureRequestDto = ob.readValue(input, CaptureRequestDto.class);
+
+            List<CaptureRequestDeviceDetailDto> mosipBioRequest = captureRequestDto.bio;
+
+            int deviceSubId = Integer.parseInt(mosipBioRequest.get(0).deviceSubId);
+            String[] bioException = mosipBioRequest.get(0).exception;// Bio exceptions
+            int count = Integer.parseInt(mosipBioRequest.get(0).count);
+            int exceptionCount = (bioException != null ? bioException.length : 0);
+            int finalCount = count + exceptionCount;
+
+            switch (bioType) {
+                case Finger:
+                    switch (deviceSubId) {
+                        case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT:
+                        case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT:
+                            // Max Count = 4 exception allowed
+                            if (finalCount != 4) {
+                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                                return;
+                            }
+                            break;
+                        case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB:
+                            // Max Count = 2 exception allowed
+                            if (finalCount != 2) {
+                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                                return;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case Iris:
+                    switch (deviceSubId) {
+                        case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT:
+                        case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT:
+                            // Max Count = 1 no exception allowed
+                            if (count != 1 || exceptionCount != 0) {
+                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                                return;
+                            }
+                            break;
+                        case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH:
+                            // Max Count = 2 exception allowed
+                            finalCount = count + exceptionCount;
+                            if (finalCount != 2) {
+                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                                return;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case Face:
+                    // Max Face Count = 1 with or without exception
+                    if (count != 1) {
+                        generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                        return;
+                    }
+                    break;
+                default:
+                    break;
+            }
 
             startCameraActivityRCapture(captureRequestDto.timeout, bioType,
                     captureRequestDto.bio.get(0).deviceSubId);
@@ -296,8 +361,6 @@ public class MDServiceActivity extends AppCompatActivity {
     private void generateResponse(Object responseXml, boolean isError) {
         Intent intent = new Intent();
         try {
-            ObjectMapper ob = new ObjectMapper();
-            ob.configure(JsonParser.Feature.ALLOW_NUMERIC_LEADING_ZEROS, false);
             byte[] responseBytes = ob.writeValueAsBytes(responseXml);
             intent.putExtra("response", responseBytes);
         } catch (JsonProcessingException e) {
@@ -310,6 +373,23 @@ public class MDServiceActivity extends AppCompatActivity {
             setResult(Activity.RESULT_OK, intent);
         }
         finish();
+    }
+
+    private CaptureResponse getCaptureErrorResponse(String errorCode, String exceptionMessage) {
+        List<CaptureDetail> biometrics = new ArrayList<>();
+
+        CaptureDetail biometric = new CaptureDetail();
+        biometric.specVersion = DeviceConstants.MDSVERSION;
+        biometric.data = "";
+        biometric.hash = "";
+
+        biometric.error = (new Error(errorCode, exceptionMessage));
+
+        CaptureResponse captureResponse = new CaptureResponse();
+        biometrics.add(biometric);
+        captureResponse.biometrics = biometrics;
+
+        return captureResponse;
     }
 
     private void generateRCaptureResponse(CaptureResponse responseXml, boolean isError) {

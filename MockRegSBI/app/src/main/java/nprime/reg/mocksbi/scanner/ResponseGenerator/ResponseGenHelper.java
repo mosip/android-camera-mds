@@ -143,7 +143,6 @@ public class ResponseGenHelper {
         return deviceInfoData;
     }
 
-
     public static String getDigitalID(String serialNumber, String szTS, DeviceConstants.BioType bioType) {
         String digiID;
         JSONObject jsonobject = new JSONObject();
@@ -185,9 +184,9 @@ public class ResponseGenHelper {
         try {
             CommonDeviceAPI mdCommonDeviceAPI = new CommonDeviceAPI();
 
-            //if (FaceCaptureResult.CAPTURE_SUCCESS == fcResult.getStatus()){
             if (DeviceConstants.environmentList.contains(captureRequestDto.env)
-                    && (captureRequestDto.purpose.equalsIgnoreCase(REGISTRATION) || captureRequestDto.purpose.equalsIgnoreCase("Auth"))) {
+                    && (captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Registration.getDeviceUsage()))
+                    || captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage())) {
 
                 List<CaptureDetail> listOfBiometric = new ArrayList<>();
                 //String previousHash = HMACUtils.digestAsPlainText(HMACUtils.generateHash(""));

@@ -20,6 +20,7 @@ import com.google.android.gms.common.util.IOUtils;
 import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
+import nprime.reg.mocksbi.utility.DeviceConstants;
 
 /**
  * @author NPrime Technologies
@@ -55,28 +56,28 @@ public class RCaptureActivity extends AppCompatActivity {
                     int qualityScore = 30;
                     switch (modality.toLowerCase()) {
                         case "face":
-                            ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.face);
+                            ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
                             uris.put("face", getBioAttributeURI("Face.iso"));
                             qualityScore = faceQualityScore;
                             break;
                         case "finger":
                             switch (bioSubId) {
                                 case "1":
-                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.left);
+                                    ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
                                     uris.put("Left IndexFinger", getBioAttributeURI("Left_Index.iso"));
                                     uris.put("Left MiddleFinger", getBioAttributeURI("Left_Middle.iso"));
                                     uris.put("Left RingFinger", getBioAttributeURI("Left_Ring.iso"));
                                     uris.put("Left LittleFinger", getBioAttributeURI("Left_Little.iso"));
                                     break;
                                 case "2":
-                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.right);
+                                    ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.right);
                                     uris.put("Right IndexFinger", getBioAttributeURI("Right_Index.iso"));
                                     uris.put("Right MiddleFinger", getBioAttributeURI("Right_Middle.iso"));
                                     uris.put("Right RingFinger", getBioAttributeURI("Right_Ring.iso"));
                                     uris.put("Right LittleFinger", getBioAttributeURI("Right_Little.iso"));
                                     break;
                                 case "3":
-                                    ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.thumbs);
+                                    ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.thumbs);
                                     uris.put("Left Thumb", getBioAttributeURI("Left_Thumb.iso"));
                                     uris.put("Right Thumb", getBioAttributeURI("Right_Thumb.iso"));
                                     break;
@@ -84,7 +85,7 @@ public class RCaptureActivity extends AppCompatActivity {
                             qualityScore = fingerQualityScore;
                             break;
                         case "iris":
-                            ((ImageView)findViewById(R.id.img)).setImageResource(R.drawable.iris);
+                            ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.iris);
                             uris.put("Left", getBioAttributeURI("Left_Iris.iso"));
                             uris.put("Right", getBioAttributeURI("Right_Iris.iso"));
                             qualityScore = irisQualityScore;
@@ -92,7 +93,7 @@ public class RCaptureActivity extends AppCompatActivity {
                     }
 
                     captureSuccessful(uris, modality, qualityScore, bioSubId);
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     captureFailed(-301, e.getMessage());
                 }
@@ -101,7 +102,7 @@ public class RCaptureActivity extends AppCompatActivity {
     }
 
     private Uri getBioAttributeURI(String file) {
-        byte[] isoRecord = getIsoDataFromAssets(file);
+        byte[] isoRecord = getIsoDataFromAssets(DeviceConstants.usageStage.getDeviceUsage() + "/" + file);
         Uri isoUri = Uri.fromFile(getTempFile(RCaptureActivity.this));
         saveByteArray(isoRecord, isoUri);
         return isoUri;
@@ -109,7 +110,7 @@ public class RCaptureActivity extends AppCompatActivity {
 
     public void captureSuccessful(Map<String, Uri> uris, String modality, int quality, String bioSubId) {
         Intent intent = new Intent();
-        for(String attribute : uris.keySet()) {
+        for (String attribute : uris.keySet()) {
             intent.putExtra(attribute, uris.get(attribute));
         }
         intent.putExtra("modality", modality);
@@ -151,11 +152,11 @@ public class RCaptureActivity extends AppCompatActivity {
         }
     }
 
-    private byte[] getIsoDataFromAssets(String assetFileName){
-       try(InputStream in = getAssets().open(assetFileName)) {
+    private byte[] getIsoDataFromAssets(String assetFileName) {
+        try (InputStream in = getAssets().open(assetFileName)) {
             return IOUtils.toByteArray(in);
         } catch (IOException e) {
-           throw new RuntimeException(e);
-       }
+            throw new RuntimeException(e);
+        }
     }
 }

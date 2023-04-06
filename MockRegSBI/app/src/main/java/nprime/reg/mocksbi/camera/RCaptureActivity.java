@@ -1,6 +1,18 @@
 package nprime.reg.mocksbi.camera;
 
-import androidx.appcompat.app.AppCompatActivity;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_FACE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_INDEX;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_IRIS;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_LITTLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_MIDDLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_RING;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_THUMB;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_INDEX;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_IRIS;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_LITTLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_MIDDLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_RING;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_THUMB;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,14 +24,25 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.widget.ImageView;
 
-import java.io.*;
-import java.util.*;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.common.util.IOUtils;
 
-import nprime.reg.mocksbi.constants.ClientConstants;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import nprime.reg.mocksbi.R;
-import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
+import nprime.reg.mocksbi.constants.ClientConstants;
+import nprime.reg.mocksbi.faceCaptureApi.CaptureResult;
 import nprime.reg.mocksbi.utility.DeviceConstants;
 
 /**
@@ -34,71 +57,193 @@ public class RCaptureActivity extends AppCompatActivity {
     private int fingerQualityScore;
     private int irisQualityScore;
 
+    private Map<String, String> segmentUriMapping;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rcapture);
         String modality = getIntent().getStringExtra("modality");
-        String bioSubId = getIntent().getStringExtra("bioSubId") != null ? getIntent().getStringExtra("bioSubId") : "1";
+        String deviceSubId = getIntent().getStringExtra("deviceSubId") != null ? getIntent().getStringExtra("deviceSubId") : "1";
+        int captureTimeout = getIntent().getIntExtra("CaptureTimeout", 0);
+        String[] bioSubType = getIntent().getStringArrayExtra("bioSubType");
+        String[] exception = getIntent().getStringArrayExtra("exception");
 
+        segmentUriMapping = new HashMap<>();
+        segmentUriMapping.put("",  PROFILE_BIO_FILE_NAME_FACE);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_INDEX, PROFILE_BIO_FILE_NAME_LEFT_INDEX);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_MIDDLE, PROFILE_BIO_FILE_NAME_LEFT_MIDDLE);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_RING, PROFILE_BIO_FILE_NAME_LEFT_RING);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_LITTLE, PROFILE_BIO_FILE_NAME_LEFT_LITTLE);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_RIGHT_INDEX, PROFILE_BIO_FILE_NAME_RIGHT_INDEX);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_RIGHT_MIDDLE, PROFILE_BIO_FILE_NAME_RIGHT_MIDDLE);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_RIGHT_RING, PROFILE_BIO_FILE_NAME_RIGHT_RING);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_RIGHT_LITTLE, PROFILE_BIO_FILE_NAME_RIGHT_LITTLE);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_THUMB, PROFILE_BIO_FILE_NAME_LEFT_THUMB);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_RIGHT_THUMB, PROFILE_BIO_FILE_NAME_RIGHT_THUMB);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_IRIS, PROFILE_BIO_FILE_NAME_LEFT_IRIS);
+        segmentUriMapping.put(DeviceConstants.BIO_NAME_RIGHT_IRIS, PROFILE_BIO_FILE_NAME_RIGHT_IRIS);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
         fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
         irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
 
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Map<String, Uri> uris = new HashMap<>();
-                    int qualityScore = 30;
-                    switch (modality.toLowerCase()) {
-                        case "face":
-                            ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
-                            uris.put("face", getBioAttributeURI("Face.iso"));
-                            qualityScore = faceQualityScore;
-                            break;
-                        case "finger":
-                            switch (bioSubId) {
-                                case "1":
-                                    ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
-                                    uris.put("Left IndexFinger", getBioAttributeURI("Left_Index.iso"));
-                                    uris.put("Left MiddleFinger", getBioAttributeURI("Left_Middle.iso"));
-                                    uris.put("Left RingFinger", getBioAttributeURI("Left_Ring.iso"));
-                                    uris.put("Left LittleFinger", getBioAttributeURI("Left_Little.iso"));
-                                    break;
-                                case "2":
-                                    ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.right);
-                                    uris.put("Right IndexFinger", getBioAttributeURI("Right_Index.iso"));
-                                    uris.put("Right MiddleFinger", getBioAttributeURI("Right_Middle.iso"));
-                                    uris.put("Right RingFinger", getBioAttributeURI("Right_Ring.iso"));
-                                    uris.put("Right LittleFinger", getBioAttributeURI("Right_Little.iso"));
-                                    break;
-                                case "3":
-                                    ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.thumbs);
-                                    uris.put("Left Thumb", getBioAttributeURI("Left_Thumb.iso"));
-                                    uris.put("Right Thumb", getBioAttributeURI("Right_Thumb.iso"));
-                                    break;
-                            }
-                            qualityScore = fingerQualityScore;
-                            break;
-                        case "iris":
-                            ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.iris);
-                            uris.put("Left", getBioAttributeURI("Left_Iris.iso"));
-                            uris.put("Right", getBioAttributeURI("Right_Iris.iso"));
-                            qualityScore = irisQualityScore;
-                            break;
-                    }
-
-                    captureSuccessful(uris, modality, qualityScore, bioSubId);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    captureFailed(-301, e.getMessage());
+        new Handler().postDelayed(() -> {
+            try {
+                int qualityScore = 30;
+                Map<String, Uri> uris;
+                switch (modality.toLowerCase()) {
+                    case "face":
+                        uris = captureFaceModality(deviceSubId, bioSubType, exception);
+                        qualityScore = faceQualityScore;
+                        break;
+                    case "finger":
+                        uris = captureFingersModality(deviceSubId, bioSubType, exception);
+                        qualityScore = fingerQualityScore;
+                        break;
+                    case "iris":
+                        uris = captureIrisModality(deviceSubId, bioSubType, exception);
+                        qualityScore = irisQualityScore;
+                        break;
+                    default:
+                        uris = new HashMap<>();
+                        break;
                 }
+
+                captureSuccessful(uris, modality, qualityScore, deviceSubId);
+            } catch (Exception e) {
+                e.printStackTrace();
+                captureFailed(-301, e.getMessage());
             }
         }, PREVIEW_TIME_DELAY);
+    }
+
+    private Map<String, Uri> captureIrisModality(String deviceSubId, String[] bioSubType, String[] exception) {
+        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.iris);
+        List<String> segmentsToCapture = null;
+        switch (deviceSubId) {
+            case "1": // left
+                segmentsToCapture = getSegmentsToCapture(Arrays.asList(
+                                DeviceConstants.BIO_NAME_LEFT_IRIS),
+                        bioSubType == null ? null : Arrays.asList(bioSubType),
+                        exception == null ? null : Arrays.asList(exception));
+                break;
+
+            case "2": // right
+                segmentsToCapture = getSegmentsToCapture(Arrays.asList(
+                                DeviceConstants.BIO_NAME_RIGHT_IRIS),
+                        bioSubType == null ? null : Arrays.asList(bioSubType),
+                        exception == null ? null : Arrays.asList(exception));
+                break;
+
+            case "3": // both
+                segmentsToCapture = getSegmentsToCapture(Arrays.asList(
+                                DeviceConstants.BIO_NAME_LEFT_IRIS,
+                                DeviceConstants.BIO_NAME_RIGHT_IRIS),
+                        bioSubType == null ? null : Arrays.asList(bioSubType),
+                        exception == null ? null : Arrays.asList(exception));
+                break;
+
+            case "0": // not sure, need to check
+                break;
+        }
+        Map<String, Uri> uris = new HashMap<>();
+        if (segmentsToCapture == null || segmentsToCapture.isEmpty()) {
+            return uris;
+        }
+
+        segmentsToCapture.forEach(segment -> uris.put(segment,
+                getBioAttributeURI(segmentUriMapping.get(segment))));
+        return uris;
+    }
+
+    private Map<String, Uri> captureFingersModality(String deviceSubId, String[] bioSubType, String[] exception) {
+        List<String> segmentsToCapture = null;
+        switch (deviceSubId) {
+            case "1": // left
+                ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
+                segmentsToCapture = getSegmentsToCapture(
+                        Arrays.asList(
+                                DeviceConstants.BIO_NAME_LEFT_INDEX,
+                                DeviceConstants.BIO_NAME_LEFT_MIDDLE,
+                                DeviceConstants.BIO_NAME_LEFT_RING,
+                                DeviceConstants.BIO_NAME_LEFT_LITTLE),
+                        bioSubType == null ? null : Arrays.asList(bioSubType),
+                        exception == null ? null : Arrays.asList(exception));
+
+                break;
+
+            case "2": // right
+                ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.right);
+                segmentsToCapture = getSegmentsToCapture(
+                        Arrays.asList(
+                                DeviceConstants.BIO_NAME_RIGHT_INDEX,
+                                DeviceConstants.BIO_NAME_RIGHT_MIDDLE,
+                                DeviceConstants.BIO_NAME_RIGHT_RING,
+                                DeviceConstants.BIO_NAME_RIGHT_LITTLE),
+                        bioSubType == null ? null : Arrays.asList(bioSubType),
+                        exception == null ? null : Arrays.asList(exception));
+                break;
+
+            case "3": // thumbs
+                ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.thumbs);
+                segmentsToCapture = getSegmentsToCapture(Arrays.asList(
+                                DeviceConstants.BIO_NAME_LEFT_THUMB,
+                                DeviceConstants.BIO_NAME_RIGHT_THUMB),
+                        bioSubType == null ? null : Arrays.asList(bioSubType),
+                        exception == null ? null : Arrays.asList(exception));
+                break;
+
+            case "0":
+                break;
+        }
+
+        Map<String, Uri> uris = new HashMap<>();
+        if (segmentsToCapture == null || segmentsToCapture.isEmpty()) {
+            return uris;
+        }
+
+        segmentsToCapture.forEach(segment -> uris.put(segment,
+                getBioAttributeURI(segmentUriMapping.get(segment))));
+        return uris;
+    }
+
+    private Map<String, Uri> captureFaceModality(String deviceSubId, String[] bioSubType, String[] exception) {
+        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
+        Map<String, Uri> uris = new HashMap<>();
+        uris.put("", getBioAttributeURI(segmentUriMapping.get("")));
+        return uris;
+    }
+
+
+    private List<String> getSegmentsToCapture(List<String> defaultSubTypes, List<String> bioSubTypes, List<String> exceptions) {
+        List<String> localCopy = new ArrayList<>(defaultSubTypes);
+        if (exceptions != null) {
+            localCopy.removeAll(exceptions);
+        }
+
+        List<String> segmentsToCapture = new ArrayList<>();
+        if (bioSubTypes == null || bioSubTypes.isEmpty()) {
+            segmentsToCapture.addAll(localCopy);
+            return segmentsToCapture;
+        } else {
+            Random rand = new Random();
+            for (String bioSubType : bioSubTypes) {
+                if (localCopy.contains(bioSubType)) {
+                    segmentsToCapture.add(bioSubType);
+                } else if ("UNKNOWN".equals(bioSubType)) {
+                    String randSubType = defaultSubTypes.get(rand.nextInt(defaultSubTypes.size()));
+                    while (bioSubTypes.contains(randSubType) && bioSubTypes.size() <= localCopy.size()) {
+                        randSubType = defaultSubTypes.get(rand.nextInt(defaultSubTypes.size()));
+                    }
+                    segmentsToCapture.add(randSubType);
+                } else {
+                    //Throw exception
+                }
+            }
+        }
+        return segmentsToCapture;
     }
 
     private Uri getBioAttributeURI(String file) {
@@ -110,11 +255,16 @@ public class RCaptureActivity extends AppCompatActivity {
 
     public void captureSuccessful(Map<String, Uri> uris, String modality, int quality, String bioSubId) {
         Intent intent = new Intent();
+        ArrayList<String> segmentNames = new ArrayList<>();
+
         for (String attribute : uris.keySet()) {
+            segmentNames.add(attribute);
             intent.putExtra(attribute, uris.get(attribute));
         }
+
+        intent.putExtra("segmentNames", segmentNames);
         intent.putExtra("modality", modality);
-        intent.putExtra("Status", FaceCaptureResult.CAPTURE_SUCCESS);
+        intent.putExtra("Status", CaptureResult.CAPTURE_SUCCESS);
         intent.putExtra("Quality", quality);
         intent.putExtra("bioSubId", bioSubId);
         setResult(Activity.RESULT_OK, intent);

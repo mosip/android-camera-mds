@@ -2,6 +2,7 @@ package nprime.reg.mocksbi.utility;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author NPrime Technologies
@@ -102,6 +103,64 @@ public class DeviceConstants {
     public final static int DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB = 3;// TWO THUMB IMAGE
     public final static int DEVICE_FACE_SUB_TYPE_ID_FULLFACE = 0;    // TWO THUMB IMAGE
 
+    /**
+     * Bio Exceptions/Bio Subtype Names
+     */
+
+    public final static String BIO_NAME_UNKNOWN = "UNKNOWN";
+    public final static String BIO_NAME_RIGHT_THUMB = "Right Thumb";
+    public final static String BIO_NAME_RIGHT_INDEX = "Right IndexFinger";
+    public final static String BIO_NAME_RIGHT_MIDDLE = "Right MiddleFinger";
+    public final static String BIO_NAME_RIGHT_RING = "Right RingFinger";
+    public final static String BIO_NAME_RIGHT_LITTLE = "Right LittleFinger";
+    public final static String BIO_NAME_LEFT_THUMB = "Left Thumb";
+    public final static String BIO_NAME_LEFT_INDEX = "Left IndexFinger";
+    public final static String BIO_NAME_LEFT_MIDDLE = "Left MiddleFinger";
+    public final static String BIO_NAME_LEFT_RING = "Left RingFinger";
+    public final static String BIO_NAME_LEFT_LITTLE = "Left LittleFinger";
+    public final static String BIO_NAME_RIGHT_IRIS = "Right";
+    public final static String BIO_NAME_LEFT_IRIS = "Left";
+
+    /**
+     * Profile Bio File Names
+     */
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_THUMB = "Right_Thumb.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_INDEX = "Right_Index.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_MIDDLE = "Right_Middle.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_RING = "Right_Ring.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_LITTLE = "Right_Little.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_THUMB = "Left_Thumb.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_INDEX = "Left_Index.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_MIDDLE = "Left_Middle.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_RING = "Left_Ring.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_LITTLE = "Left_Little.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_THUMB_WSQ = "Right_Thumb_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_INDEX_WSQ = "Right_Index_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_MIDDLE_WSQ = "Right_Middle_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_RING_WSQ = "Right_Ring_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_LITTLE_WSQ = "Right_Little_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_THUMB_WSQ = "Left_Thumb_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_INDEX_WSQ = "Left_Index_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_MIDDLE_WSQ = "Left_Middle_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_RING_WSQ = "Left_Ring_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_LITTLE_WSQ = "Left_Little_wsq.iso";
+    public static String PROFILE_BIO_FILE_NAME_RIGHT_IRIS = "Right_Iris.iso";
+    public static String PROFILE_BIO_FILE_NAME_LEFT_IRIS = "Left_Iris.iso";
+    public static String PROFILE_BIO_FILE_NAME_FACE = "Face.iso";
+    public static String PROFILE_BIO_FILE_NAME_FACE_EXCEPTION = "Exception_Photo.iso";
+
+    public static DeviceConstants.ServiceStatus getDeviceStatusEnum(String deviceStatus) {
+        if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.READY.getType())) {
+            return DeviceConstants.ServiceStatus.READY;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.BUSY.getType())) {
+            return DeviceConstants.ServiceStatus.BUSY;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREADY.getType())) {
+            return DeviceConstants.ServiceStatus.NOTREADY;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREGISTERED.getType())) {
+            return DeviceConstants.ServiceStatus.NOTREGISTERED;
+        }
+        return null;
+    }
     public static List<String> environmentList = Arrays.asList("Staging", "Developer", "Pre-Production", "Production");
 
     public static String[] daysOfWeek = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};

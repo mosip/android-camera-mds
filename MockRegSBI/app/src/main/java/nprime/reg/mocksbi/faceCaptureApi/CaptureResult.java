@@ -9,7 +9,7 @@ import java.util.Map;
  * @author NPrime Technologies
  */
 
-public class FaceCaptureResult {
+public class CaptureResult {
     public static final int CAPTURE_SUCCESS = 0;
     public static final int CAPTURE_STARTED = 1;
     public static final int CAPTURE_COMPLETED = 2;

@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.camera.RCaptureActivity;
@@ -46,7 +45,7 @@ import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
 import nprime.reg.mocksbi.dto.DeviceInfo;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
 import nprime.reg.mocksbi.dto.Error;
-import nprime.reg.mocksbi.faceCaptureApi.FaceCaptureResult;
+import nprime.reg.mocksbi.faceCaptureApi.CaptureResult;
 import nprime.reg.mocksbi.scanner.ResponseGenerator.ResponseGenHelper;
 import nprime.reg.mocksbi.secureLib.DeviceKeystore;
 import nprime.reg.mocksbi.utility.CommonDeviceAPI;
@@ -91,13 +90,13 @@ public class MDServiceActivity extends AppCompatActivity {
         applicationContext = this.getApplicationContext();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
-        currentFaceStatus = getDeviceStatusEnum(
+        currentFaceStatus = DeviceConstants.getDeviceStatusEnum(
                 sharedPreferences.getString(ClientConstants.FACE_DEVICE_STATUS
                         , DeviceConstants.ServiceStatus.READY.toString()));
-        currentFingerStatus = getDeviceStatusEnum(
+        currentFingerStatus = DeviceConstants.getDeviceStatusEnum(
                 sharedPreferences.getString(ClientConstants.FINGER_DEVICE_STATUS
                         , DeviceConstants.ServiceStatus.READY.toString()));
-        currentIrisStatus = getDeviceStatusEnum(
+        currentIrisStatus = DeviceConstants.getDeviceStatusEnum(
                 sharedPreferences.getString(ClientConstants.IRIS_DEVICE_STATUS
                         , DeviceConstants.ServiceStatus.READY.toString()));
 
@@ -273,6 +272,7 @@ public class MDServiceActivity extends AppCompatActivity {
             }
             captureRequestDto = ob.readValue(input, CaptureRequestDto.class);
 
+            //Validations
             List<CaptureRequestDeviceDetailDto> mosipBioRequest = captureRequestDto.bio;
 
             int deviceSubId = Integer.parseInt(mosipBioRequest.get(0).deviceSubId);
@@ -336,8 +336,13 @@ public class MDServiceActivity extends AppCompatActivity {
                     break;
             }
 
-            startCameraActivityRCapture(captureRequestDto.timeout, bioType,
-                    captureRequestDto.bio.get(0).deviceSubId);
+            if (DeviceConstants.environmentList.contains(captureRequestDto.env)
+                    && (captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Registration.getDeviceUsage()))
+                    || captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage())) {
+                startCameraActivityRCapture(captureRequestDto.timeout, captureRequestDto.bio.get(0), bioType);
+            } else {
+                generateRCaptureResponse(getCaptureErrorResponse("501", "Invalid Environment / Purpose"), false);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Logger.e(DeviceConstants.LOG_TAG, "Failed to initiate capture");
@@ -350,11 +355,13 @@ public class MDServiceActivity extends AppCompatActivity {
         }
     }
 
-    private void startCameraActivityRCapture(int captureTimeout, DeviceConstants.BioType bioType, String bioSubId) {
+    private void startCameraActivityRCapture(int captureTimeout, CaptureRequestDeviceDetailDto bio, DeviceConstants.BioType bioType) {
         Intent intent = new Intent(this, RCaptureActivity.class);
         intent.putExtra("CaptureTimeout", captureTimeout);
         intent.putExtra("modality", bioType.getType());
-        intent.putExtra("bioSubId", bioSubId);
+        intent.putExtra("deviceSubId", bio.deviceSubId);
+        intent.putExtra("bioSubType", bio.bioSubType);
+        intent.putExtra("exception", bio.exception);
         startActivityForResult(intent, RequestCodeRCapture);
     }
 
@@ -445,66 +452,21 @@ public class MDServiceActivity extends AppCompatActivity {
             if (Activity.RESULT_OK == resultCode) {
                 new Thread(() -> {
                     try {
-                        FaceCaptureResult captureResult = new FaceCaptureResult();
+                        CaptureResult captureResult = new CaptureResult();
                         captureResult.setModality(data.getStringExtra("modality"));
                         captureResult.setBioSubId(data.getStringExtra("bioSubId") != null ? data.getStringExtra("bioSubId") : "1");
-                        switch (captureResult.getModality().toLowerCase()) {
-                            case "face":
-                                try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("face"))) {
-                                    captureResult.getBiometricRecords().put("", readBytes(is));
-                                }
-                                break;
-                            case "finger":
-                                switch (captureResult.getBioSubId()) {
-                                    case "1":
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left IndexFinger"))) {
-                                            captureResult.getBiometricRecords().put("Left IndexFinger", readBytes(is));
-                                        }
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left MiddleFinger"))) {
-                                            captureResult.getBiometricRecords().put("Left MiddleFinger", readBytes(is));
-                                        }
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left RingFinger"))) {
-                                            captureResult.getBiometricRecords().put("Left RingFinger", readBytes(is));
-                                        }
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left LittleFinger"))) {
-                                            captureResult.getBiometricRecords().put("Left LittleFinger", readBytes(is));
-                                        }
-                                        break;
-                                    case "2":
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right IndexFinger"))) {
-                                            captureResult.getBiometricRecords().put("Right IndexFinger", readBytes(is));
-                                        }
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right MiddleFinger"))) {
-                                            captureResult.getBiometricRecords().put("Right MiddleFinger", readBytes(is));
-                                        }
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right RingFinger"))) {
-                                            captureResult.getBiometricRecords().put("Right RingFinger", readBytes(is));
-                                        }
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right LittleFinger"))) {
-                                            captureResult.getBiometricRecords().put("Right LittleFinger", readBytes(is));
-                                        }
-                                        break;
-                                    case "3":
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left Thumb"))) {
-                                            captureResult.getBiometricRecords().put("Left Thumb", readBytes(is));
-                                        }
-                                        try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right Thumb"))) {
-                                            captureResult.getBiometricRecords().put("Right Thumb", readBytes(is));
-                                        }
-                                        break;
-                                }
-                                break;
-                            case "iris":
-                                try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Left"))) {
-                                    captureResult.getBiometricRecords().put("Left", readBytes(is));
-                                }
-                                try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra("Right"))) {
-                                    captureResult.getBiometricRecords().put("Right", readBytes(is));
-                                }
-                                break;
-                        }
 
-                        captureResult.setStatus(data.getIntExtra("Status", FaceCaptureResult.CAPTURE_CANCELLED));
+                        List<String> segmentNames = data.getStringArrayListExtra("segmentNames");
+
+                        segmentNames.forEach(segmentName -> {
+                            try (InputStream is = getContentResolver().openInputStream(data.getParcelableExtra(segmentName))) {
+                                captureResult.getBiometricRecords().put(segmentName, readBytes(is));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
+
+                        captureResult.setStatus(data.getIntExtra("Status", CaptureResult.CAPTURE_CANCELLED));
                         captureResult.setQualityScore(data.getIntExtra("Quality", 0));
                         CaptureResponse responseXml = ResponseGenHelper
                                 .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
@@ -514,11 +476,11 @@ public class MDServiceActivity extends AppCompatActivity {
                     }
                 }).start();
             } else {
-                FaceCaptureResult captureResult = new FaceCaptureResult();
-                captureResult.setStatus(FaceCaptureResult.CAPTURE_CANCELLED);
+                CaptureResult captureResult = new CaptureResult();
+                captureResult.setStatus(CaptureResult.CAPTURE_CANCELLED);
                 captureResult.setQualityScore(0);
                 if (null != data) {
-                    captureResult.setStatus(data.getIntExtra("Status", FaceCaptureResult.CAPTURE_CANCELLED));
+                    captureResult.setStatus(data.getIntExtra("Status", CaptureResult.CAPTURE_CANCELLED));
                     captureResult.setQualityScore(data.getIntExtra("Quality", 0));
                 }
 
@@ -545,18 +507,5 @@ public class MDServiceActivity extends AppCompatActivity {
 
         // and then we can return your byte array.
         return byteBuffer.toByteArray();
-    }
-
-    private DeviceConstants.ServiceStatus getDeviceStatusEnum(String deviceStatus) {
-        if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.READY.getType())) {
-            return DeviceConstants.ServiceStatus.READY;
-        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.BUSY.getType())) {
-            return DeviceConstants.ServiceStatus.BUSY;
-        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREADY.getType())) {
-            return DeviceConstants.ServiceStatus.NOTREADY;
-        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREGISTERED.getType())) {
-            return DeviceConstants.ServiceStatus.NOTREGISTERED;
-        }
-        return null;
     }
 }

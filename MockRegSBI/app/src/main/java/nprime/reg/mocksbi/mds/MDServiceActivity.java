@@ -17,6 +17,7 @@ import androidx.core.content.FileProvider;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.json.JSONObject;
@@ -66,6 +67,7 @@ public class MDServiceActivity extends AppCompatActivity {
     {
         ob = new ObjectMapper();
         ob.configure(JsonParser.Feature.ALLOW_NUMERIC_LEADING_ZEROS, false);
+        ob.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
     public static long lastInitTimestamp = 0;
@@ -346,12 +348,7 @@ public class MDServiceActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
             Logger.e(DeviceConstants.LOG_TAG, "Failed to initiate capture");
-            Map<String, Object> errorMap = new LinkedHashMap<>();
-            errorMap.put("errorCode", "101");
-            errorMap.put("errorInfo", "Invalid input data");
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("error", errorMap);
-            generateResponse(responseMap, true);
+            generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid JSON Value"), false);
         }
     }
 

@@ -8,6 +8,7 @@ import nprime.reg.mocksbi.dto.CaptureRequestDto;
 import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceInfo;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.DiscoverDto;
 import nprime.reg.mocksbi.dto.Error;
 
 import org.bouncycastle.util.Strings;
@@ -37,12 +38,11 @@ public class ResponseGenHelper {
         oB = new ObjectMapper();
     }
 
-    public static List<DeviceInfoResponse> getDeviceDriverInfo(
-            DeviceConstants.ServiceStatus currentStatus,
-            String szTimeStamp, String requestType, DeviceConstants.BioType bioType, DeviceKeystore keystore) {
+    public static List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus,
+                                                               String szTimeStamp, String requestType,
+                                                               DeviceConstants.BioType bioType, DeviceKeystore keystore) {
         List<String> listOfModalities = Collections.singletonList("FAC");
 
-        CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
         List<DeviceInfoResponse> infoList = new ArrayList<>();
         try {
             Error error = new Error("0", "Success");
@@ -60,43 +60,44 @@ public class ResponseGenHelper {
         return infoList;
     }
 
-    public static List<DeviceInfo> getDeviceDiscovery(
+    public static List<DiscoverDto> getDeviceDiscovery(
             DeviceConstants.ServiceStatus currentStatus,
             String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
-        List<DeviceInfo> list = new ArrayList();
+        List<DiscoverDto> list = new ArrayList();
+        byte[] fwVersion = DeviceConstants.FIRMWAREVER.getBytes();
         try {
-            DeviceInfo jsonobject = new DeviceInfo();
+            DiscoverDto discoverDto = new DiscoverDto();
             String serialNumber;
             CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
             serialNumber = devCommonDeviceAPI.getSerialNumber();
-            jsonobject.deviceId = serialNumber;
-            jsonobject.deviceStatus = currentStatus.getType();
-            jsonobject.certification = DeviceConstants.CERTIFICATIONLEVEL;
-            jsonobject.serviceVersion = DeviceConstants.MDSVERSION;
+            discoverDto.deviceId = serialNumber;
+            discoverDto.deviceStatus = currentStatus.getType();
+            discoverDto.certification = DeviceConstants.CERTIFICATIONLEVEL;
+            discoverDto.serviceVersion = DeviceConstants.MDSVERSION;
 
             switch (bioType) {
                 case Face:
-                    jsonobject.deviceSubId = new String[]{"0"};
+                    discoverDto.deviceSubId = new String[]{"0"};
                     break;
                 case Finger:
-                    jsonobject.deviceSubId = new String[]{"1", "2", "3"};
+                    discoverDto.deviceSubId = new String[]{"1", "2", "3"};
                     break;
                 case Iris:
-                    jsonobject.deviceSubId = new String[]{"3"};
+                    discoverDto.deviceSubId = new String[]{"3"};
                     break;
             }
 
-            jsonobject.callbackId = requestType;
+            discoverDto.callbackId = requestType;
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
             String digID = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes()); //Base64.encodeToString(payLoad.getBytes(), Base64.NO_PADDING); //
 
-            jsonobject.digitalId = digID;
-            jsonobject.deviceCode = serialNumber;
-            jsonobject.specVersion = new String[]{DeviceConstants.REGSERVER_VERSION};
-            jsonobject.purpose = DeviceConstants.usageStage.getDeviceUsage();
+            discoverDto.digitalId = digID;
+            discoverDto.deviceCode = serialNumber;
+            discoverDto.specVersion = new String[]{DeviceConstants.REGSERVER_VERSION};
+            discoverDto.purpose = DeviceConstants.usageStage.getDeviceUsage();
+            discoverDto.error = new Error("0", "Success");
 
-            //jsonobject.error = new Error("0", "Success"));
-            list.add(jsonobject);
+            list.add(discoverDto);
         } catch (Exception ex) {
             Logger.e(DeviceConstants.LOG_TAG, "Face SBI :: " + "Failed to process exception");
         }
@@ -179,7 +180,7 @@ public class ResponseGenHelper {
         CaptureResponse captureResponse = new CaptureResponse();
         try {
             CommonDeviceAPI mdCommonDeviceAPI = new CommonDeviceAPI();
-            
+
             List<CaptureDetail> listOfBiometric = new ArrayList<>();
             String previousHash = mdCommonDeviceAPI.digestAsPlainText(mdCommonDeviceAPI.Sha256("".getBytes()));
 

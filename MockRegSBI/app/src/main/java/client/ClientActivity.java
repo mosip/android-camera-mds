@@ -36,6 +36,7 @@ import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
 import nprime.reg.mocksbi.dto.DeviceInfo;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.DiscoverDto;
 import nprime.reg.mocksbi.dto.Error;
 
 import org.json.JSONException;
@@ -356,8 +357,8 @@ public class ClientActivity extends AppCompatActivity {
                         if (data.hasExtra("response")) {
                             byte[] response = data.getByteArrayExtra("response");
                             ObjectMapper ob = new ObjectMapper();
-                            List<DeviceInfo> list = ob.readValue(response,
-                                    new TypeReference<List<DeviceInfo>>() {
+                            List<DiscoverDto> list = ob.readValue(response,
+                                    new TypeReference<List<DiscoverDto>>() {
                                     });
 
                             if (!list.isEmpty()) {

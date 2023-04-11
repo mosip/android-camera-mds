@@ -43,8 +43,8 @@ import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
 import nprime.reg.mocksbi.dto.CaptureRequestDto;
 import nprime.reg.mocksbi.dto.CaptureResponse;
 import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
-import nprime.reg.mocksbi.dto.DeviceInfo;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.DiscoverDto;
 import nprime.reg.mocksbi.dto.Error;
 import nprime.reg.mocksbi.faceCaptureApi.CaptureResult;
 import nprime.reg.mocksbi.scanner.ResponseGenerator.ResponseGenHelper;
@@ -431,7 +431,7 @@ public class MDServiceActivity extends AppCompatActivity {
         finish();
     }
 
-    private List<DeviceInfo> discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
+    private List<DiscoverDto> discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
         return ResponseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType);
     }
 

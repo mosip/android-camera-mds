@@ -176,7 +176,6 @@ public class ClientActivity extends AppCompatActivity {
 
             PackageManager packageManager = this.getPackageManager();
             List<ResolveInfo> activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-            //activities.sort(new ResolveInfo.DisplayNameComparator(packageManager));
             final boolean isIntentSafe = activities.size() > 0;
 
             if (isIntentSafe) {
@@ -210,11 +209,11 @@ public class ClientActivity extends AppCompatActivity {
 
         PackageManager packageManager = this.getPackageManager();
         List<ResolveInfo> activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-        Collections.sort(activities, new ResolveInfo.DisplayNameComparator(packageManager));
+        activities.sort(new ResolveInfo.DisplayNameComparator(packageManager));
         final boolean isIntentSafe = activities.size() > 0;
 
         if (isIntentSafe) {
-            String packageName = null;
+            String packageName;
             for (ResolveInfo activity : activities) {
                 if (appID.startsWith(activity.activityInfo.applicationInfo.packageName)) {
                     packageName = activity.activityInfo.applicationInfo.packageName;
@@ -235,7 +234,7 @@ public class ClientActivity extends AppCompatActivity {
 
             PackageManager packageManager = this.getPackageManager();
             List<ResolveInfo> activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-            Collections.sort(activities, new ResolveInfo.DisplayNameComparator(packageManager));
+            activities.sort(new ResolveInfo.DisplayNameComparator(packageManager));
             final boolean isIntentSafe = activities.size() > 0;
             if (isIntentSafe) {
                 if (null == serialNo) {
@@ -438,15 +437,11 @@ public class ClientActivity extends AppCompatActivity {
                         } else {
                             showEmptyScreen();
                             Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
-                            //textBox.setText("Info response not found");
                         }
                     } else {
                         showEmptyScreen();
                         Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
-                        //textBox.setText("Info rsponse not found");
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -457,48 +452,37 @@ public class ClientActivity extends AppCompatActivity {
                 if (null != data) {
                     Uri uri = data.getParcelableExtra("response");
                     if (null != uri) {
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                try {
-                                    sendMessage(HANDLER_DISPLAY_PROGRESS_BAR_SCREEN, null);
-                                    InputStream respData = getContentResolver().openInputStream(uri);
-                                    byte[] bytes = IOUtils.toByteArray(respData);
-                                    CaptureResponse resposeObject = new ObjectMapper().readValue(bytes, CaptureResponse.class);
-                                    //JSONObject resposeObject = new JSONObject(response);
-                                    if (resposeObject.biometrics != null && !resposeObject.biometrics.isEmpty()) {
-                                        List<CaptureDetail> biometrics = resposeObject.biometrics;
-                                        Error errObject = (biometrics.get(0)).error;
-                                        responseData = resposeObject.toString();
-                                        sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, responseData);
-                                        if (!errObject.errorCode.equals("0")) {
-                                            sendMessage(HANDLER_DISPLAY_TOAST, errObject.toString());
-                                        }
-                                    } else {
-                                        responseData = resposeObject.toString();
-                                        sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, responseData);
-                                        //textBox.setText();
-                                        //deviceId.setText("");
-                                        //deviceIdRow.setVisibility(View.GONE);
-                                        //deviceStatus.setText("Not Ready");
+                        new Thread(() -> {
+                            try {
+                                sendMessage(HANDLER_DISPLAY_PROGRESS_BAR_SCREEN, null);
+                                InputStream respData = getContentResolver().openInputStream(uri);
+                                byte[] bytes = IOUtils.toByteArray(respData);
+                                CaptureResponse resposeObject = new ObjectMapper().readValue(bytes, CaptureResponse.class);
+                                if (resposeObject.biometrics != null && !resposeObject.biometrics.isEmpty()) {
+                                    List<CaptureDetail> biometrics = resposeObject.biometrics;
+                                    Error errObject = (biometrics.get(0)).error;
+                                    responseData = resposeObject.toString();
+                                    sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, responseData);
+                                    if (!errObject.errorCode.equals("0")) {
+                                        sendMessage(HANDLER_DISPLAY_TOAST, errObject.toString());
                                     }
-                                } catch (Exception e) {
-                                    sendMessage(HANDLER_DISPLAY_EMPTY_SCREEN, null);
-                                    sendMessage(HANDLER_DISPLAY_TOAST, "Capture error");
-                                    e.printStackTrace();
+                                } else {
+                                    responseData = resposeObject.toString();
+                                    sendMessage(HANDLER_DISPLAY_CAPTURE_RESPONSE, responseData);
                                 }
+                            } catch (Exception e) {
+                                sendMessage(HANDLER_DISPLAY_EMPTY_SCREEN, null);
+                                sendMessage(HANDLER_DISPLAY_TOAST, "Capture error");
+                                e.printStackTrace();
                             }
-                        }.start();
+                        }).start();
                     } else {
                         showEmptyScreen();
                         Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
-                        //textBox.setText("Capture response not found");
                     }
-                    //String response = data.getStringExtra("Response");
                 } else {
                     showEmptyScreen();
                     Toast.makeText(ClientActivity.this, "Response Not found", Toast.LENGTH_SHORT).show();
-                    //textBox.setText("Capture response not found");
                 }
             } else {
                 showEmptyScreen();

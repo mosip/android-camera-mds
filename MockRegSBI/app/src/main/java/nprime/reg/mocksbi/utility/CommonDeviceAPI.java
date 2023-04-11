@@ -2,8 +2,6 @@ package nprime.reg.mocksbi.utility;
 
 import android.provider.Settings;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.MessageDigest;
@@ -16,8 +14,6 @@ import nprime.reg.mocksbi.mds.MDServiceActivity;
  */
 
 public class CommonDeviceAPI {
-
-    ObjectMapper oB = null;
 
     public String getISOTimeStamp() {
 
@@ -33,14 +29,11 @@ public class CommonDeviceAPI {
         String algorithm = "SHA-256";
         byte[] hash = null;
         MessageDigest digest;
-        try
-        {
+        try {
             digest = MessageDigest.getInstance(algorithm);
             digest.reset();
             hash = digest.digest(inpData);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Logger.e(DeviceConstants.LOG_TAG, "Error while generating SHA");
         }
         return hash;

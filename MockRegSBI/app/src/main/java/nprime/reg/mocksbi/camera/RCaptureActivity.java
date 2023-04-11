@@ -30,10 +30,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.common.util.IOUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -115,7 +115,7 @@ public class RCaptureActivity extends AppCompatActivity {
                 Map<String, Uri> uris;
                 switch (modality.toLowerCase()) {
                     case "face":
-                        uris = captureFaceModality(deviceSubId, bioSubType, exception);
+                        uris = captureFaceModality();
                         qualityScore = faceQualityScore;
                         break;
                     case "finger":
@@ -228,7 +228,7 @@ public class RCaptureActivity extends AppCompatActivity {
         return uris;
     }
 
-    private Map<String, Uri> captureFaceModality(String deviceSubId, String[] bioSubType, String[] exception) {
+    private Map<String, Uri> captureFaceModality() {
         ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
         Map<String, Uri> uris = new HashMap<>();
         uris.put("", getBioAttributeURI(segmentUriMapping.get("")));
@@ -257,8 +257,6 @@ public class RCaptureActivity extends AppCompatActivity {
                         randSubType = defaultSubTypes.get(rand.nextInt(defaultSubTypes.size()));
                     }
                     segmentsToCapture.add(randSubType);
-                } else {
-                    //Throw exception
                 }
             }
         }
@@ -311,7 +309,7 @@ public class RCaptureActivity extends AppCompatActivity {
         final File file = new File(uri.getPath());
 
         try {
-            final OutputStream os = new FileOutputStream(file);
+            final OutputStream os = Files.newOutputStream(file.toPath());
             os.write(data);
             os.flush();
             os.close();

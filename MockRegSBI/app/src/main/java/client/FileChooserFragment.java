@@ -16,10 +16,8 @@ import android.widget.TextView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import java.io.File;
-
-import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.R;
+import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.utility.FileUtils;
 
 /**
@@ -27,9 +25,6 @@ import nprime.reg.mocksbi.utility.FileUtils;
  */
 
 public class FileChooserFragment extends Fragment {
-
-    private static final String TAG = FileChooserFragment.class.getName();
-
     private static final int MY_REQUEST_CODE_PERMISSION = 1000;
     private static final int MY_RESULT_CODE_FILE_CHOOSER = 2000;
 

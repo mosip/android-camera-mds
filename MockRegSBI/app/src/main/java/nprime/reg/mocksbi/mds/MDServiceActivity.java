@@ -354,7 +354,7 @@ public class MDServiceActivity extends AppCompatActivity {
     private void startCameraActivityRCapture(int captureTimeout, CaptureRequestDeviceDetailDto bio, DeviceConstants.BioType bioType) {
         Intent intent = new Intent(this, RCaptureActivity.class);
         intent.putExtra("CaptureTimeout", captureTimeout);
-        intent.putExtra("modality", bioType.getType());
+        intent.putExtra("modality", bioType.getBioType());
         intent.putExtra("deviceSubId", bio.deviceSubId);
         intent.putExtra("bioSubType", bio.bioSubType);
         intent.putExtra("exception", bio.exception);

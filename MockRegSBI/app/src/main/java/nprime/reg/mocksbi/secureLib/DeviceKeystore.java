@@ -3,14 +3,13 @@ package nprime.reg.mocksbi.secureLib;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -36,16 +35,15 @@ public class DeviceKeystore {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         keyAlias = sharedPreferences.getString(ClientConstants.KEY_ALIAS, "");
         keystorePwd = sharedPreferences.getString(ClientConstants.KEY_STORE_PASSWORD, "");
-
     }
 
     public String getJwt(byte[] data) {
-        PrivateKey privateKey = null;
-        Certificate x509Certificate = null;
+        PrivateKey privateKey;
+        Certificate x509Certificate;
 
         File file = new File(context.getFilesDir(), ClientConstants.P12_FILE_NAME);
 
-        try (InputStream inputStream = new FileInputStream(file)) {
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             KeyStore keystore = KeyStore.getInstance("PKCS12");
             keystore.load(inputStream, keystorePwd.toCharArray());
             privateKey = (PrivateKey) keystore.getKey(keyAlias, keystorePwd.toCharArray());
@@ -81,12 +79,12 @@ public class DeviceKeystore {
     }
 
     public boolean checkCertificateCredentials() {
-        PrivateKey privateKey = null;
-        Certificate x509Certificate = null;
+        PrivateKey privateKey;
+        Certificate x509Certificate;
 
         File file = new File(context.getFilesDir(), ClientConstants.P12_FILE_NAME);
 
-        try (InputStream inputStream = new FileInputStream(file)) {
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             KeyStore keystore = KeyStore.getInstance("PKCS12");
             keystore.load(inputStream, keystorePwd.toCharArray());
             privateKey = (PrivateKey) keystore.getKey(keyAlias, keystorePwd.toCharArray());

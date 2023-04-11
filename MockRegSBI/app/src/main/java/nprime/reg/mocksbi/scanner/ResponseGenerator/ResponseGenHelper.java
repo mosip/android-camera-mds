@@ -96,11 +96,10 @@ public class ResponseGenHelper {
         List<DiscoverDto> list = new ArrayList<>();
         try {
             DiscoverDto discoverDto = new DiscoverDto();
-            String serialNumber;
             CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
-            serialNumber = devCommonDeviceAPI.getSerialNumber();
+            String serialNumber = devCommonDeviceAPI.getSerialNumber();
             discoverDto.deviceId = serialNumber;
-            discoverDto.deviceStatus = currentStatus.getType();
+            discoverDto.deviceStatus = currentStatus.getStatus();
             discoverDto.certification = DeviceConstants.CERTIFICATIONLEVEL;
             discoverDto.serviceVersion = DeviceConstants.MDSVERSION;
 
@@ -136,9 +135,8 @@ public class ResponseGenHelper {
 
             discoverDto.callbackId = requestType;
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
-            String digID = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes()); //Base64.encodeToString(payLoad.getBytes(), Base64.NO_PADDING); //
 
-            discoverDto.digitalId = digID;
+            discoverDto.digitalId = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes());
             discoverDto.deviceCode = serialNumber;
             discoverDto.specVersion = new String[]{DeviceConstants.REGSERVER_VERSION};
             discoverDto.purpose = DeviceConstants.usageStage.getDeviceUsage();
@@ -168,7 +166,7 @@ public class ResponseGenHelper {
             info.certification = DeviceConstants.CERTIFICATIONLEVEL;
             info.deviceCode = serialNumber;
             info.deviceId = serialNumber;
-            info.deviceStatus = currentStatus.getType();
+            info.deviceStatus = currentStatus.getStatus();
             info.deviceSubId = new String[]{"0"};
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
             info.digitalId = deviceKeystore.getJwt(payLoad.getBytes());
@@ -199,15 +197,15 @@ public class ResponseGenHelper {
             jsonobject.put("model", DeviceConstants.DEVICEMODEL);
             switch (bioType) {
                 case Face:
-                    jsonobject.put("type", DeviceConstants.BioType.Face.getType());
+                    jsonobject.put("type", DeviceConstants.BioType.Face.getBioType());
                     jsonobject.put("deviceSubType", DeviceConstants.FACE_DEVICESUBTYPE);
                     break;
                 case Finger:
-                    jsonobject.put("type", DeviceConstants.BioType.Finger.getType());
+                    jsonobject.put("type", DeviceConstants.BioType.Finger.getBioType());
                     jsonobject.put("deviceSubType", DeviceConstants.FINGER_DEVICESUBTYPE);
                     break;
                 case Iris:
-                    jsonobject.put("type", DeviceConstants.BioType.Iris.getType());
+                    jsonobject.put("type", DeviceConstants.BioType.Iris.getBioType());
                     jsonobject.put("deviceSubType", DeviceConstants.IRIS_DEVICESUBTYPE);
                     break;
             }
@@ -255,7 +253,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_LEFT_INDEX, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(left_index);
-                                    previousHash = (String) left_index.hash;
+                                    previousHash = left_index.hash;
                                 }
                                 if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_MIDDLE)) {
                                     CaptureDetail left_middle = getMinimalResponse(
@@ -263,7 +261,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_LEFT_MIDDLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(left_middle);
-                                    previousHash = (String) left_middle.hash;
+                                    previousHash = left_middle.hash;
                                 }
                                 if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_RING)) {
                                     CaptureDetail left_ring = getMinimalResponse(
@@ -271,7 +269,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_LEFT_RING, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(left_ring);
-                                    previousHash = (String) left_ring.hash;
+                                    previousHash = left_ring.hash;
                                 }
                                 if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_LITTLE)) {
                                     CaptureDetail left_little = getMinimalResponse(
@@ -279,7 +277,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_LEFT_LITTLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(left_little);
-                                    previousHash = (String) left_little.hash;
+                                    previousHash = left_little.hash;
                                 }
                                 break;
                             case "2":
@@ -289,7 +287,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_RIGHT_INDEX, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(right_index);
-                                    previousHash = (String) right_index.hash;
+                                    previousHash = right_index.hash;
                                 }
                                 if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_MIDDLE)) {
                                     CaptureDetail right_middle = getMinimalResponse(
@@ -297,7 +295,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_RIGHT_MIDDLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(right_middle);
-                                    previousHash = (String) right_middle.hash;
+                                    previousHash = right_middle.hash;
                                 }
                                 if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_RING)) {
                                     CaptureDetail right_ring = getMinimalResponse(
@@ -305,7 +303,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_RIGHT_RING, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(right_ring);
-                                    previousHash = (String) right_ring.hash;
+                                    previousHash = right_ring.hash;
                                 }
                                 if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_LITTLE)) {
                                     CaptureDetail right_little = getMinimalResponse(
@@ -313,7 +311,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_RIGHT_LITTLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(right_little);
-                                    previousHash = (String) right_little.hash;
+                                    previousHash = right_little.hash;
                                 }
                                 break;
                             case "3":
@@ -323,7 +321,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_LEFT_THUMB, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(left_thumb);
-                                    previousHash = (String) left_thumb.hash;
+                                    previousHash = left_thumb.hash;
                                 }
                                 if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_THUMB)) {
                                     CaptureDetail right_thumb = getMinimalResponse(
@@ -331,7 +329,7 @@ public class ResponseGenHelper {
                                                     DeviceConstants.BIO_NAME_RIGHT_THUMB, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
                                             previousHash, captureResult, keystore);
                                     listOfBiometric.add(right_thumb);
-                                    previousHash = (String) right_thumb.hash;
+                                    previousHash = right_thumb.hash;
                                 }
                                 break;
                         }
@@ -343,7 +341,7 @@ public class ResponseGenHelper {
                                             DeviceConstants.BIO_NAME_LEFT_IRIS, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Iris),
                                     previousHash, captureResult, keystore);
                             listOfBiometric.add(left_iris);
-                            previousHash = (String) left_iris.hash;
+                            previousHash = left_iris.hash;
                         }
                         if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_IRIS)) {
                             CaptureDetail right_iris = getMinimalResponse(
@@ -351,7 +349,7 @@ public class ResponseGenHelper {
                                             DeviceConstants.BIO_NAME_RIGHT_IRIS, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Iris),
                                     previousHash, captureResult, keystore);
                             listOfBiometric.add(right_iris);
-                            previousHash = (String) right_iris.hash;
+                            previousHash = right_iris.hash;
                         }
                         break;
                 }
@@ -406,9 +404,8 @@ public class ResponseGenHelper {
             }
 
             biometricData.specVersion = specVersion;
-            String dataBlock = keystore.getJwt(oB.writeValueAsBytes(data));
 
-            biometricData.data = dataBlock;
+            biometricData.data = keystore.getJwt(oB.writeValueAsBytes(data));
             byte[] previousBioDataHash;
             byte[] currentBioDataHash;
 
@@ -424,9 +421,8 @@ public class ResponseGenHelper {
             byte[] finalBioDataHash = new byte[previousBioDataHash.length + currentBioDataHash.length];
             System.arraycopy(previousBioDataHash, 0, finalBioDataHash, 0, previousBioDataHash.length);
             System.arraycopy(currentBioDataHash, 0, finalBioDataHash, previousBioDataHash.length, currentBioDataHash.length);
-            String finalHashDataHex = CryptoUtility.toHex(CryptoUtility.generateHash(finalBioDataHash));
 
-            biometricData.hash = finalHashDataHex;
+            biometricData.hash = CryptoUtility.toHex(CryptoUtility.generateHash(finalBioDataHash));
 
         } catch (Exception ex) {
             ex.printStackTrace();

@@ -33,7 +33,6 @@ public class CryptoUtility {
     }
 
     public static String toHex(byte[] bytes) {
-        //return Hex.encodeHexString(bytes).toUpperCase();
         return new String(Hex.encodeHex(bytes)).toUpperCase();
     }
 }

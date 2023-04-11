@@ -105,10 +105,10 @@ public class ConfigurationActivity extends AppCompatActivity {
         irisResponseDelayEditText = findViewById(R.id.iris_response_delay_millis);
 
         ArrayList<String> deviceStatus = new ArrayList<>();
-        deviceStatus.add(DeviceConstants.ServiceStatus.READY.getType());
-        deviceStatus.add(DeviceConstants.ServiceStatus.BUSY.getType());
-        deviceStatus.add(DeviceConstants.ServiceStatus.NOTREADY.getType());
-        deviceStatus.add(DeviceConstants.ServiceStatus.NOTREGISTERED.getType());
+        deviceStatus.add(DeviceConstants.ServiceStatus.READY.getStatus());
+        deviceStatus.add(DeviceConstants.ServiceStatus.BUSY.getStatus());
+        deviceStatus.add(DeviceConstants.ServiceStatus.NOTREADY.getStatus());
+        deviceStatus.add(DeviceConstants.ServiceStatus.NOTREGISTERED.getStatus());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, deviceStatus);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
@@ -123,9 +123,9 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFingerScore = sharedPreferences.getInt(FINGER_SCORE, 30);
         currentIrisScore = sharedPreferences.getInt(IRIS_SCORE, 30);
         lastUploadDate = sharedPreferences.getString(LAST_UPLOAD_DATE, "");
-        currentFaceDeviceStatus = sharedPreferences.getString(FACE_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getType());
-        currentFingerDeviceStatus = sharedPreferences.getString(FINGER_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getType());
-        currentIrisDeviceStatus = sharedPreferences.getString(IRIS_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getType());
+        currentFaceDeviceStatus = sharedPreferences.getString(FACE_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
+        currentFingerDeviceStatus = sharedPreferences.getString(FINGER_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
+        currentIrisDeviceStatus = sharedPreferences.getString(IRIS_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
 
         currentFaceResponseDelay = sharedPreferences.getInt(FACE_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, DEFAULT_TIME_DELAY);

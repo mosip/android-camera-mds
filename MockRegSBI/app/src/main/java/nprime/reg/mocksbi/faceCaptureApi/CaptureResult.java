@@ -13,7 +13,6 @@ public class CaptureResult {
     public static final int CAPTURE_SUCCESS = 0;
     public static final int CAPTURE_STARTED = 1;
     public static final int CAPTURE_COMPLETED = 2;
-
     public static final int CAPTURE_FAILED = -1;
     public static final int CAPTURE_CANCELLED = -2;
     public static final int CAPTURE_TIMEOUT = -3;

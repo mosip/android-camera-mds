@@ -7,24 +7,12 @@ import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import android.util.Pair;
 
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
-
 public class FileUtils {
-
-    /**
-     * Check if a file exists on device
-     *
-     * @param filePath The absolute file path
-     */
-    private static boolean fileExists(String filePath) {
-        File file = new File(filePath);
-        return file.exists();
-    }
 
     public static void SaveFileInAppStorage(final Context context, Uri fileUri, String fileName) throws IOException {
         ParcelFileDescriptor inputPFD = context.getContentResolver().openFileDescriptor(fileUri, "r");
@@ -56,7 +44,7 @@ public class FileUtils {
         long fileSize = returnCursor.getLong(sizeIndex);
         returnCursor.close();
 
-        String fileSizeInKb = (fileSize/1024) + "kb";
+        String fileSizeInKb = (fileSize / 1024) + "kb";
         return new Pair<>(fileName, fileSizeInKb);
     }
 }

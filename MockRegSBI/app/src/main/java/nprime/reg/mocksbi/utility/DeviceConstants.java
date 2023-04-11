@@ -37,6 +37,8 @@ public class DeviceConstants {
     public static final String PURPOSE = DeviceUsage.Registration.toString();
     public static String OSTYPE = "ANDROID";
     public static String DOMAIN_URI = "ANDROID";
+    public static final int DEFAULT_TIME_DELAY = 1000;
+
 
     public static enum ServiceStatus {
 

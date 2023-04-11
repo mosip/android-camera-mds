@@ -12,6 +12,7 @@ import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_SCORE;
 import static nprime.reg.mocksbi.constants.ClientConstants.KEY_ALIAS;
 import static nprime.reg.mocksbi.constants.ClientConstants.KEY_STORE_PASSWORD;
 import static nprime.reg.mocksbi.constants.ClientConstants.LAST_UPLOAD_DATE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_TIME_DELAY;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -126,9 +127,9 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFingerDeviceStatus = sharedPreferences.getString(FINGER_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getType());
         currentIrisDeviceStatus = sharedPreferences.getString(IRIS_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getType());
 
-        currentFaceResponseDelay = sharedPreferences.getInt(FACE_RESPONSE_DELAY, 0);
-        currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, 0);
-        currentIrisResponseDelay = sharedPreferences.getInt(IRIS_RESPONSE_DELAY, 0);
+        currentFaceResponseDelay = sharedPreferences.getInt(FACE_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
+        currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
+        currentIrisResponseDelay = sharedPreferences.getInt(IRIS_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
 
         Bundle bundle = new Bundle();
         bundle.putString(LAST_UPLOAD_DATE, lastUploadDate);

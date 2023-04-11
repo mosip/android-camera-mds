@@ -1,5 +1,6 @@
 package nprime.reg.mocksbi.camera;
 
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_TIME_DELAY;
 import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_FACE;
 import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_INDEX;
 import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_IRIS;
@@ -50,9 +51,6 @@ import nprime.reg.mocksbi.utility.DeviceConstants;
  */
 
 public class RCaptureActivity extends AppCompatActivity {
-
-    private static final long PREVIEW_TIME_DELAY = 1000;
-
     private int faceQualityScore;
     private int fingerQualityScore;
     private int irisQualityScore;
@@ -65,12 +63,12 @@ public class RCaptureActivity extends AppCompatActivity {
         setContentView(R.layout.activity_rcapture);
         String modality = getIntent().getStringExtra("modality");
         String deviceSubId = getIntent().getStringExtra("deviceSubId") != null ? getIntent().getStringExtra("deviceSubId") : "1";
-        int captureTimeout = getIntent().getIntExtra("CaptureTimeout", 0);
+        int captureTimeout = getIntent().getIntExtra("CaptureTimeout", Integer.MAX_VALUE);
         String[] bioSubType = getIntent().getStringArrayExtra("bioSubType");
         String[] exception = getIntent().getStringArrayExtra("exception");
 
         segmentUriMapping = new HashMap<>();
-        segmentUriMapping.put("",  PROFILE_BIO_FILE_NAME_FACE);
+        segmentUriMapping.put("", PROFILE_BIO_FILE_NAME_FACE);
         segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_INDEX, PROFILE_BIO_FILE_NAME_LEFT_INDEX);
         segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_MIDDLE, PROFILE_BIO_FILE_NAME_LEFT_MIDDLE);
         segmentUriMapping.put(DeviceConstants.BIO_NAME_LEFT_RING, PROFILE_BIO_FILE_NAME_LEFT_RING);
@@ -88,6 +86,28 @@ public class RCaptureActivity extends AppCompatActivity {
         faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
         fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
         irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
+
+        long responseDelay;
+        switch (modality.toLowerCase()) {
+            case "face":
+                responseDelay = sharedPreferences.getInt(ClientConstants.FACE_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
+                break;
+            case "finger":
+                responseDelay = sharedPreferences.getInt(ClientConstants.FINGER_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
+                break;
+            case "iris":
+                responseDelay = sharedPreferences.getInt(ClientConstants.IRIS_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
+                break;
+            default:
+                responseDelay = DEFAULT_TIME_DELAY;
+        }
+
+        if (captureTimeout < responseDelay) {
+            new Handler().postDelayed(() -> {
+                captureFailed(CaptureResult.CAPTURE_TIMEOUT, "");
+            }, captureTimeout);
+            return;
+        }
 
         new Handler().postDelayed(() -> {
             try {
@@ -110,13 +130,12 @@ public class RCaptureActivity extends AppCompatActivity {
                         uris = new HashMap<>();
                         break;
                 }
-
                 captureSuccessful(uris, modality, qualityScore, deviceSubId);
             } catch (Exception e) {
                 e.printStackTrace();
                 captureFailed(-301, e.getMessage());
             }
-        }, PREVIEW_TIME_DELAY);
+        }, responseDelay);
     }
 
     private Map<String, Uri> captureIrisModality(String deviceSubId, String[] bioSubType, String[] exception) {
@@ -275,7 +294,6 @@ public class RCaptureActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.putExtra("Status", status);
         intent.putExtra("msg", msg);
-        //intent.putExtra("IsoFaceRecord", "".getBytes());
         intent.putExtra("Quality", 0);
         setResult(Activity.RESULT_CANCELED, intent);
         finish();

@@ -29,16 +29,6 @@ import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
-import nprime.reg.mocksbi.dto.CaptureDetail;
-import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
-import nprime.reg.mocksbi.dto.CaptureRequestDto;
-import nprime.reg.mocksbi.dto.CaptureResponse;
-import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
-import nprime.reg.mocksbi.dto.DeviceInfo;
-import nprime.reg.mocksbi.dto.DeviceInfoResponse;
-import nprime.reg.mocksbi.dto.DiscoverDto;
-import nprime.reg.mocksbi.dto.Error;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,6 +42,14 @@ import java.util.Collections;
 import java.util.List;
 
 import nprime.reg.mocksbi.R;
+import nprime.reg.mocksbi.dto.CaptureDetail;
+import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
+import nprime.reg.mocksbi.dto.CaptureRequestDto;
+import nprime.reg.mocksbi.dto.CaptureResponse;
+import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
+import nprime.reg.mocksbi.dto.DeviceInfoResponse;
+import nprime.reg.mocksbi.dto.DiscoverDto;
+import nprime.reg.mocksbi.dto.Error;
 import nprime.reg.mocksbi.secureLib.DeviceKeystore;
 import nprime.reg.mocksbi.utility.DeviceConstants;
 

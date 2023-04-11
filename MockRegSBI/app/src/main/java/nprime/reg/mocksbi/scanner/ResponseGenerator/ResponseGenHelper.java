@@ -2,6 +2,16 @@ package nprime.reg.mocksbi.scanner.ResponseGenerator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.bouncycastle.util.Strings;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import nprime.reg.mocksbi.dto.CaptureDetail;
 import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
 import nprime.reg.mocksbi.dto.CaptureRequestDto;
@@ -10,14 +20,6 @@ import nprime.reg.mocksbi.dto.DeviceInfo;
 import nprime.reg.mocksbi.dto.DeviceInfoResponse;
 import nprime.reg.mocksbi.dto.DiscoverDto;
 import nprime.reg.mocksbi.dto.Error;
-
-import org.bouncycastle.util.Strings;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 import nprime.reg.mocksbi.dto.NewBioDto;
 import nprime.reg.mocksbi.faceCaptureApi.CaptureResult;
 import nprime.reg.mocksbi.secureLib.DeviceKeystore;
@@ -32,7 +34,7 @@ import nprime.reg.mocksbi.utility.Logger;
  */
 
 public class ResponseGenHelper {
-    static ObjectMapper oB = null;
+    static ObjectMapper oB;
 
     static {
         oB = new ObjectMapper();
@@ -45,13 +47,41 @@ public class ResponseGenHelper {
 
         List<DeviceInfoResponse> infoList = new ArrayList<>();
         try {
-            Error error = new Error("0", "Success");
-
-            listOfModalities.forEach(value -> {
-                byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType);
-                String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
-                infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
-            });
+            Error error;
+            switch (currentStatus) {
+                case NOTREADY:
+                    error = new Error("110", "Device not ready");
+                    listOfModalities.forEach(value -> {
+                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, DeviceConstants.usageStage.getDeviceUsage());
+                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
+                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
+                    });
+                    break;
+                case BUSY:
+                    error = new Error("111", "Device busy");
+                    listOfModalities.forEach(value -> {
+                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, DeviceConstants.usageStage.getDeviceUsage());
+                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
+                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
+                    });
+                    break;
+                case NOTREGISTERED:
+                    error = new Error("100", "Device not registered");
+                    listOfModalities.forEach(value -> {
+                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, "");
+                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
+                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
+                    });
+                    break;
+                default:
+                    error = new Error("0", "Success");
+                    listOfModalities.forEach(value -> {
+                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, DeviceConstants.usageStage.getDeviceUsage());
+                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
+                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
+                    });
+                    break;
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
             infoList.add(new DeviceInfoResponse(null, new Error("UNKNOWN",
@@ -63,8 +93,7 @@ public class ResponseGenHelper {
     public static List<DiscoverDto> getDeviceDiscovery(
             DeviceConstants.ServiceStatus currentStatus,
             String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
-        List<DiscoverDto> list = new ArrayList();
-        byte[] fwVersion = DeviceConstants.FIRMWAREVER.getBytes();
+        List<DiscoverDto> list = new ArrayList<>();
         try {
             DiscoverDto discoverDto = new DiscoverDto();
             String serialNumber;
@@ -84,6 +113,24 @@ public class ResponseGenHelper {
                     break;
                 case Iris:
                     discoverDto.deviceSubId = new String[]{"3"};
+                    break;
+            }
+
+            switch (currentStatus) {
+                case NOTREADY:
+                    discoverDto.error = new Error("110", "Device not ready");
+                    break;
+                case BUSY:
+                    discoverDto.error = new Error("111", "Device busy");
+                    break;
+                case NOTREGISTERED:
+                    discoverDto.deviceId = "";
+                    discoverDto.deviceCode = "";
+                    discoverDto.purpose = "";
+                    discoverDto.error = new Error("100", "Device not registered");
+                    break;
+                default:
+                    discoverDto.error = new Error("0", "Success");
                     break;
             }
 
@@ -107,7 +154,8 @@ public class ResponseGenHelper {
     private static byte[] getDeviceInfo(
             DeviceKeystore deviceKeystore,
             DeviceConstants.ServiceStatus currentStatus,
-            String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
+            String szTimeStamp, String requestType, DeviceConstants.BioType bioType,
+            String deviceUsage) {
         byte[] deviceInfoData = null;
         try {
             byte[] fwVersion;
@@ -126,7 +174,7 @@ public class ResponseGenHelper {
             info.digitalId = deviceKeystore.getJwt(payLoad.getBytes());
             info.specVersion = new String[]{DeviceConstants.REGSERVER_VERSION};
             info.serviceVersion = DeviceConstants.MDSVERSION;
-            info.purpose = DeviceConstants.usageStage.getDeviceUsage();
+            info.purpose = deviceUsage;
             info.firmware = new String(fwVersion).replaceAll("\0", "").trim();
             info.env = DeviceConstants.ENVIRONMENT; //DeviceConstants.Environment.Staging.getEnvironment();
 

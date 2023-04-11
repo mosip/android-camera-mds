@@ -70,7 +70,6 @@ public class MDServiceActivity extends AppCompatActivity {
         ob.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
-    public static long lastInitTimestamp = 0;
     public static Context applicationContext;
 
     CaptureRequestDto captureRequestDto = null;

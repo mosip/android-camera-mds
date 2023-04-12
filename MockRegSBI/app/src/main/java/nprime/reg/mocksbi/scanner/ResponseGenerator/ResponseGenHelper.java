@@ -174,7 +174,7 @@ public class ResponseGenHelper {
             info.serviceVersion = DeviceConstants.MDSVERSION;
             info.purpose = deviceUsage;
             info.firmware = new String(fwVersion).replaceAll("\0", "").trim();
-            info.env = DeviceConstants.ENVIRONMENT; //DeviceConstants.Environment.Staging.getEnvironment();
+            info.env = DeviceConstants.ENVIRONMENT;
 
             deviceInfoData = oB.writeValueAsString(info).getBytes();
         } catch (IOException e) {

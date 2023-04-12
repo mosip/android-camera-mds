@@ -111,7 +111,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         deviceStatus.add(DeviceConstants.ServiceStatus.NOTREGISTERED.getStatus());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, deviceStatus);
 
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         faceDeviceStatus.setAdapter(adapter);
         fingerDeviceStatus.setAdapter(adapter);
         irisDeviceStatus.setAdapter(adapter);
@@ -230,7 +230,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     private void setSpinner(Spinner spinner, String value) {
-        int position = ((ArrayAdapter<CharSequence>) spinner.getAdapter()).getPosition(value);
+        int position = ((ArrayAdapter<String>) spinner.getAdapter()).getPosition(value);
         spinner.setSelection(position);
     }
 }

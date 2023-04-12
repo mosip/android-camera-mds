@@ -85,6 +85,7 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:background="@drawable/custom_border"
+                    android:backgroundTint="#F5F5F5"
                     android:orientation="vertical">
 
                     <TextView
@@ -163,11 +164,20 @@
                             android:text="@string/device_status"
                             android:textSize="20sp" />
 
-                        <Spinner
-                            android:id="@+id/face_device_status"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:spinnerMode="dropdown" />
+                            android:layout_marginVertical="5dp"
+                            android:background="@drawable/custom_border"
+                            android:backgroundTint="#E6E6E6"
+                            android:orientation="vertical">
+
+                            <Spinner
+                                android:id="@+id/face_device_status"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:theme="@style/Widget.AppCompat.DropDownItem.Spinner" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
@@ -202,6 +212,7 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:background="@drawable/custom_border"
+                    android:backgroundTint="#F5F5F5"
                     android:orientation="vertical">
 
                     <TextView
@@ -280,11 +291,20 @@
                             android:text="@string/device_status"
                             android:textSize="20sp" />
 
-                        <Spinner
-                            android:id="@+id/finger_device_status"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:spinnerMode="dropdown" />
+                            android:layout_marginVertical="5dp"
+                            android:background="@drawable/custom_border"
+                            android:backgroundTint="#E6E6E6"
+                            android:orientation="vertical">
+
+                            <Spinner
+                                android:id="@+id/finger_device_status"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:theme="@style/Widget.AppCompat.DropDownItem.Spinner" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
@@ -318,6 +338,7 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:background="@drawable/custom_border"
+                    android:backgroundTint="#F5F5F5"
                     android:orientation="vertical">
 
                     <TextView
@@ -396,11 +417,20 @@
                             android:text="@string/device_status"
                             android:textSize="20sp" />
 
-                        <Spinner
-                            android:id="@+id/iris_device_status"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:spinnerMode="dropdown" />
+                            android:layout_marginVertical="5dp"
+                            android:background="@drawable/custom_border"
+                            android:backgroundTint="#E6E6E6"
+                            android:orientation="vertical">
+
+                            <Spinner
+                                android:id="@+id/iris_device_status"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:theme="@style/Widget.AppCompat.DropDownItem.Spinner" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout

@@ -245,7 +245,7 @@ public class ClientActivity extends AppCompatActivity {
                 CaptureRequestDto captureRequestDto = new CaptureRequestDto();
                 captureRequestDto.env = DeviceConstants.ENVIRONMENT;
                 captureRequestDto.purpose = DeviceConstants.DeviceUsage.Registration.toString();
-                captureRequestDto.specVersion = DeviceConstants.MDSVERSION;
+                captureRequestDto.specVersion = DeviceConstants.MDS_VERSION;
                 captureRequestDto.timeout = 10000;
                 captureRequestDto.captureTime = "2021-07-18T17:56:11Z";
                 captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;

@@ -10,22 +10,27 @@ import java.util.Objects;
 
 public class DeviceConstants {
     public static final String LOG_TAG = "NPrimeSBI";
-    public static final String CERTIFICATIONLEVEL = "L0"; //L0, L1, L2
-    public static final String MDSVERSION = "0.9.5";
-    public static final String FIRMWAREVER = "1.0.1";
-    public static final String DEVICEMODEL = "AndroidFaceCamera";
-    public static final String DEVICEMAKE = "Android";
-    public static final String FACE_DEVICESUBTYPE = "Full face";
-    public static final String FINGER_DEVICESUBTYPE = "Slap";
-    public static final String IRIS_DEVICESUBTYPE = "Double";
-    public static final String PROVIDERNAME = "NPrime";
-    public static final String PROVIDERID = "Nprime_DP";
-    public static final String REGSERVER_VERSION = "0.9.5";
+    public static final String MDS_VERSION = "0.9.5";
+    public static final String FIRMWARE_VER = "1.0.1";
+    public static final String DEVICE_MODEL = "AndroidFaceCamera";
+    public static final String DEVICE_MAKE = "Android";
+    public static final String PROVIDER_NAME = "NPrime";
+    public static final String PROVIDER_ID = "Nprime_DP";
+    public static final String REG_SERVER_VERSION = "0.9.5";
     public static String ENVIRONMENT = "Production";
     public static String DOMAIN_URI = "ANDROID";
     public static final int DEFAULT_TIME_DELAY = 1000;
-    public static DeviceUsage usageStage = DeviceUsage.Registration;
     public static List<String> environmentList = Arrays.asList("Staging", "Developer", "Pre-Production", "Production");
+
+    /**
+     * Biometric Sub Types Names
+     */
+    public final static String MOSIP_BIOMETRIC_SUBTYPE_FINGER_SLAP = "Slap";
+    public final static String MOSIP_BIOMETRIC_SUBTYPE_FINGER_SINGLE = "Single";
+    public final static String MOSIP_BIOMETRIC_SUBTYPE_FINGER_TOUCHLESS = "Touchless";
+    public final static String MOSIP_BIOMETRIC_SUBTYPE_FACE = "Full face";
+    public final static String MOSIP_BIOMETRIC_SUBTYPE_IRIS_SINGLE = "Single";
+    public final static String MOSIP_BIOMETRIC_SUBTYPE_IRIS_DOUBLE = "Double";
 
     /**
      * Device SubType Id Value
@@ -86,7 +91,7 @@ public class DeviceConstants {
     public static String PROFILE_BIO_FILE_NAME_FACE_EXCEPTION = "Exception_Photo.iso";
 
     public enum ServiceStatus {
-        READY("Ready"), BUSY("Busy"), NOTREADY("Not Ready"), NOTREGISTERED("Not Registered");
+        READY("Ready"), BUSY("Busy"), NOT_READY("Not Ready"), NOT_REGISTERED("Not Registered");
         private final String status;
 
         public String getStatus() {
@@ -129,10 +134,10 @@ public class DeviceConstants {
             return DeviceConstants.ServiceStatus.READY;
         } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.BUSY.getStatus())) {
             return DeviceConstants.ServiceStatus.BUSY;
-        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREADY.getStatus())) {
-            return DeviceConstants.ServiceStatus.NOTREADY;
-        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOTREGISTERED.getStatus())) {
-            return DeviceConstants.ServiceStatus.NOTREGISTERED;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOT_READY.getStatus())) {
+            return DeviceConstants.ServiceStatus.NOT_READY;
+        } else if (Objects.equals(deviceStatus, DeviceConstants.ServiceStatus.NOT_REGISTERED.getStatus())) {
+            return DeviceConstants.ServiceStatus.NOT_REGISTERED;
         }
         return null;
     }

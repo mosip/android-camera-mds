@@ -27,6 +27,7 @@ import nprime.reg.mocksbi.utility.CommonDeviceAPI;
 import nprime.reg.mocksbi.utility.CryptoUtility;
 import nprime.reg.mocksbi.utility.DeviceConstants;
 import nprime.reg.mocksbi.utility.DeviceErrorCodes;
+import nprime.reg.mocksbi.utility.DeviceUtil;
 import nprime.reg.mocksbi.utility.Logger;
 
 /**
@@ -34,25 +35,27 @@ import nprime.reg.mocksbi.utility.Logger;
  */
 
 public class ResponseGenHelper {
-    static ObjectMapper oB;
+    ObjectMapper oB;
+    DeviceUtil deviceUtil;
 
-    static {
+    public ResponseGenHelper(DeviceUtil _deviceUtil) {
         oB = new ObjectMapper();
+        deviceUtil = _deviceUtil;
     }
 
-    public static List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus,
-                                                               String szTimeStamp, String requestType,
-                                                               DeviceConstants.BioType bioType, DeviceKeystore keystore) {
+    public List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus,
+                                                        String szTimeStamp, String requestType,
+                                                        DeviceConstants.BioType bioType, DeviceKeystore keystore) {
         List<String> listOfModalities = Collections.singletonList("FAC");
 
         List<DeviceInfoResponse> infoList = new ArrayList<>();
         try {
             Error error;
             switch (currentStatus) {
-                case NOTREADY:
+                case NOT_READY:
                     error = new Error("110", "Device not ready");
                     listOfModalities.forEach(value -> {
-                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, DeviceConstants.usageStage.getDeviceUsage());
+                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, deviceUtil.DEVICE_USAGE.getDeviceUsage());
                         String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
                         infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
                     });
@@ -60,12 +63,12 @@ public class ResponseGenHelper {
                 case BUSY:
                     error = new Error("111", "Device busy");
                     listOfModalities.forEach(value -> {
-                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, DeviceConstants.usageStage.getDeviceUsage());
+                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, deviceUtil.DEVICE_USAGE.getDeviceUsage());
                         String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
                         infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
                     });
                     break;
-                case NOTREGISTERED:
+                case NOT_REGISTERED:
                     error = new Error("100", "Device not registered");
                     listOfModalities.forEach(value -> {
                         byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, "");
@@ -76,7 +79,7 @@ public class ResponseGenHelper {
                 default:
                     error = new Error("0", "Success");
                     listOfModalities.forEach(value -> {
-                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, DeviceConstants.usageStage.getDeviceUsage());
+                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, deviceUtil.DEVICE_USAGE.getDeviceUsage());
                         String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
                         infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
                     });
@@ -90,7 +93,7 @@ public class ResponseGenHelper {
         return infoList;
     }
 
-    public static List<DiscoverDto> getDeviceDiscovery(
+    public List<DiscoverDto> getDeviceDiscovery(
             DeviceConstants.ServiceStatus currentStatus,
             String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
         List<DiscoverDto> list = new ArrayList<>();
@@ -100,8 +103,8 @@ public class ResponseGenHelper {
             String serialNumber = devCommonDeviceAPI.getSerialNumber();
             discoverDto.deviceId = serialNumber;
             discoverDto.deviceStatus = currentStatus.getStatus();
-            discoverDto.certification = DeviceConstants.CERTIFICATIONLEVEL;
-            discoverDto.serviceVersion = DeviceConstants.MDSVERSION;
+            discoverDto.certification = deviceUtil.CERTIFICATION_LEVEL;
+            discoverDto.serviceVersion = DeviceConstants.MDS_VERSION;
 
             switch (bioType) {
                 case Face:
@@ -116,13 +119,13 @@ public class ResponseGenHelper {
             }
 
             switch (currentStatus) {
-                case NOTREADY:
+                case NOT_READY:
                     discoverDto.error = new Error("110", "Device not ready");
                     break;
                 case BUSY:
                     discoverDto.error = new Error("111", "Device busy");
                     break;
-                case NOTREGISTERED:
+                case NOT_REGISTERED:
                     discoverDto.deviceId = "";
                     discoverDto.deviceCode = "";
                     discoverDto.purpose = "";
@@ -138,8 +141,8 @@ public class ResponseGenHelper {
 
             discoverDto.digitalId = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes());
             discoverDto.deviceCode = serialNumber;
-            discoverDto.specVersion = new String[]{DeviceConstants.REGSERVER_VERSION};
-            discoverDto.purpose = DeviceConstants.usageStage.getDeviceUsage();
+            discoverDto.specVersion = new String[]{DeviceConstants.REG_SERVER_VERSION};
+            discoverDto.purpose = deviceUtil.DEVICE_USAGE.getDeviceUsage();
             discoverDto.error = new Error("0", "Success");
 
             list.add(discoverDto);
@@ -149,7 +152,7 @@ public class ResponseGenHelper {
         return list;
     }
 
-    private static byte[] getDeviceInfo(
+    private byte[] getDeviceInfo(
             DeviceKeystore deviceKeystore,
             DeviceConstants.ServiceStatus currentStatus,
             String szTimeStamp, String requestType, DeviceConstants.BioType bioType,
@@ -157,21 +160,21 @@ public class ResponseGenHelper {
         byte[] deviceInfoData = null;
         try {
             byte[] fwVersion;
-            fwVersion = DeviceConstants.FIRMWAREVER.getBytes();
+            fwVersion = DeviceConstants.FIRMWARE_VER.getBytes();
             CommonDeviceAPI devCommonDeviceAPI = new CommonDeviceAPI();
             String serialNumber = devCommonDeviceAPI.getSerialNumber();
 
             DeviceInfo info = new DeviceInfo();
             info.callbackId = requestType.replace(".Info", "");
-            info.certification = DeviceConstants.CERTIFICATIONLEVEL;
+            info.certification = deviceUtil.CERTIFICATION_LEVEL;
             info.deviceCode = serialNumber;
             info.deviceId = serialNumber;
             info.deviceStatus = currentStatus.getStatus();
             info.deviceSubId = new String[]{"0"};
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
             info.digitalId = deviceKeystore.getJwt(payLoad.getBytes());
-            info.specVersion = new String[]{DeviceConstants.REGSERVER_VERSION};
-            info.serviceVersion = DeviceConstants.MDSVERSION;
+            info.specVersion = new String[]{DeviceConstants.REG_SERVER_VERSION};
+            info.serviceVersion = DeviceConstants.MDS_VERSION;
             info.purpose = deviceUsage;
             info.firmware = new String(fwVersion).replaceAll("\0", "").trim();
             info.env = DeviceConstants.ENVIRONMENT;
@@ -187,30 +190,30 @@ public class ResponseGenHelper {
         return deviceInfoData;
     }
 
-    public static String getDigitalID(String serialNumber, String szTS, DeviceConstants.BioType bioType) {
+    public String getDigitalID(String serialNumber, String szTS, DeviceConstants.BioType bioType) {
         String digiID;
         JSONObject jsonobject = new JSONObject();
 
         try {
             jsonobject.put("serialNo", serialNumber);
-            jsonobject.put("make", DeviceConstants.DEVICEMAKE);
-            jsonobject.put("model", DeviceConstants.DEVICEMODEL);
+            jsonobject.put("make", DeviceConstants.DEVICE_MAKE);
+            jsonobject.put("model", DeviceConstants.DEVICE_MODEL);
             switch (bioType) {
                 case Face:
                     jsonobject.put("type", DeviceConstants.BioType.Face.getBioType());
-                    jsonobject.put("deviceSubType", DeviceConstants.FACE_DEVICESUBTYPE);
+                    jsonobject.put("deviceSubType", deviceUtil.FACE_DEVICE_SUBTYPE);
                     break;
                 case Finger:
                     jsonobject.put("type", DeviceConstants.BioType.Finger.getBioType());
-                    jsonobject.put("deviceSubType", DeviceConstants.FINGER_DEVICESUBTYPE);
+                    jsonobject.put("deviceSubType", deviceUtil.FINGER_DEVICE_SUBTYPE);
                     break;
                 case Iris:
                     jsonobject.put("type", DeviceConstants.BioType.Iris.getBioType());
-                    jsonobject.put("deviceSubType", DeviceConstants.IRIS_DEVICESUBTYPE);
+                    jsonobject.put("deviceSubType", deviceUtil.IRIS_DEVICE_SUBTYPE);
                     break;
             }
-            jsonobject.put("deviceProvider", DeviceConstants.PROVIDERNAME);
-            jsonobject.put("deviceProviderId", DeviceConstants.PROVIDERID);
+            jsonobject.put("deviceProvider", DeviceConstants.PROVIDER_NAME);
+            jsonobject.put("deviceProviderId", DeviceConstants.PROVIDER_ID);
             jsonobject.put("dateTime", szTS);
         } catch (Exception ex) {
             Logger.e(DeviceConstants.LOG_TAG, "Face SBI :: " + "Error occurred while retreiving Digital ID ");
@@ -220,8 +223,8 @@ public class ResponseGenHelper {
         return digiID;
     }
 
-    public static CaptureResponse getRCaptureBiometricsMOSIP(CaptureResult captureResult,
-                                                             CaptureRequestDto captureRequestDto, DeviceKeystore keystore) {
+    public CaptureResponse getRCaptureBiometricsMOSIP(CaptureResult captureResult,
+                                                      CaptureRequestDto captureRequestDto, DeviceKeystore keystore) {
 
         CaptureResponse captureResponse = new CaptureResponse();
         try {
@@ -357,25 +360,25 @@ public class ResponseGenHelper {
             captureResponse.biometrics = listOfBiometric;
         } catch (Exception exception) {
             CaptureDetail captureDetail = new CaptureDetail();
-            captureDetail.specVersion = DeviceConstants.REGSERVER_VERSION;
+            captureDetail.specVersion = DeviceConstants.REG_SERVER_VERSION;
             captureDetail.error = new Error("UNKNOWN", exception.getMessage());
         }
         return captureResponse;
     }
 
-    private static NewBioDto getBioResponse(String deviceSerialNumber, String bioType, String bioSubType,
-                                            CaptureRequestDto captureRequestDto, CaptureResult captureResult,
-                                            int requestedScore, DeviceKeystore keystore,
-                                            DeviceConstants.BioType bioTypeAtt) {
+    private NewBioDto getBioResponse(String deviceSerialNumber, String bioType, String bioSubType,
+                                     CaptureRequestDto captureRequestDto, CaptureResult captureResult,
+                                     int requestedScore, DeviceKeystore keystore,
+                                     DeviceConstants.BioType bioTypeAtt) {
         String timestamp = CryptoUtility.getTimestamp();
         NewBioDto bioResponse = new NewBioDto();
         bioResponse.setBioSubType(bioSubType);
         bioResponse.setBioType(bioType);
         bioResponse.setDeviceCode(deviceSerialNumber);
         //Device service version should be read from file
-        bioResponse.setDeviceServiceVersion(DeviceConstants.MDSVERSION);
+        bioResponse.setDeviceServiceVersion(DeviceConstants.MDS_VERSION);
         bioResponse.setEnv(captureRequestDto.env);
-        bioResponse.setPurpose(DeviceConstants.usageStage.getDeviceUsage());
+        bioResponse.setPurpose(deviceUtil.DEVICE_USAGE.getDeviceUsage());
         bioResponse.setRequestedScore(String.valueOf(requestedScore));
         bioResponse.setQualityScore(String.valueOf(captureResult.getQualityScore()));
         bioResponse.setTransactionId(captureRequestDto.transactionId);
@@ -391,8 +394,8 @@ public class ResponseGenHelper {
         return bioResponse;
     }
 
-    private static CaptureDetail getMinimalResponse(String specVersion, NewBioDto data,
-                                                    String previousHash, CaptureResult fcResult, DeviceKeystore keystore) {
+    private CaptureDetail getMinimalResponse(String specVersion, NewBioDto data,
+                                             String previousHash, CaptureResult fcResult, DeviceKeystore keystore) {
         CaptureDetail biometricData = new CaptureDetail();
         try {
             if (CaptureResult.CAPTURE_SUCCESS == fcResult.getStatus()) {

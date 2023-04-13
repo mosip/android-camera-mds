@@ -123,8 +123,8 @@ public class ConfigurationActivity extends AppCompatActivity {
         ArrayList<String> deviceStatus = new ArrayList<>();
         deviceStatus.add(DeviceConstants.ServiceStatus.READY.getStatus());
         deviceStatus.add(DeviceConstants.ServiceStatus.BUSY.getStatus());
-        deviceStatus.add(DeviceConstants.ServiceStatus.NOTREADY.getStatus());
-        deviceStatus.add(DeviceConstants.ServiceStatus.NOTREGISTERED.getStatus());
+        deviceStatus.add(DeviceConstants.ServiceStatus.NOT_READY.getStatus());
+        deviceStatus.add(DeviceConstants.ServiceStatus.NOT_REGISTERED.getStatus());
 
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, deviceStatus);
         statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

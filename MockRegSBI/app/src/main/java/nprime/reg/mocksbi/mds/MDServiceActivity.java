@@ -51,6 +51,7 @@ import nprime.reg.mocksbi.scanner.ResponseGenerator.ResponseGenHelper;
 import nprime.reg.mocksbi.secureLib.DeviceKeystore;
 import nprime.reg.mocksbi.utility.CommonDeviceAPI;
 import nprime.reg.mocksbi.utility.DeviceConstants;
+import nprime.reg.mocksbi.utility.DeviceUtil;
 import nprime.reg.mocksbi.utility.Logger;
 
 /**
@@ -77,6 +78,8 @@ public class MDServiceActivity extends AppCompatActivity {
     DeviceConstants.ServiceStatus currentFingerStatus = DeviceConstants.ServiceStatus.READY;
     DeviceConstants.ServiceStatus currentIrisStatus = DeviceConstants.ServiceStatus.READY;
 
+    ResponseGenHelper responseGenHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +104,9 @@ public class MDServiceActivity extends AppCompatActivity {
                 sharedPreferences.getString(ClientConstants.IRIS_DEVICE_STATUS
                         , DeviceConstants.ServiceStatus.READY.toString()));
 
+        String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
+                , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+        responseGenHelper = new ResponseGenHelper(new DeviceUtil(deviceUsage));
         handleIntents();
     }
 
@@ -382,7 +388,7 @@ public class MDServiceActivity extends AppCompatActivity {
         List<CaptureDetail> biometrics = new ArrayList<>();
 
         CaptureDetail biometric = new CaptureDetail();
-        biometric.specVersion = DeviceConstants.MDSVERSION;
+        biometric.specVersion = DeviceConstants.MDS_VERSION;
         biometric.data = "";
         biometric.hash = "";
 
@@ -431,13 +437,13 @@ public class MDServiceActivity extends AppCompatActivity {
     }
 
     private List<DiscoverDto> discoverDevice(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType, DeviceConstants.BioType bioType) {
-        return ResponseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType);
+        return responseGenHelper.getDeviceDiscovery(currentStatus, szTimeStamp, requestType, bioType);
     }
 
     public List<DeviceInfoResponse> getDeviceDriverInfo(DeviceConstants.ServiceStatus currentStatus, String szTimeStamp, String requestType,
                                                         DeviceConstants.BioType bioType) {
         DeviceKeystore keystore = new DeviceKeystore(this);
-        return ResponseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType, keystore);
+        return responseGenHelper.getDeviceDriverInfo(currentStatus, szTimeStamp, requestType, bioType, keystore);
     }
 
     @Override
@@ -464,7 +470,7 @@ public class MDServiceActivity extends AppCompatActivity {
 
                         captureResult.setStatus(data.getIntExtra("Status", CaptureResult.CAPTURE_CANCELLED));
                         captureResult.setQualityScore(data.getIntExtra("Quality", 0));
-                        CaptureResponse responseXml = ResponseGenHelper
+                        CaptureResponse responseXml = responseGenHelper
                                 .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
                         generateRCaptureResponse(responseXml, false);
                     } catch (Exception e) {
@@ -480,7 +486,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     captureResult.setQualityScore(data.getIntExtra("Quality", 0));
                 }
 
-                CaptureResponse responseXml = ResponseGenHelper
+                CaptureResponse responseXml = responseGenHelper
                         .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
                 generateRCaptureResponse(responseXml, false);
             }

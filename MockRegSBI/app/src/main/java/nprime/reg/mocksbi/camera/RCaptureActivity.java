@@ -45,6 +45,7 @@ import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.faceCaptureApi.CaptureResult;
 import nprime.reg.mocksbi.utility.DeviceConstants;
+import nprime.reg.mocksbi.utility.DeviceUtil;
 
 /**
  * @author NPrime Technologies
@@ -56,6 +57,7 @@ public class RCaptureActivity extends AppCompatActivity {
     private int irisQualityScore;
 
     private Map<String, String> segmentUriMapping;
+    private DeviceUtil deviceUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +88,11 @@ public class RCaptureActivity extends AppCompatActivity {
         faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
         fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
         irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
+
+        String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
+                , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+
+        deviceUtil = new DeviceUtil(deviceUsage);
 
         long responseDelay;
         switch (modality.toLowerCase()) {
@@ -264,7 +271,7 @@ public class RCaptureActivity extends AppCompatActivity {
     }
 
     private Uri getBioAttributeURI(String file) {
-        byte[] isoRecord = getIsoDataFromAssets(DeviceConstants.usageStage.getDeviceUsage() + "/" + file);
+        byte[] isoRecord = getIsoDataFromAssets(deviceUtil.DEVICE_USAGE.getDeviceUsage() + "/" + file);
         Uri isoUri = Uri.fromFile(getTempFile(RCaptureActivity.this));
         saveByteArray(isoRecord, isoUri);
         return isoUri;

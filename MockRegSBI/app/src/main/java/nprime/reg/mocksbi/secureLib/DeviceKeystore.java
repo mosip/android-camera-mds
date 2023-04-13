@@ -30,18 +30,19 @@ public class DeviceKeystore {
     private final String keystorePwd;
     private final String keyAlias;
 
+
     public DeviceKeystore(Context context) {
         this.context = context;
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        keyAlias = sharedPreferences.getString(ClientConstants.KEY_ALIAS, "");
-        keystorePwd = sharedPreferences.getString(ClientConstants.KEY_STORE_PASSWORD, "");
+        keyAlias = sharedPreferences.getString(ClientConstants.REG_KEY_ALIAS, "");
+        keystorePwd = sharedPreferences.getString(ClientConstants.REG_KEY_STORE_PASSWORD, "");
     }
 
     public String getJwt(byte[] data) {
         PrivateKey privateKey;
         Certificate x509Certificate;
 
-        File file = new File(context.getFilesDir(), ClientConstants.P12_FILE_NAME);
+        File file = new File(context.getFilesDir(), ClientConstants.REG_P12_FILE_NAME);
 
         try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             KeyStore keystore = KeyStore.getInstance("PKCS12");
@@ -78,11 +79,11 @@ public class DeviceKeystore {
         return jwsToken;
     }
 
-    public boolean checkCertificateCredentials() {
+    public boolean checkCertificateCredentials(String fileName, String keyAlias, String keystorePwd) {
         PrivateKey privateKey;
         Certificate x509Certificate;
 
-        File file = new File(context.getFilesDir(), ClientConstants.P12_FILE_NAME);
+        File file = new File(context.getFilesDir(), fileName);
 
         try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             KeyStore keystore = KeyStore.getInstance("PKCS12");

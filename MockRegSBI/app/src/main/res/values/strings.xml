@@ -12,7 +12,7 @@
     <string name="reset">Reset</string>
     <string name="last_upload">Last Upload</string>
     <string name="browse">Browse</string>
-    <string name="p12_configuration">P12 Configuration</string>
+    <string name="p12_config">P12 Config</string>
     <string name="modality_config">Modality Config</string>
     <string name="_30">30</string>
     <string name="validate_certificate">Validate Certificate</string>
@@ -25,4 +25,10 @@
     <string name="finger">Finger</string>
     <string name="iris">Iris</string>
     <string name="response_delay_in_ms">Response Delay(in ms)</string>
+    <string name="registration">Registration</string>
+    <string name="device_config">Device Config</string>
+    <string name="authentication">Authentication</string>
+    <string name="device_usage">Device Usage</string>
+    <string name="device_key">Device Key</string>
+    <string name="ftm_key">FTM Key</string>
 </resources>

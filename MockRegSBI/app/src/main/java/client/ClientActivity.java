@@ -3,6 +3,7 @@ package client;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.ImageButton;
@@ -29,7 +31,6 @@ import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -38,10 +39,10 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 
 import nprime.reg.mocksbi.R;
+import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.dto.CaptureDetail;
 import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
 import nprime.reg.mocksbi.dto.CaptureRequestDto;
@@ -515,10 +516,22 @@ public class ClientActivity extends AppCompatActivity {
 
     public void validateCertificate(View view) {
         DeviceKeystore keystore = new DeviceKeystore(this);
-        if (keystore.checkCertificateCredentials()) {
-            Toast.makeText(this, "Certificate credentials are valid.", Toast.LENGTH_SHORT).show();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String keyAlias = sharedPreferences.getString(ClientConstants.REG_KEY_ALIAS, "");
+        String keystorePwd = sharedPreferences.getString(ClientConstants.REG_KEY_STORE_PASSWORD, "");
+        String ftm_keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
+        String ftm_keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
+
+        if (keystore.checkCertificateCredentials(ClientConstants.REG_P12_FILE_NAME, keyAlias, keystorePwd)) {
+            Toast.makeText(this, "Device key credentials are valid.", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, "Certificate validation failed.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Device key validation failed.", Toast.LENGTH_SHORT).show();
+        }
+
+        if (keystore.checkCertificateCredentials(ClientConstants.FTM_P12_FILE_NAME, ftm_keyAlias, ftm_keystorePwd)) {
+            Toast.makeText(this, "FTM key credentials are valid.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "FTM key validation failed.", Toast.LENGTH_SHORT).show();
         }
     }
 }

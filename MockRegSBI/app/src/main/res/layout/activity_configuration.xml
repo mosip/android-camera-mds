@@ -19,18 +19,84 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/p12_configuration"
+                android:text="@string/device_config"
                 android:textColor="@color/nprime_primary"
                 android:textSize="18sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/custom_border"
                 android:orientation="vertical"
                 android:padding="10dp">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="2dp">
+
+                    <TextView
+                        android:id="@+id/textView16"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/device_usage"
+                        android:textSize="20sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="5dp"
+                        android:background="@drawable/custom_border"
+                        android:backgroundTint="#E6E6E6"
+                        android:orientation="vertical">
+
+                        <Spinner
+                            android:id="@+id/deviceUsage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:theme="@style/Widget.AppCompat.DropDownItem.Spinner" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider1"
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/p12_config"
+                android:textColor="@color/nprime_primary"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/custom_border"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/textView14"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/device_key"
+                    android:textAlignment="center"
+                    android:textColor="@color/nprime_primary"
+                    android:textSize="25sp" />
+
                 <EditText
-                    android:id="@+id/key_alias"
+                    android:id="@+id/reg_key_alias"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -40,7 +106,7 @@
                     android:minHeight="48dp" />
 
                 <EditText
-                    android:id="@+id/key_store_password"
+                    android:id="@+id/reg_key_store_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -50,7 +116,53 @@
                     android:minHeight="48dp" />
 
                 <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/fragmentContainerView"
+                    android:id="@+id/reg_fragmentContainerView"
+                    android:name="client.FileChooserFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:layout="@layout/fragment_file_chooser" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/custom_border"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/textView15"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ftm_key"
+                    android:textAlignment="center"
+                    android:textColor="@color/nprime_primary"
+                    android:textSize="25sp" />
+
+                <EditText
+                    android:id="@+id/ftm_key_alias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="@string/key_alias"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:minHeight="48dp" />
+
+                <EditText
+                    android:id="@+id/ftm_key_store_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="@string/key_store_password"
+                    android:importantForAutofill="no"
+                    android:inputType="textPassword"
+                    android:minHeight="48dp" />
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/ftm_fragmentContainerView"
                     android:name="client.FileChooserFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -58,7 +170,7 @@
             </LinearLayout>
 
             <View
-                android:id="@+id/divider"
+                android:id="@+id/divider2"
                 android:layout_width="match_parent"
                 android:layout_height="5dp"
                 android:layout_marginTop="5dp"
@@ -85,7 +197,6 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:background="@drawable/custom_border"
-                    android:backgroundTint="#F5F5F5"
                     android:orientation="vertical">
 
                     <TextView
@@ -212,7 +323,6 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:background="@drawable/custom_border"
-                    android:backgroundTint="#F5F5F5"
                     android:orientation="vertical">
 
                     <TextView
@@ -338,7 +448,6 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:background="@drawable/custom_border"
-                    android:backgroundTint="#F5F5F5"
                     android:orientation="vertical">
 
                     <TextView

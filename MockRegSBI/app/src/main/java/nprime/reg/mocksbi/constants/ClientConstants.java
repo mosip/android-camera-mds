@@ -25,5 +25,6 @@ public class ClientConstants {
     public static final String MOSIP_AUTH_SECRETKEY = "mosip_auth_secretkey";
     public static final String MOSIP_AUTH_SERVER_URL = "mosip_auth_server_url";
     public static final String MOSIP_IDA_SERVER_URL = "mosip_ida_server_url";
+    public static final String CERTIFICATE_TO_ENCRYPT_BIO = "certificate_to_encrypt_bio";
 
 }

@@ -2,16 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="nprime.reg.mocksbi">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <queries android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
-        android:requestLegacyExternalStorage="true"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher_camera"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_camera_round"
         android:supportsRtl="true"
         android:theme="@style/NPrimeTheme">
@@ -33,10 +35,13 @@
             <intent-filter>
                 <action android:name="io.sbi.device" />
                 <action android:name="nprime.reg.mocksbi.face.Info" />
+                <action android:name="nprime.reg.mocksbi.face.Capture" />
                 <action android:name="nprime.reg.mocksbi.face.rCapture" />
                 <action android:name="nprime.reg.mocksbi.finger.Info" />
+                <action android:name="nprime.reg.mocksbi.finger.Capture" />
                 <action android:name="nprime.reg.mocksbi.finger.rCapture" />
                 <action android:name="nprime.reg.mocksbi.iris.Info" />
+                <action android:name="nprime.reg.mocksbi.iris.Capture" />
                 <action android:name="nprime.reg.mocksbi.iris.rCapture" />
 
                 <category android:name="android.intent.category.DEFAULT" />

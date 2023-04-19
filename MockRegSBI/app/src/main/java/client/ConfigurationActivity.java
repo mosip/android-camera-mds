@@ -1,22 +1,12 @@
 package client;
 
 import static client.FileChooserFragment.LAST_UPLOAD_DATE;
-import static nprime.reg.mocksbi.constants.ClientConstants.FTM_KEY_ALIAS;
-import static nprime.reg.mocksbi.constants.ClientConstants.FTM_KEY_STORE_PASSWORD;
-import static nprime.reg.mocksbi.constants.ClientConstants.FTM_LAST_UPLOAD_DATE;
-import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_USAGE;
-import static nprime.reg.mocksbi.constants.ClientConstants.FACE_DEVICE_STATUS;
-import static nprime.reg.mocksbi.constants.ClientConstants.FACE_RESPONSE_DELAY;
-import static nprime.reg.mocksbi.constants.ClientConstants.FACE_SCORE;
-import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_DEVICE_STATUS;
-import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_RESPONSE_DELAY;
-import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_SCORE;
-import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_DEVICE_STATUS;
-import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_RESPONSE_DELAY;
-import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_SCORE;
-import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_KEY_ALIAS;
-import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_KEY_STORE_PASSWORD;
-import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_LAST_UPLOAD_DATE;
+import static nprime.reg.mocksbi.constants.ClientConstants.*;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_APPID;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_CLIENTID;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_SECRETKEY;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_SERVER_URL;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_IDA_SERVER_URL;
 import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_TIME_DELAY;
 
 import android.content.SharedPreferences;
@@ -70,6 +60,11 @@ public class ConfigurationActivity extends AppCompatActivity {
     private EditText fingerResponseDelayEditText;
     private EditText irisResponseDelayEditText;
     private Spinner deviceUsageSpinner;
+    private EditText mosipAuthAppIdEditText;
+    private EditText mosipAuthClientIdEditText;
+    private EditText mosipAuthSecretKeyEditText;
+    private EditText mosipAuthServerUrlEditText;
+    private EditText mosipIdaServerUrlEditText;
 
     private String device_currentKeyAlias;
     private String device_currentKeyPassword;
@@ -87,6 +82,12 @@ public class ConfigurationActivity extends AppCompatActivity {
     private int currentFaceResponseDelay;
     private int currentFingerResponseDelay;
     private int currentIrisResponseDelay;
+
+    private String mosipAuthAppId;
+    private String mosipAuthClientId;
+    private String mosipAuthSecretKey;
+    private String mosipIdaServerUrl;
+    private String mosipAuthServerUrl;
 
 
     SharedPreferences sharedPreferences;
@@ -119,6 +120,12 @@ public class ConfigurationActivity extends AppCompatActivity {
         fingerResponseDelayEditText = findViewById(R.id.finger_response_delay_millis);
         irisResponseDelayEditText = findViewById(R.id.iris_response_delay_millis);
         deviceUsageSpinner = findViewById(R.id.deviceUsage);
+
+        mosipAuthAppIdEditText = findViewById(R.id.mosip_auth_app_id);
+        mosipAuthClientIdEditText = findViewById(R.id.mosip_auth_client_id);
+        mosipAuthSecretKeyEditText = findViewById(R.id.mosip_auth_secret_key);
+        mosipAuthServerUrlEditText = findViewById(R.id.mosip_auth_server_url);
+        mosipIdaServerUrlEditText = findViewById(R.id.mosip_ida_server_url);
 
         ArrayList<String> deviceStatus = new ArrayList<>();
         deviceStatus.add(DeviceConstants.ServiceStatus.READY.getStatus());
@@ -159,6 +166,12 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentIrisResponseDelay = sharedPreferences.getInt(IRIS_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentDeviceUsage = sharedPreferences.getString(DEVICE_USAGE, DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+
+        mosipAuthAppId = sharedPreferences.getString(MOSIP_AUTH_APPID, DEFAULT_MOSIP_AUTH_APPID);
+        mosipAuthClientId = sharedPreferences.getString(MOSIP_AUTH_CLIENTID, DEFAULT_MOSIP_AUTH_CLIENTID);
+        mosipAuthSecretKey = sharedPreferences.getString(MOSIP_AUTH_SECRETKEY, DEFAULT_MOSIP_AUTH_SECRETKEY);
+        mosipAuthServerUrl = sharedPreferences.getString(MOSIP_AUTH_SERVER_URL, DEFAULT_MOSIP_AUTH_SERVER_URL);
+        mosipIdaServerUrl = sharedPreferences.getString(MOSIP_IDA_SERVER_URL, DEFAULT_MOSIP_IDA_SERVER_URL);
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         device_fileChooserFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.device_fragmentContainerView);
@@ -224,6 +237,11 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFingerResponseDelay = Integer.parseInt(fingerResponseDelayEditText.getText().toString());
         currentIrisResponseDelay = Integer.parseInt(irisResponseDelayEditText.getText().toString());
         currentDeviceUsage = deviceUsageSpinner.getSelectedItem().toString();
+        mosipAuthAppId = mosipAuthAppIdEditText.getText().toString();
+        mosipAuthClientId = mosipAuthClientIdEditText.getText().toString();
+        mosipAuthSecretKey = mosipAuthSecretKeyEditText.getText().toString();
+        mosipAuthServerUrl = mosipAuthServerUrlEditText.getText().toString();
+        mosipIdaServerUrl = mosipIdaServerUrlEditText.getText().toString();
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(DEVICE_KEY_ALIAS, device_currentKeyAlias);
@@ -242,6 +260,11 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(FINGER_RESPONSE_DELAY, currentFingerResponseDelay);
         editor.putInt(IRIS_RESPONSE_DELAY, currentIrisResponseDelay);
         editor.putString(DEVICE_USAGE, currentDeviceUsage);
+        editor.putString(MOSIP_AUTH_APPID, mosipAuthAppId);
+        editor.putString(MOSIP_AUTH_CLIENTID, mosipAuthClientId);
+        editor.putString(MOSIP_AUTH_SECRETKEY, mosipAuthSecretKey);
+        editor.putString(MOSIP_AUTH_SERVER_URL, mosipAuthServerUrl);
+        editor.putString(MOSIP_IDA_SERVER_URL, mosipIdaServerUrl);
 
         editor.apply();
 
@@ -271,6 +294,11 @@ public class ConfigurationActivity extends AppCompatActivity {
         faceResponseDelayEditText.setText(String.format("%d", currentFaceResponseDelay));
         fingerResponseDelayEditText.setText(String.format("%d", currentFingerResponseDelay));
         irisResponseDelayEditText.setText(String.format("%d", currentIrisResponseDelay));
+        mosipAuthAppIdEditText.setText(mosipAuthAppId);
+        mosipAuthClientIdEditText.setText(mosipAuthClientId);
+        mosipAuthSecretKeyEditText.setText(mosipAuthSecretKey);
+        mosipAuthServerUrlEditText.setText(mosipAuthServerUrl);
+        mosipIdaServerUrlEditText.setText(mosipIdaServerUrl);
     }
 
     private boolean saveFile(Uri fileUri, String fileName) {

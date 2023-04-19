@@ -15,7 +15,6 @@
     <string name="p12_config">P12 Config</string>
     <string name="modality_config">Modality Config</string>
     <string name="_30">30</string>
-    <string name="validate_certificate">Validate Certificate</string>
     <string name="face">Face</string>
     <string name="device_status">Device Status</string>
     <string name="response_delay">Response Delay</string>
@@ -31,4 +30,16 @@
     <string name="device_usage">Device Usage</string>
     <string name="device_key">Device Key</string>
     <string name="ftm_key">FTM Key</string>
+    <string name="mosip_ida_config">MOSIP IDA Config</string>
+    <string name="mosip_auth_app_id">Mosip Auth App Id</string>
+    <string name="mosip_auth_client_id">Mosip Auth Client Id</string>
+    <string name="mosip_auth_secret_key">Mosip Auth Secret Key</string>
+    <string name="mosip_auth_server_url">Mosip Auth Server URL</string>
+    <string name="mosip_ida_server_url">Mosip IDA Server URL</string>
+    <string name="app_id">App Id</string>
+    <string name="client_id">Client Id</string>
+    <string name="secret_key">Secret Key</string>
+    <string name="auth_server_url">Auth Server URL</string>
+    <string name="ida_server_url">IDA Server URL</string>
+    <string name="load_and_validate_certificates">Load and Validate Certificates</string>
 </resources>

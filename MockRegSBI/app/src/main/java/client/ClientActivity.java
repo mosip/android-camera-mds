@@ -1,5 +1,6 @@
 package client;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -60,6 +62,7 @@ import nprime.reg.mocksbi.utility.DeviceConstants;
 
 public class ClientActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_PERMISSION_INTERNET = 1001;
     private static final int REQUEST_DISCOVER = 1;
     private static final int REQUEST_INFO = 2;
     private static final int REQUEST_CAPTURE = 3;
@@ -79,14 +82,15 @@ public class ClientActivity extends AppCompatActivity {
 
     static String appID = null;
     String serialNo = null;
-
     private String responseData = null;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Toolbar toolbar = findViewById(R.id.toolbar_client);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
@@ -513,10 +517,38 @@ public class ClientActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ConfigurationActivity.class);
         startActivity(intent);
     }
+    
+    public void askPermissionAndValidateCertificates(View view) {
+        // Check if we have Call permission
+        int permission = ActivityCompat.checkSelfPermission(this.getApplicationContext(),
+                Manifest.permission.INTERNET);
 
-    public void validateCertificate(View view) {
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // If don't have permission so prompt the user.
+            this.requestPermissions(
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_CODE_PERMISSION_INTERNET
+            );
+            return;
+        }
+        validateCertificates();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSION_INTERNET) {
+            // Note: If request is cancelled, the result arrays are empty.
+            // Permissions granted (CALL_PHONE).
+            validateCertificates();
+        }
+    }
+
+    private void validateCertificates() {
         DeviceKeystore keystore = new DeviceKeystore(this);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
         String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
         String ftm_keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
@@ -533,5 +565,17 @@ public class ClientActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "FTM key validation failed.", Toast.LENGTH_SHORT).show();
         }
+
+        keystore.loadCertificateFromIDA(() -> {
+            this.runOnUiThread(() -> {
+                String certificateStr = sharedPreferences.getString(ClientConstants.CERTIFICATE_TO_ENCRYPT_BIO, "");
+
+                if (certificateStr.equals("")) {
+                    Toast.makeText(this, "Certificate to encrypt failed to load.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Certificate to encrypt loaded successfully.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
     }
 }

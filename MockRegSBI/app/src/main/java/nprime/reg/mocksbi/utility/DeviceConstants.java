@@ -20,6 +20,11 @@ public class DeviceConstants {
     public static String ENVIRONMENT = "Production";
     public static String DOMAIN_URI = "ANDROID";
     public static final int DEFAULT_TIME_DELAY = 1000;
+    public static final String DEFAULT_MOSIP_AUTH_APPID = "regproc";
+    public static final String DEFAULT_MOSIP_AUTH_CLIENTID = "mosip-regproc-client";
+    public static final String DEFAULT_MOSIP_AUTH_SECRETKEY = "Rafd7YQGMSYLB0pj";
+    public static final String DEFAULT_MOSIP_AUTH_SERVER_URL = "https://api-internal.dev.mosip.net/v1/authmanager/authenticate/clientidsecretkey";
+    public static final String DEFAULT_MOSIP_IDA_SERVER_URL = "https://api-internal.dev.mosip.net/idauthentication/v1/internal/getCertificate?applicationId=IDA&referenceId=IDA-FIR";
     public static List<String> environmentList = Arrays.asList("Staging", "Developer", "Pre-Production", "Production");
 
     /**

@@ -23,6 +23,12 @@ public class DeviceConstants {
     public static List<String> environmentList = Arrays.asList("Staging", "Developer", "Pre-Production", "Production");
 
     /**
+     * Certification Levels
+     */
+    public final static String CERTIFICATION_L0 = "L0";
+    public final static String CERTIFICATION_L1 = "L1";
+
+    /**
      * Biometric Sub Types Names
      */
     public final static String MOSIP_BIOMETRIC_SUBTYPE_FINGER_SLAP = "Slap";

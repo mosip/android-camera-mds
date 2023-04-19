@@ -517,12 +517,12 @@ public class ClientActivity extends AppCompatActivity {
     public void validateCertificate(View view) {
         DeviceKeystore keystore = new DeviceKeystore(this);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String keyAlias = sharedPreferences.getString(ClientConstants.REG_KEY_ALIAS, "");
-        String keystorePwd = sharedPreferences.getString(ClientConstants.REG_KEY_STORE_PASSWORD, "");
+        String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
+        String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
         String ftm_keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
         String ftm_keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
 
-        if (keystore.checkCertificateCredentials(ClientConstants.REG_P12_FILE_NAME, keyAlias, keystorePwd)) {
+        if (keystore.checkCertificateCredentials(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd)) {
             Toast.makeText(this, "Device key credentials are valid.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Device key validation failed.", Toast.LENGTH_SHORT).show();

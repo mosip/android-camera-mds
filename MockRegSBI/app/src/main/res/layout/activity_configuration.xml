@@ -96,7 +96,7 @@
                     android:textSize="25sp" />
 
                 <EditText
-                    android:id="@+id/reg_key_alias"
+                    android:id="@+id/device_key_alias"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -106,7 +106,7 @@
                     android:minHeight="48dp" />
 
                 <EditText
-                    android:id="@+id/reg_key_store_password"
+                    android:id="@+id/device_key_store_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -116,7 +116,7 @@
                     android:minHeight="48dp" />
 
                 <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/reg_fragmentContainerView"
+                    android:id="@+id/device_fragmentContainerView"
                     android:name="client.FileChooserFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

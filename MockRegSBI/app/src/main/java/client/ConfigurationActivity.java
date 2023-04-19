@@ -14,9 +14,9 @@ import static nprime.reg.mocksbi.constants.ClientConstants.FINGER_SCORE;
 import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_DEVICE_STATUS;
 import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_RESPONSE_DELAY;
 import static nprime.reg.mocksbi.constants.ClientConstants.IRIS_SCORE;
-import static nprime.reg.mocksbi.constants.ClientConstants.REG_KEY_ALIAS;
-import static nprime.reg.mocksbi.constants.ClientConstants.REG_KEY_STORE_PASSWORD;
-import static nprime.reg.mocksbi.constants.ClientConstants.REG_LAST_UPLOAD_DATE;
+import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_KEY_ALIAS;
+import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_KEY_STORE_PASSWORD;
+import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_LAST_UPLOAD_DATE;
 import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_TIME_DELAY;
 
 import android.content.SharedPreferences;
@@ -53,8 +53,8 @@ public class ConfigurationActivity extends AppCompatActivity {
     private static final String TAG = ConfigurationActivity.class.getName();
     private static final String LAST_UPDATE = "Last updated : ";
 
-    private EditText reg_keyAliasEditText;
-    private EditText reg_keyStorePasswordEditText;
+    private EditText device_keyAliasEditText;
+    private EditText device_keyStorePasswordEditText;
     private EditText ftm_keyAliasEditText;
     private EditText ftm_keyStorePasswordEditText;
     private Slider faceSlider;
@@ -71,14 +71,14 @@ public class ConfigurationActivity extends AppCompatActivity {
     private EditText irisResponseDelayEditText;
     private Spinner deviceUsageSpinner;
 
-    private String reg_currentKeyAlias;
-    private String reg_currentKeyPassword;
+    private String device_currentKeyAlias;
+    private String device_currentKeyPassword;
     private String ftm_currentKeyAlias;
     private String ftm_currentKeyPassword;
     private int currentFaceScore;
     private int currentFingerScore;
     private int currentIrisScore;
-    private String reg_lastUploadDate;
+    private String device_lastUploadDate;
     private String ftm_lastUploadDate;
     private String currentFaceDeviceStatus;
     private String currentFingerDeviceStatus;
@@ -90,7 +90,7 @@ public class ConfigurationActivity extends AppCompatActivity {
 
 
     SharedPreferences sharedPreferences;
-    private FileChooserFragment reg_fileChooserFragment;
+    private FileChooserFragment device_fileChooserFragment;
     private FileChooserFragment ftm_fileChooserFragment;
     DateUtil dateUtil;
 
@@ -101,8 +101,8 @@ public class ConfigurationActivity extends AppCompatActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         dateUtil = new DateUtil(this);
 
-        reg_keyAliasEditText = findViewById(R.id.reg_key_alias);
-        reg_keyStorePasswordEditText = findViewById(R.id.reg_key_store_password);
+        device_keyAliasEditText = findViewById(R.id.device_key_alias);
+        device_keyStorePasswordEditText = findViewById(R.id.device_key_store_password);
         ftm_keyAliasEditText = findViewById(R.id.ftm_key_alias);
         ftm_keyStorePasswordEditText = findViewById(R.id.ftm_key_store_password);
 
@@ -143,14 +143,14 @@ public class ConfigurationActivity extends AppCompatActivity {
         deviceUsageSpinner.setAdapter(deviceUsageAdapter);
 
         //default values
-        reg_currentKeyAlias = sharedPreferences.getString(REG_KEY_ALIAS, "");
-        reg_currentKeyPassword = sharedPreferences.getString(REG_KEY_STORE_PASSWORD, "");
+        device_currentKeyAlias = sharedPreferences.getString(DEVICE_KEY_ALIAS, "");
+        device_currentKeyPassword = sharedPreferences.getString(DEVICE_KEY_STORE_PASSWORD, "");
         ftm_currentKeyAlias = sharedPreferences.getString(FTM_KEY_ALIAS, "");
         ftm_currentKeyPassword = sharedPreferences.getString(FTM_KEY_STORE_PASSWORD, "");
         currentFaceScore = sharedPreferences.getInt(FACE_SCORE, 30);
         currentFingerScore = sharedPreferences.getInt(FINGER_SCORE, 30);
         currentIrisScore = sharedPreferences.getInt(IRIS_SCORE, 30);
-        reg_lastUploadDate = sharedPreferences.getString(REG_LAST_UPLOAD_DATE, "");
+        device_lastUploadDate = sharedPreferences.getString(DEVICE_LAST_UPLOAD_DATE, "");
         ftm_lastUploadDate = sharedPreferences.getString(FTM_LAST_UPLOAD_DATE, "");
         currentFaceDeviceStatus = sharedPreferences.getString(FACE_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
         currentFingerDeviceStatus = sharedPreferences.getString(FINGER_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
@@ -161,11 +161,11 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentDeviceUsage = sharedPreferences.getString(DEVICE_USAGE, DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
-        reg_fileChooserFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.reg_fragmentContainerView);
-        if (reg_fileChooserFragment != null) {
+        device_fileChooserFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.device_fragmentContainerView);
+        if (device_fileChooserFragment != null) {
             Bundle bundle = new Bundle();
-            bundle.putString(LAST_UPLOAD_DATE, reg_lastUploadDate);
-            reg_fileChooserFragment.setArguments(bundle);
+            bundle.putString(LAST_UPLOAD_DATE, device_lastUploadDate);
+            device_fileChooserFragment.setArguments(bundle);
         }
         ftm_fileChooserFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.ftm_fragmentContainerView);
         if (ftm_fileChooserFragment != null) {
@@ -193,14 +193,14 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     public void onSave(View view) {
-        Uri reg_fileUri = reg_fileChooserFragment.getSelectedUri();
+        Uri device_fileUri = device_fileChooserFragment.getSelectedUri();
         Uri ftm_fileUri = ftm_fileChooserFragment.getSelectedUri();
 
-        if (reg_fileUri != null && !saveFile(reg_fileUri, ClientConstants.REG_P12_FILE_NAME)) {
+        if (device_fileUri != null && !saveFile(device_fileUri, ClientConstants.DEVICE_P12_FILE_NAME)) {
             Toast.makeText(this, "Failed to save reg p.12 file! Please try again.", Toast.LENGTH_LONG).show();
             return;
         } else {
-            reg_lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
+            device_lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
         }
 
         if (ftm_fileUri != null && !saveFile(ftm_fileUri, ClientConstants.FTM_P12_FILE_NAME)) {
@@ -210,8 +210,8 @@ public class ConfigurationActivity extends AppCompatActivity {
             ftm_lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
         }
 
-        reg_currentKeyAlias = reg_keyAliasEditText.getText().toString();
-        reg_currentKeyPassword = reg_keyStorePasswordEditText.getText().toString();
+        device_currentKeyAlias = device_keyAliasEditText.getText().toString();
+        device_currentKeyPassword = device_keyStorePasswordEditText.getText().toString();
         ftm_currentKeyAlias = ftm_keyAliasEditText.getText().toString();
         ftm_currentKeyPassword = ftm_keyStorePasswordEditText.getText().toString();
         currentFaceScore = (int) faceSlider.getValue();
@@ -226,14 +226,14 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentDeviceUsage = deviceUsageSpinner.getSelectedItem().toString();
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(REG_KEY_ALIAS, reg_currentKeyAlias);
-        editor.putString(REG_KEY_STORE_PASSWORD, reg_currentKeyPassword);
+        editor.putString(DEVICE_KEY_ALIAS, device_currentKeyAlias);
+        editor.putString(DEVICE_KEY_STORE_PASSWORD, device_currentKeyPassword);
         editor.putString(FTM_KEY_ALIAS, ftm_currentKeyAlias);
         editor.putString(FTM_KEY_STORE_PASSWORD, ftm_currentKeyPassword);
         editor.putInt(FACE_SCORE, currentFaceScore);
         editor.putInt(FINGER_SCORE, currentFingerScore);
         editor.putInt(IRIS_SCORE, currentIrisScore);
-        editor.putString(REG_LAST_UPLOAD_DATE, LAST_UPDATE + reg_lastUploadDate);
+        editor.putString(DEVICE_LAST_UPLOAD_DATE, LAST_UPDATE + device_lastUploadDate);
         editor.putString(FTM_LAST_UPLOAD_DATE, LAST_UPDATE + ftm_lastUploadDate);
         editor.putString(FACE_DEVICE_STATUS, currentFaceDeviceStatus);
         editor.putString(FINGER_DEVICE_STATUS, currentFingerDeviceStatus);
@@ -255,14 +255,14 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     private void resetScreen() {
-        reg_keyAliasEditText.setText(reg_currentKeyAlias);
-        reg_keyStorePasswordEditText.setText(reg_currentKeyPassword);
+        device_keyAliasEditText.setText(device_currentKeyAlias);
+        device_keyStorePasswordEditText.setText(device_currentKeyPassword);
         ftm_keyAliasEditText.setText(ftm_currentKeyAlias);
         ftm_keyStorePasswordEditText.setText(ftm_currentKeyPassword);
         faceSlider.setValue(currentFaceScore);
         fingerSlider.setValue(currentFingerScore);
         irisSlider.setValue(currentIrisScore);
-        reg_fileChooserFragment.resetSelection(reg_lastUploadDate);
+        device_fileChooserFragment.resetSelection(device_lastUploadDate);
         ftm_fileChooserFragment.resetSelection(ftm_lastUploadDate);
         setSpinner(faceDeviceStatus, currentFaceDeviceStatus);
         setSpinner(fingerDeviceStatus, currentFingerDeviceStatus);

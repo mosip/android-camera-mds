@@ -20,22 +20,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import nprime.reg.mocksbi.R;
+import nprime.reg.mocksbi.camera.AuthCaptureActivity;
 import nprime.reg.mocksbi.camera.RCaptureActivity;
 import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.dto.CaptureDetail;
@@ -79,6 +75,7 @@ public class MDServiceActivity extends AppCompatActivity {
     DeviceConstants.ServiceStatus currentIrisStatus = DeviceConstants.ServiceStatus.READY;
 
     ResponseGenHelper responseGenHelper;
+    DeviceUtil deviceUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +103,9 @@ public class MDServiceActivity extends AppCompatActivity {
 
         String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
                 , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
-        responseGenHelper = new ResponseGenHelper(new DeviceUtil(deviceUsage));
+
+        deviceUtil = new DeviceUtil(deviceUsage);
+        responseGenHelper = new ResponseGenHelper(deviceUtil);
         handleIntents();
     }
 
@@ -157,7 +156,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
-                    String requestType = "nprime.reg.mocksbi.face" + ".info";
+                    String requestType = actionType.replace(".Info", ".info") + ".info";
                     List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentFaceStatus, szTs, requestType, DeviceConstants.BioType.Face);
 
                     generateResponse(deviceInfo, false);
@@ -196,12 +195,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != input) {
                         rCapture(input, DeviceConstants.BioType.Face);
                     } else {
-                        Map<String, Object> errorMap = new LinkedHashMap<>();
-                        errorMap.put("errorCode", "101");
-                        errorMap.put("errorInfo", "Invalid input");
-                        Map<String, Object> responseMap = new HashMap<>();
-                        responseMap.put("error", errorMap);
-                        generateResponse(new JSONObject(responseMap), true);
+                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
                     }
                 }).start();
                 break;
@@ -213,12 +207,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != input) {
                         rCapture(input, DeviceConstants.BioType.Finger);
                     } else {
-                        Map<String, Object> errorMap = new LinkedHashMap<>();
-                        errorMap.put("errorCode", "101");
-                        errorMap.put("errorInfo", "Invalid input");
-                        Map<String, Object> responseMap = new HashMap<>();
-                        responseMap.put("error", errorMap);
-                        generateResponse(new JSONObject(responseMap), true);
+                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
                     }
                 }).start();
                 break;
@@ -230,12 +219,43 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != input) {
                         rCapture(input, DeviceConstants.BioType.Iris);
                     } else {
-                        Map<String, Object> errorMap = new LinkedHashMap<>();
-                        errorMap.put("errorCode", "101");
-                        errorMap.put("errorInfo", "Invalid input");
-                        Map<String, Object> responseMap = new HashMap<>();
-                        responseMap.put("error", errorMap);
-                        generateResponse(new JSONObject(responseMap), true);
+                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
+                    }
+                }).start();
+                break;
+            }
+            case "nprime.reg.mocksbi.face.Capture": {
+                new Thread(() -> {
+                    cleanUriFileData();
+                    byte[] input = getIntent().getByteArrayExtra("input");
+                    if (null != input) {
+                        capture(input, DeviceConstants.BioType.Face);
+                    } else {
+                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
+                    }
+                }).start();
+                break;
+            }
+            case "nprime.reg.mocksbi.finger.Capture": {
+                new Thread(() -> {
+                    cleanUriFileData();
+                    byte[] input = getIntent().getByteArrayExtra("input");
+                    if (null != input) {
+                        capture(input, DeviceConstants.BioType.Finger);
+                    } else {
+                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
+                    }
+                }).start();
+                break;
+            }
+            case "nprime.reg.mocksbi.iris.Capture": {
+                new Thread(() -> {
+                    cleanUriFileData();
+                    byte[] input = getIntent().getByteArrayExtra("input");
+                    if (null != input) {
+                        capture(input, DeviceConstants.BioType.Iris);
+                    } else {
+                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
                     }
                 }).start();
                 break;
@@ -267,6 +287,10 @@ public class MDServiceActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void capture(byte[] input, DeviceConstants.BioType bioType) {
+        rCapture(input, bioType);
     }
 
     private void rCapture(byte[] input, DeviceConstants.BioType bioType) {
@@ -346,7 +370,7 @@ public class MDServiceActivity extends AppCompatActivity {
             if (DeviceConstants.environmentList.contains(captureRequestDto.env)
                     && (captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Registration.getDeviceUsage()))
                     || captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage())) {
-                startCameraActivityRCapture(captureRequestDto.timeout, captureRequestDto.bio.get(0), bioType);
+                startCameraActivityRCapture(captureRequestDto.timeout, captureRequestDto.bio.get(0), bioType, deviceSubId);
             } else {
                 generateRCaptureResponse(getCaptureErrorResponse("501", "Invalid Environment / Purpose"), false);
             }
@@ -357,11 +381,14 @@ public class MDServiceActivity extends AppCompatActivity {
         }
     }
 
-    private void startCameraActivityRCapture(int captureTimeout, CaptureRequestDeviceDetailDto bio, DeviceConstants.BioType bioType) {
-        Intent intent = new Intent(this, RCaptureActivity.class);
+    private void startCameraActivityRCapture(int captureTimeout, CaptureRequestDeviceDetailDto bio, DeviceConstants.BioType bioType, int deviceSubId) {
+        Class<?> cls = deviceUtil.DEVICE_USAGE == DeviceConstants.DeviceUsage.Registration ?
+                RCaptureActivity.class : AuthCaptureActivity.class;
+
+        Intent intent = new Intent(this, cls);
         intent.putExtra("CaptureTimeout", captureTimeout);
         intent.putExtra("modality", bioType.getBioType());
-        intent.putExtra("deviceSubId", bio.deviceSubId);
+        intent.putExtra("deviceSubId", deviceSubId);
         intent.putExtra("bioSubType", bio.bioSubType);
         intent.putExtra("exception", bio.exception);
         startActivityForResult(intent, RequestCodeRCapture);
@@ -401,9 +428,9 @@ public class MDServiceActivity extends AppCompatActivity {
         return captureResponse;
     }
 
-    private void generateRCaptureResponse(CaptureResponse responseXml, boolean isError) {
+    private void generateRCaptureResponse(CaptureResponse captureResponse, boolean isError) {
         Intent intent = new Intent();
-        if (null != responseXml) {
+        if (null != captureResponse) {
             try {
                 File outputPath = new File(this.getFilesDir(), "output/");
                 if (!outputPath.exists()) {
@@ -414,9 +441,10 @@ public class MDServiceActivity extends AppCompatActivity {
                 if (!clientFolderPath.exists()) {
                     clientFolderPath.mkdir();
                 }
+
                 File file = new File(clientFolderPath, "resp_" + System.currentTimeMillis() + ".txt");
-                final OutputStream os = new FileOutputStream(file);
-                os.write(ob.writeValueAsBytes(responseXml));
+                final OutputStream os = Files.newOutputStream(file.toPath());
+                os.write(ob.writeValueAsBytes(captureResponse));
                 os.flush();
                 os.close();
                 Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "nprime.reg.mocksbi.fileprovider", file);
@@ -428,7 +456,7 @@ public class MDServiceActivity extends AppCompatActivity {
         }
 
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        if (isError || (null == responseXml)) {
+        if (isError || (null == captureResponse)) {
             setResult(Activity.RESULT_CANCELED, intent);
         } else {
             setResult(Activity.RESULT_OK, intent);
@@ -455,8 +483,6 @@ public class MDServiceActivity extends AppCompatActivity {
                 new Thread(() -> {
                     try {
                         CaptureResult captureResult = new CaptureResult();
-                        captureResult.setModality(data.getStringExtra("modality"));
-                        captureResult.setBioSubId(data.getStringExtra("bioSubId") != null ? data.getStringExtra("bioSubId") : "1");
 
                         List<String> segmentNames = data.getStringArrayListExtra("segmentNames");
 
@@ -470,9 +496,9 @@ public class MDServiceActivity extends AppCompatActivity {
 
                         captureResult.setStatus(data.getIntExtra("Status", CaptureResult.CAPTURE_CANCELLED));
                         captureResult.setQualityScore(data.getIntExtra("Quality", 0));
-                        CaptureResponse responseXml = responseGenHelper
-                                .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
-                        generateRCaptureResponse(responseXml, false);
+                        CaptureResponse captureResponse = responseGenHelper
+                                .getCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
+                        generateRCaptureResponse(captureResponse, false);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -486,9 +512,9 @@ public class MDServiceActivity extends AppCompatActivity {
                     captureResult.setQualityScore(data.getIntExtra("Quality", 0));
                 }
 
-                CaptureResponse responseXml = responseGenHelper
-                        .getRCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
-                generateRCaptureResponse(responseXml, false);
+                CaptureResponse captureResponse = responseGenHelper
+                        .getCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
+                generateRCaptureResponse(captureResponse, false);
             }
         }
     }

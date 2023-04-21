@@ -1,6 +1,28 @@
 package nprime.reg.mocksbi.camera;
 
-import static nprime.reg.mocksbi.utility.DeviceConstants.*;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_TIME_DELAY;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_FINGER_SINGLE_SUB_TYPE_ID;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_IRIS_SINGLE_SUB_TYPE_ID;
+import static nprime.reg.mocksbi.utility.DeviceConstants.DeviceUsage;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_FACE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_INDEX;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_IRIS;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_LITTLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_MIDDLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_RING;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_LEFT_THUMB;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_INDEX;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_IRIS;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_LITTLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_MIDDLE;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_RING;
+import static nprime.reg.mocksbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_THUMB;
 
 import android.app.Activity;
 import android.content.Context;
@@ -38,7 +60,7 @@ import nprime.reg.mocksbi.utility.DeviceUtil;
  * @author NPrime Technologies
  */
 
-public class RCaptureActivity extends AppCompatActivity {
+public class AuthCaptureActivity extends AppCompatActivity {
     private int faceQualityScore;
     private int fingerQualityScore;
     private int irisQualityScore;
@@ -74,6 +96,9 @@ public class RCaptureActivity extends AppCompatActivity {
         faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
         fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
         irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
+
+        String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
+                , DeviceUsage.Authentication.getDeviceUsage());
 
         long responseDelay;
         switch (modality.toLowerCase()) {
@@ -130,29 +155,15 @@ public class RCaptureActivity extends AppCompatActivity {
         ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.iris);
         List<String> segmentsToCapture = null;
         switch (deviceSubId) {
-            case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT: // left
-                segmentsToCapture = getSegmentsToCapture(Arrays.asList(
-                                DeviceConstants.BIO_NAME_LEFT_IRIS),
-                        bioSubType == null ? null : Arrays.asList(bioSubType),
-                        exception == null ? null : Arrays.asList(exception));
-                break;
-
-            case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT: // right
-                segmentsToCapture = getSegmentsToCapture(Arrays.asList(
-                                DeviceConstants.BIO_NAME_RIGHT_IRIS),
-                        bioSubType == null ? null : Arrays.asList(bioSubType),
-                        exception == null ? null : Arrays.asList(exception));
-                break;
-
-            case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH: // both
+            case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT:
+            case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT:
+            case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH:
+            case DEVICE_IRIS_SINGLE_SUB_TYPE_ID:
                 segmentsToCapture = getSegmentsToCapture(Arrays.asList(
                                 DeviceConstants.BIO_NAME_LEFT_IRIS,
                                 DeviceConstants.BIO_NAME_RIGHT_IRIS),
                         bioSubType == null ? null : Arrays.asList(bioSubType),
                         exception == null ? null : Arrays.asList(exception));
-                break;
-
-            case DEVICE_IRIS_SINGLE_SUB_TYPE_ID: // not sure, need to check
                 break;
         }
         Map<String, Uri> uris = new HashMap<>();
@@ -169,40 +180,26 @@ public class RCaptureActivity extends AppCompatActivity {
         List<String> segmentsToCapture = null;
         switch (deviceSubId) {
             case DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT: // left
-                ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
-                segmentsToCapture = getSegmentsToCapture(
-                        Arrays.asList(
-                                DeviceConstants.BIO_NAME_LEFT_INDEX,
-                                DeviceConstants.BIO_NAME_LEFT_MIDDLE,
-                                DeviceConstants.BIO_NAME_LEFT_RING,
-                                DeviceConstants.BIO_NAME_LEFT_LITTLE),
-                        bioSubType == null ? null : Arrays.asList(bioSubType),
-                        exception == null ? null : Arrays.asList(exception));
-
+            case DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT: // right
+            case DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB: // thumbs
                 break;
 
-            case DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT: // right
+            case DEVICE_FINGER_SINGLE_SUB_TYPE_ID:
                 ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.right);
                 segmentsToCapture = getSegmentsToCapture(
                         Arrays.asList(
                                 DeviceConstants.BIO_NAME_RIGHT_INDEX,
                                 DeviceConstants.BIO_NAME_RIGHT_MIDDLE,
                                 DeviceConstants.BIO_NAME_RIGHT_RING,
-                                DeviceConstants.BIO_NAME_RIGHT_LITTLE),
-                        bioSubType == null ? null : Arrays.asList(bioSubType),
-                        exception == null ? null : Arrays.asList(exception));
-                break;
-
-            case DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB: // thumbs
-                ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.thumbs);
-                segmentsToCapture = getSegmentsToCapture(Arrays.asList(
+                                DeviceConstants.BIO_NAME_RIGHT_LITTLE,
+                                DeviceConstants.BIO_NAME_LEFT_INDEX,
+                                DeviceConstants.BIO_NAME_LEFT_MIDDLE,
+                                DeviceConstants.BIO_NAME_LEFT_RING,
+                                DeviceConstants.BIO_NAME_LEFT_LITTLE,
                                 DeviceConstants.BIO_NAME_LEFT_THUMB,
                                 DeviceConstants.BIO_NAME_RIGHT_THUMB),
                         bioSubType == null ? null : Arrays.asList(bioSubType),
                         exception == null ? null : Arrays.asList(exception));
-                break;
-
-            case DEVICE_FINGER_SINGLE_SUB_TYPE_ID:
                 break;
         }
 
@@ -252,8 +249,8 @@ public class RCaptureActivity extends AppCompatActivity {
     }
 
     private Uri getBioAttributeURI(String file) {
-        byte[] isoRecord = getIsoDataFromAssets(DeviceUsage.Registration.getDeviceUsage() + "/" + file);
-        Uri isoUri = Uri.fromFile(getTempFile(RCaptureActivity.this));
+        byte[] isoRecord = getIsoDataFromAssets(DeviceUsage.Authentication.getDeviceUsage() + "/" + file);
+        Uri isoUri = Uri.fromFile(getTempFile(AuthCaptureActivity.this));
         saveByteArray(isoRecord, isoUri);
         return isoUri;
     }

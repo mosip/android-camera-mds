@@ -1,5 +1,8 @@
 package nprime.reg.mocksbi.scanner.ResponseGenerator;
 
+import static nprime.reg.mocksbi.utility.DeviceConstants.CERTIFICATION_L1;
+import static nprime.reg.mocksbi.utility.DeviceConstants.ServiceStatus.NOT_REGISTERED;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.bouncycastle.util.Strings;
@@ -7,10 +10,13 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import nprime.reg.mocksbi.dto.CaptureDetail;
 import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
@@ -54,37 +60,25 @@ public class ResponseGenHelper {
             switch (currentStatus) {
                 case NOT_READY:
                     error = new Error("110", "Device not ready");
-                    listOfModalities.forEach(value -> {
-                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, deviceUtil.DEVICE_USAGE.getDeviceUsage());
-                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
-                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
-                    });
                     break;
                 case BUSY:
                     error = new Error("111", "Device busy");
-                    listOfModalities.forEach(value -> {
-                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, deviceUtil.DEVICE_USAGE.getDeviceUsage());
-                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
-                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
-                    });
                     break;
                 case NOT_REGISTERED:
                     error = new Error("100", "Device not registered");
-                    listOfModalities.forEach(value -> {
-                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, "");
-                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
-                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
-                    });
                     break;
                 default:
                     error = new Error("0", "Success");
-                    listOfModalities.forEach(value -> {
-                        byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, deviceUtil.DEVICE_USAGE.getDeviceUsage());
-                        String encodedDeviceInfo = keystore.getJwt(deviceInfoData);
-                        infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
-                    });
                     break;
             }
+            //Purpose for Not Registered device should be empty
+            String purpose = currentStatus != NOT_REGISTERED ? deviceUtil.DEVICE_USAGE.getDeviceUsage() : "";
+
+            listOfModalities.forEach(value -> {
+                byte[] deviceInfoData = getDeviceInfo(keystore, currentStatus, szTimeStamp, requestType, bioType, purpose);
+                String encodedDeviceInfo = keystore.getJwt(deviceInfoData, false);
+                infoList.add(new DeviceInfoResponse(encodedDeviceInfo, error));
+            });
         } catch (Exception ex) {
             ex.printStackTrace();
             infoList.add(new DeviceInfoResponse(null, new Error("UNKNOWN",
@@ -139,7 +133,7 @@ public class ResponseGenHelper {
             discoverDto.callbackId = requestType;
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
 
-            discoverDto.digitalId = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payLoad.getBytes());
+            discoverDto.digitalId = CryptoUtility.getBase64encodeString(payLoad);
             discoverDto.deviceCode = serialNumber;
             discoverDto.specVersion = new String[]{DeviceConstants.REG_SERVER_VERSION};
             discoverDto.purpose = deviceUtil.DEVICE_USAGE.getDeviceUsage();
@@ -172,7 +166,7 @@ public class ResponseGenHelper {
             info.deviceStatus = currentStatus.getStatus();
             info.deviceSubId = new String[]{"0"};
             String payLoad = getDigitalID(serialNumber, szTimeStamp, bioType);
-            info.digitalId = deviceKeystore.getJwt(payLoad.getBytes());
+            info.digitalId = deviceKeystore.getJwt(payLoad.getBytes(), deviceUtil.CERTIFICATION_LEVEL.equals(CERTIFICATION_L1));
             info.specVersion = new String[]{DeviceConstants.REG_SERVER_VERSION};
             info.serviceVersion = DeviceConstants.MDS_VERSION;
             info.purpose = deviceUsage;
@@ -223,9 +217,8 @@ public class ResponseGenHelper {
         return digiID;
     }
 
-    public CaptureResponse getRCaptureBiometricsMOSIP(CaptureResult captureResult,
-                                                      CaptureRequestDto captureRequestDto, DeviceKeystore keystore) {
-
+    public CaptureResponse getCaptureBiometricsMOSIP(CaptureResult captureResult,
+                                                     CaptureRequestDto captureRequestDto, DeviceKeystore keystore) {
         CaptureResponse captureResponse = new CaptureResponse();
         try {
             CommonDeviceAPI mdCommonDeviceAPI = new CommonDeviceAPI();
@@ -234,127 +227,22 @@ public class ResponseGenHelper {
             String previousHash = mdCommonDeviceAPI.digestAsPlainText(mdCommonDeviceAPI.Sha256("".getBytes()));
 
             for (CaptureRequestDeviceDetailDto bio : captureRequestDto.bio) {
-                List<String> exceptions = Arrays.asList(bio.exception == null ?
-                        new String[]{} : bio.exception);
+                int captureStatus = captureResult.getStatus();
+                int qualityScore = captureResult.getQualityScore();
 
-                switch (bio.type.toLowerCase()) {
-                    case "face":
-                        NewBioDto bioResponse = getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type, "",
-                                captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Face);
-                        bioResponse.setBioSubType(null);
-                        CaptureDetail biometricData = getMinimalResponse(
-                                captureRequestDto.specVersion, bioResponse, previousHash, captureResult, keystore);
-                        listOfBiometric.add(biometricData);
-                        previousHash = biometricData.hash;
-                        break;
-                    case "finger":
-                        switch (bio.deviceSubId) {
-                            case "1":
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_INDEX)) {
-                                    CaptureDetail left_index = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_LEFT_INDEX, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(left_index);
-                                    previousHash = left_index.hash;
-                                }
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_MIDDLE)) {
-                                    CaptureDetail left_middle = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_LEFT_MIDDLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(left_middle);
-                                    previousHash = left_middle.hash;
-                                }
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_RING)) {
-                                    CaptureDetail left_ring = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_LEFT_RING, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(left_ring);
-                                    previousHash = left_ring.hash;
-                                }
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_LITTLE)) {
-                                    CaptureDetail left_little = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_LEFT_LITTLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(left_little);
-                                    previousHash = left_little.hash;
-                                }
-                                break;
-                            case "2":
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_INDEX)) {
-                                    CaptureDetail right_index = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_RIGHT_INDEX, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(right_index);
-                                    previousHash = right_index.hash;
-                                }
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_MIDDLE)) {
-                                    CaptureDetail right_middle = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_RIGHT_MIDDLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(right_middle);
-                                    previousHash = right_middle.hash;
-                                }
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_RING)) {
-                                    CaptureDetail right_ring = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_RIGHT_RING, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(right_ring);
-                                    previousHash = right_ring.hash;
-                                }
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_LITTLE)) {
-                                    CaptureDetail right_little = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_RIGHT_LITTLE, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(right_little);
-                                    previousHash = right_little.hash;
-                                }
-                                break;
-                            case "3":
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_THUMB)) {
-                                    CaptureDetail left_thumb = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_LEFT_THUMB, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(left_thumb);
-                                    previousHash = left_thumb.hash;
-                                }
-                                if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_THUMB)) {
-                                    CaptureDetail right_thumb = getMinimalResponse(
-                                            captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                                    DeviceConstants.BIO_NAME_RIGHT_THUMB, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Finger),
-                                            previousHash, captureResult, keystore);
-                                    listOfBiometric.add(right_thumb);
-                                    previousHash = right_thumb.hash;
-                                }
-                                break;
-                        }
-                        break;
-                    case "iris":
-                        if (!exceptions.contains(DeviceConstants.BIO_NAME_LEFT_IRIS)) {
-                            CaptureDetail left_iris = getMinimalResponse(
-                                    captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                            DeviceConstants.BIO_NAME_LEFT_IRIS, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Iris),
-                                    previousHash, captureResult, keystore);
-                            listOfBiometric.add(left_iris);
-                            previousHash = left_iris.hash;
-                        }
-                        if (!exceptions.contains(DeviceConstants.BIO_NAME_RIGHT_IRIS)) {
-                            CaptureDetail right_iris = getMinimalResponse(
-                                    captureRequestDto.specVersion, getBioResponse(mdCommonDeviceAPI.getSerialNumber(), bio.type,
-                                            DeviceConstants.BIO_NAME_RIGHT_IRIS, captureRequestDto, captureResult, bio.requestedScore, keystore, DeviceConstants.BioType.Iris),
-                                    previousHash, captureResult, keystore);
-                            listOfBiometric.add(right_iris);
-                            previousHash = right_iris.hash;
-                        }
-                        break;
+                DeviceConstants.BioType bioType = DeviceConstants.BioType.getBioType(bio.type);
+
+                if (bioType == null || bioType == DeviceConstants.BioType.BioDevice) {
+                    continue;
+                }
+
+                for (String bioSubType : captureResult.getBiometricRecords().keySet()) {
+                    byte[] bioValue = captureResult.getBiometricRecords().get(bioSubType);
+                    CaptureDetail biometricData = getCaptureDetail(mdCommonDeviceAPI.getSerialNumber(), bio.type, bioSubType, captureRequestDto,
+                            bioValue, bio.requestedScore, keystore, bioType, previousHash
+                            , captureStatus, qualityScore);
+                    listOfBiometric.add(biometricData);
+                    previousHash = biometricData.hash;
                 }
             }
             captureResponse.biometrics = listOfBiometric;
@@ -366,11 +254,55 @@ public class ResponseGenHelper {
         return captureResponse;
     }
 
+    private CaptureDetail getCaptureDetail(String deviceSerialNumber, String bioType, String bioSubType,
+                                           CaptureRequestDto captureRequestDto, byte[] captureBioValue,
+                                           int requestedScore, DeviceKeystore keystore,
+                                           DeviceConstants.BioType bioTypeAtt, String previousHash,
+                                           int captureStatus, int capturedQualityScore) throws CertificateException {
+
+        String domainUri;
+        String bioValueString;
+        String sessionKey;
+        String timeStamp;
+        String thumbprint;
+        String digitalID;
+        if (deviceUtil.DEVICE_USAGE == DeviceConstants.DeviceUsage.Authentication) {
+            Certificate certificate = keystore.getCertificateToEncryptCaptureBioValue();
+            PublicKey publicKey = certificate.getPublicKey();
+            Map<String, String> cryptoResult = CryptoUtility.encrypt(publicKey, captureBioValue, captureRequestDto.transactionId);
+            byte[] crt = DeviceKeystore.getCertificateThumbprint(certificate);
+
+            bioValueString = cryptoResult.getOrDefault("ENC_DATA", null);
+            sessionKey = cryptoResult.getOrDefault("ENC_SESSION_KEY", null);
+            timeStamp = cryptoResult.getOrDefault("TIMESTAMP", CryptoUtility.getTimestamp());
+            domainUri = captureRequestDto.domainUri == null ? "" : captureRequestDto.domainUri;
+            thumbprint = CryptoUtility.toHex(crt).replace("-", "").toUpperCase();
+
+            String payLoad = getDigitalID(deviceSerialNumber, timeStamp, bioTypeAtt);
+            digitalID = keystore.getJwt(payLoad.getBytes(StandardCharsets.UTF_8), true);
+        } else {
+            bioValueString = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(captureBioValue);
+            sessionKey = null;
+            timeStamp = CryptoUtility.getTimestamp();
+            domainUri = null;
+            thumbprint = null;
+
+            String payLoad = getDigitalID(deviceSerialNumber, timeStamp, bioTypeAtt);
+            digitalID = keystore.getJwt(payLoad.getBytes(StandardCharsets.UTF_8), false);
+        }
+
+        //bioSubType should be null for face
+        bioSubType = "face".equalsIgnoreCase(bioType) ? null : bioSubType;
+
+        NewBioDto bioDto = getBioResponse(deviceSerialNumber, bioType, bioSubType, captureRequestDto, capturedQualityScore,
+                requestedScore, domainUri, bioValueString, timeStamp, digitalID);
+        return getMinimalResponse(captureRequestDto.specVersion, bioDto,
+                previousHash, captureStatus, keystore, sessionKey, thumbprint);
+    }
+
     private NewBioDto getBioResponse(String deviceSerialNumber, String bioType, String bioSubType,
-                                     CaptureRequestDto captureRequestDto, CaptureResult captureResult,
-                                     int requestedScore, DeviceKeystore keystore,
-                                     DeviceConstants.BioType bioTypeAtt) {
-        String timestamp = CryptoUtility.getTimestamp();
+                                     CaptureRequestDto captureRequestDto, int capturedQualityScore, int requestedScore,
+                                     String domainUri, String bioValueStr, String timeStamp, String digitalID) {
         NewBioDto bioResponse = new NewBioDto();
         bioResponse.setBioSubType(bioSubType);
         bioResponse.setBioType(bioType);
@@ -380,27 +312,24 @@ public class ResponseGenHelper {
         bioResponse.setEnv(captureRequestDto.env);
         bioResponse.setPurpose(deviceUtil.DEVICE_USAGE.getDeviceUsage());
         bioResponse.setRequestedScore(String.valueOf(requestedScore));
-        bioResponse.setQualityScore(String.valueOf(captureResult.getQualityScore()));
+        bioResponse.setQualityScore(String.valueOf(capturedQualityScore));
         bioResponse.setTransactionId(captureRequestDto.transactionId);
-        String payLoad = getDigitalID(deviceSerialNumber, timestamp, bioTypeAtt);
-        String digitalID = keystore.getJwt(payLoad.getBytes(StandardCharsets.UTF_8));
         bioResponse.setDigitalId(digitalID);
+        bioResponse.setTimestamp(timeStamp);
+        bioResponse.setDomainUri(domainUri);
+        bioResponse.setBioValue(bioValueStr);
 
-        bioResponse.setTimestamp(timestamp);
-
-        bioResponse.setBioValue(java.util.Base64.getUrlEncoder().withoutPadding()
-                .encodeToString((captureResult.getBiometricRecords().get(bioSubType) == null) ?
-                        "".getBytes(StandardCharsets.UTF_8) : captureResult.getBiometricRecords().get(bioSubType)));
         return bioResponse;
     }
 
-    private CaptureDetail getMinimalResponse(String specVersion, NewBioDto data,
-                                             String previousHash, CaptureResult fcResult, DeviceKeystore keystore) {
+    private CaptureDetail getMinimalResponse(String specVersion, NewBioDto data, String previousHash,
+                                             int captureStatus, DeviceKeystore keystore,
+                                             String sessionKey, String thumbprint) {
         CaptureDetail biometricData = new CaptureDetail();
         try {
-            if (CaptureResult.CAPTURE_SUCCESS == fcResult.getStatus()) {
+            if (CaptureResult.CAPTURE_SUCCESS == captureStatus) {
                 biometricData.error = new Error("0", "Success");
-            } else if (CaptureResult.CAPTURE_TIMEOUT == fcResult.getStatus()) {
+            } else if (CaptureResult.CAPTURE_TIMEOUT == captureStatus) {
                 biometricData.error = new Error(DeviceErrorCodes.MDS_CAPTURE_TIMEOUT, "Capture Timeout");
             } else {
                 biometricData.error = new Error(DeviceErrorCodes.MDS_CAPTURE_FAILED, "Capture Failed");
@@ -408,7 +337,7 @@ public class ResponseGenHelper {
 
             biometricData.specVersion = specVersion;
 
-            biometricData.data = keystore.getJwt(oB.writeValueAsBytes(data));
+            biometricData.data = keystore.getJwt(oB.writeValueAsBytes(data), false);
             byte[] previousBioDataHash;
             byte[] currentBioDataHash;
 
@@ -426,7 +355,8 @@ public class ResponseGenHelper {
             System.arraycopy(currentBioDataHash, 0, finalBioDataHash, previousBioDataHash.length, currentBioDataHash.length);
 
             biometricData.hash = CryptoUtility.toHex(CryptoUtility.generateHash(finalBioDataHash));
-
+            biometricData.sessionKey = sessionKey;
+            biometricData.thumbprint = thumbprint;
         } catch (Exception ex) {
             ex.printStackTrace();
             biometricData.error = new Error("UNKNOWN", ex.getMessage());

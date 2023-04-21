@@ -1,10 +1,17 @@
 package nprime.reg.mocksbi.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class CaptureDetail {
 
-    public java.lang.String specVersion;
-    public java.lang.String data;
-    public java.lang.String hash;
+    public String specVersion;
+    public String data;
+    public String hash;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String sessionKey;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String thumbprint;
     public Error error;
 
     @Override
@@ -13,7 +20,10 @@ public class CaptureDetail {
                 "specVersion='" + specVersion + '\'' +
                 ", data='" + data + '\'' +
                 ", hash='" + hash + '\'' +
+                ", sessionKey='" + sessionKey + '\'' +
+                ", thumbprint='" + thumbprint + '\'' +
                 ", error=" + error +
                 '}';
     }
+
 }

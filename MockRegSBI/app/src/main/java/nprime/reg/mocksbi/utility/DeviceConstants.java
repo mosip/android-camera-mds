@@ -125,6 +125,19 @@ public class DeviceConstants {
         BioType(String type) {
             this.bioType = type;
         }
+
+        public static BioType getBioType(String bioType) {
+            if (Objects.equals(bioType, BioType.Finger.getBioType())) {
+                return BioType.Finger;
+            } else if (Objects.equals(bioType, BioType.Iris.getBioType())) {
+                return BioType.Iris;
+            } else if (Objects.equals(bioType, BioType.Face.getBioType())) {
+                return BioType.Face;
+            } else if (Objects.equals(bioType, BioType.BioDevice.getBioType())) {
+                return BioType.BioDevice;
+            }
+            return null;
+        }
     }
 
     public enum DeviceUsage {

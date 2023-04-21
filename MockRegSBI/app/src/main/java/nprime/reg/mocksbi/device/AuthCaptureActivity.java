@@ -1,4 +1,4 @@
-package nprime.reg.mocksbi.camera;
+package nprime.reg.mocksbi.device;
 
 import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_TIME_DELAY;
 import static nprime.reg.mocksbi.utility.DeviceConstants.DEVICE_FINGER_SINGLE_SUB_TYPE_ID;
@@ -54,7 +54,6 @@ import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.faceCaptureApi.CaptureResult;
 import nprime.reg.mocksbi.utility.DeviceConstants;
-import nprime.reg.mocksbi.utility.DeviceUtil;
 
 /**
  * @author NPrime Technologies
@@ -96,9 +95,6 @@ public class AuthCaptureActivity extends AppCompatActivity {
         faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
         fingerQualityScore = sharedPreferences.getInt(ClientConstants.FINGER_SCORE, 30);
         irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
-
-        String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
-                , DeviceUsage.Authentication.getDeviceUsage());
 
         long responseDelay;
         switch (modality.toLowerCase()) {
@@ -158,6 +154,7 @@ public class AuthCaptureActivity extends AppCompatActivity {
             case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT:
             case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT:
             case DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH:
+                break; // double not implemented for auth
             case DEVICE_IRIS_SINGLE_SUB_TYPE_ID:
                 segmentsToCapture = getSegmentsToCapture(Arrays.asList(
                                 DeviceConstants.BIO_NAME_LEFT_IRIS,
@@ -182,8 +179,7 @@ public class AuthCaptureActivity extends AppCompatActivity {
             case DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT: // left
             case DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT: // right
             case DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB: // thumbs
-                break;
-
+                break; // double not implemented for auth
             case DEVICE_FINGER_SINGLE_SUB_TYPE_ID:
                 ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.right);
                 segmentsToCapture = getSegmentsToCapture(
@@ -219,7 +215,6 @@ public class AuthCaptureActivity extends AppCompatActivity {
         uris.put("", getBioAttributeURI(segmentUriMapping.get("")));
         return uris;
     }
-
 
     private List<String> getSegmentsToCapture(List<String> defaultSubTypes, List<String> bioSubTypes, List<String> exceptions) {
         List<String> localCopy = new ArrayList<>(defaultSubTypes);

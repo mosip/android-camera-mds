@@ -47,8 +47,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="nprime.reg.mocksbi.camera.RCaptureActivity" />
-        <activity android:name="nprime.reg.mocksbi.camera.AuthCaptureActivity" />
+        <activity android:name="nprime.reg.mocksbi.device.RCaptureActivity" />
+        <activity android:name="nprime.reg.mocksbi.device.AuthCaptureActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

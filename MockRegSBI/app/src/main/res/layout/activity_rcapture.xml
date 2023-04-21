@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="nprime.reg.mocksbi.camera.RCaptureActivity">
+    tools:context="nprime.reg.mocksbi.device.RCaptureActivity">
 
     <ImageView
         android:id="@+id/img"

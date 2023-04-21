@@ -1,4 +1,4 @@
-package nprime.reg.mocksbi.camera;
+package nprime.reg.mocksbi.device;
 
 import static nprime.reg.mocksbi.utility.DeviceConstants.*;
 
@@ -32,7 +32,6 @@ import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.faceCaptureApi.CaptureResult;
 import nprime.reg.mocksbi.utility.DeviceConstants;
-import nprime.reg.mocksbi.utility.DeviceUtil;
 
 /**
  * @author NPrime Technologies
@@ -222,7 +221,6 @@ public class RCaptureActivity extends AppCompatActivity {
         uris.put("", getBioAttributeURI(segmentUriMapping.get("")));
         return uris;
     }
-
 
     private List<String> getSegmentsToCapture(List<String> defaultSubTypes, List<String> bioSubTypes, List<String> exceptions) {
         List<String> localCopy = new ArrayList<>(defaultSubTypes);

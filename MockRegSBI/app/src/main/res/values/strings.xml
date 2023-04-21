@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Mock Registration SBI</string>
+    <string name="app_name">Mock Android SBI</string>
     <string name="no_data_text">For testing, get Info and Capture results</string>
     <string name="key_alias">Key Alias</string>
     <string name="key_store_password">Key Store Password</string>

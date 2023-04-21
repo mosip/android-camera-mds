@@ -31,8 +31,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import nprime.reg.mocksbi.R;
-import nprime.reg.mocksbi.camera.AuthCaptureActivity;
-import nprime.reg.mocksbi.camera.RCaptureActivity;
+import nprime.reg.mocksbi.device.AuthCaptureActivity;
+import nprime.reg.mocksbi.device.RCaptureActivity;
 import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.dto.CaptureDetail;
 import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;

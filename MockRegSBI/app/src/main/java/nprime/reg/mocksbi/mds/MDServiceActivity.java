@@ -31,8 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import nprime.reg.mocksbi.R;
-import nprime.reg.mocksbi.device.AuthCaptureActivity;
-import nprime.reg.mocksbi.device.RCaptureActivity;
+import nprime.reg.mocksbi.device.CaptureActivity;
 import nprime.reg.mocksbi.constants.ClientConstants;
 import nprime.reg.mocksbi.dto.CaptureDetail;
 import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
@@ -382,10 +381,7 @@ public class MDServiceActivity extends AppCompatActivity {
     }
 
     private void startCameraActivityRCapture(int captureTimeout, CaptureRequestDeviceDetailDto bio, DeviceConstants.BioType bioType, int deviceSubId) {
-        Class<?> cls = deviceUtil.DEVICE_USAGE == DeviceConstants.DeviceUsage.Registration ?
-                RCaptureActivity.class : AuthCaptureActivity.class;
-
-        Intent intent = new Intent(this, cls);
+        Intent intent = new Intent(this, CaptureActivity.class);
         intent.putExtra("CaptureTimeout", captureTimeout);
         intent.putExtra("modality", bioType.getBioType());
         intent.putExtra("deviceSubId", deviceSubId);

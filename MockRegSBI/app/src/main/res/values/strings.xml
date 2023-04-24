@@ -42,4 +42,7 @@
     <string name="auth_server_url">Auth Server URL</string>
     <string name="ida_server_url">IDA Server URL</string>
     <string name="load_and_validate_certificates">Load and Validate Certificates</string>
+    <string name="stay_steady">Stay steady</string>
+    <string name="flip">Flip</string>
+    <string name="flash">Flash</string>
 </resources>

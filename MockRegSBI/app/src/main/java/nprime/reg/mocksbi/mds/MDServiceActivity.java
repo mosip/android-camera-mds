@@ -54,7 +54,7 @@ import nprime.reg.mocksbi.utility.Logger;
  */
 
 public class MDServiceActivity extends AppCompatActivity {
-    private static final int RequestCodeRCapture = 1;
+    private static final int RequestCodeCapture = 1;
 
     private static final int PERMISSION_CAMERA = 2;
 
@@ -187,42 +187,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "nprime.reg.mocksbi.face.rCapture": {
-                new Thread(() -> {
-                    cleanUriFileData();
-                    byte[] input = getIntent().getByteArrayExtra("input");
-                    if (null != input) {
-                        rCapture(input, DeviceConstants.BioType.Face);
-                    } else {
-                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
-                    }
-                }).start();
-                break;
-            }
-            case "nprime.reg.mocksbi.finger.rCapture": {
-                new Thread(() -> {
-                    cleanUriFileData();
-                    byte[] input = getIntent().getByteArrayExtra("input");
-                    if (null != input) {
-                        rCapture(input, DeviceConstants.BioType.Finger);
-                    } else {
-                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
-                    }
-                }).start();
-                break;
-            }
-            case "nprime.reg.mocksbi.iris.rCapture": {
-                new Thread(() -> {
-                    cleanUriFileData();
-                    byte[] input = getIntent().getByteArrayExtra("input");
-                    if (null != input) {
-                        rCapture(input, DeviceConstants.BioType.Iris);
-                    } else {
-                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
-                    }
-                }).start();
-                break;
-            }
+            case "nprime.reg.mocksbi.face.rCapture":
             case "nprime.reg.mocksbi.face.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
@@ -230,11 +195,12 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != input) {
                         capture(input, DeviceConstants.BioType.Face);
                     } else {
-                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
+                        generateCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
                     }
                 }).start();
                 break;
             }
+            case "nprime.reg.mocksbi.finger.rCapture":
             case "nprime.reg.mocksbi.finger.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
@@ -242,11 +208,12 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != input) {
                         capture(input, DeviceConstants.BioType.Finger);
                     } else {
-                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
+                        generateCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
                     }
                 }).start();
                 break;
             }
+            case "nprime.reg.mocksbi.iris.rCapture":
             case "nprime.reg.mocksbi.iris.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
@@ -254,7 +221,7 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != input) {
                         capture(input, DeviceConstants.BioType.Iris);
                     } else {
-                        generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
+                        generateCaptureResponse(getCaptureErrorResponse("101", "Invalid input"), false);
                     }
                 }).start();
                 break;
@@ -289,10 +256,6 @@ public class MDServiceActivity extends AppCompatActivity {
     }
 
     private void capture(byte[] input, DeviceConstants.BioType bioType) {
-        rCapture(input, bioType);
-    }
-
-    private void rCapture(byte[] input, DeviceConstants.BioType bioType) {
         try {
             if (ActivityCompat.checkSelfPermission(MDServiceActivity.this, Manifest.permission.CAMERA)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -306,88 +269,116 @@ public class MDServiceActivity extends AppCompatActivity {
             List<CaptureRequestDeviceDetailDto> mosipBioRequest = captureRequestDto.bio;
 
             int deviceSubId = Integer.parseInt(mosipBioRequest.get(0).deviceSubId);
-            String[] bioException = mosipBioRequest.get(0).exception;// Bio exceptions
             int count = Integer.parseInt(mosipBioRequest.get(0).count);
-            int exceptionCount = (bioException != null ? bioException.length : 0);
-            int finalCount = count + exceptionCount;
 
-            switch (bioType) {
-                case Finger:
-                    switch (deviceSubId) {
-                        case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT:
-                        case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT:
-                            // Max Count = 4 exception allowed
-                            if (finalCount != 4) {
-                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
-                                return;
-                            }
-                            break;
-                        case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB:
-                            // Max Count = 2 exception allowed
-                            if (finalCount != 2) {
-                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
-                                return;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-                case Iris:
-                    switch (deviceSubId) {
-                        case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT:
-                        case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT:
-                            // Max Count = 1 no exception allowed
-                            if (count != 1 || exceptionCount != 0) {
-                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
-                                return;
-                            }
-                            break;
-                        case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH:
-                            // Max Count = 2 exception allowed
-                            finalCount = count + exceptionCount;
-                            if (finalCount != 2) {
-                                generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
-                                return;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-                case Face:
-                    // Max Face Count = 1 with or without exception
-                    if (count != 1) {
-                        generateRCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
-                        return;
-                    }
-                    break;
-                default:
-                    break;
+            if (deviceUtil.DEVICE_USAGE == DeviceConstants.DeviceUsage.Registration) {
+                if (!validateBioCountReg(mosipBioRequest.get(0), bioType)) {
+                    generateCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                    return;
+                }
+            } else {
+                if (!validateBioCountAuth(bioType, count)) {
+                    generateCaptureResponse(getCaptureErrorResponse("109", "Count Mismatch"), false);
+                    return;
+                }
             }
 
             if (DeviceConstants.environmentList.contains(captureRequestDto.env)
                     && (captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Registration.getDeviceUsage()))
                     || captureRequestDto.purpose.equalsIgnoreCase(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage())) {
-                startCameraActivityRCapture(captureRequestDto.timeout, captureRequestDto.bio.get(0), bioType, deviceSubId);
+                startCameraActivityCapture(captureRequestDto.timeout, captureRequestDto.bio.get(0), bioType, deviceSubId);
             } else {
-                generateRCaptureResponse(getCaptureErrorResponse("501", "Invalid Environment / Purpose"), false);
+                generateCaptureResponse(getCaptureErrorResponse("501", "Invalid Environment / Purpose"), false);
             }
         } catch (Exception e) {
             e.printStackTrace();
             Logger.e(DeviceConstants.LOG_TAG, "Failed to initiate capture");
-            generateRCaptureResponse(getCaptureErrorResponse("101", "Invalid JSON Value"), false);
+            generateCaptureResponse(getCaptureErrorResponse("101", "Invalid JSON Value"), false);
         }
     }
 
-    private void startCameraActivityRCapture(int captureTimeout, CaptureRequestDeviceDetailDto bio, DeviceConstants.BioType bioType, int deviceSubId) {
+    private boolean validateBioCountAuth(DeviceConstants.BioType bioType, int bioCount) {
+        switch (bioType) {
+            case Finger:
+                if (bioCount < 0 || bioCount > 10)
+                    return false;
+            case Iris:
+                if (bioCount < 0 || bioCount > 2)
+                    return false;
+            case Face:
+                if (bioCount < 0 || bioCount > 2)
+                    return false;
+        }
+        return true;
+    }
+
+    private boolean validateBioCountReg(CaptureRequestDeviceDetailDto bioRequest, DeviceConstants.BioType bioType) {
+        int deviceSubId = Integer.parseInt(bioRequest.deviceSubId);
+        String[] bioException = bioRequest.exception;// Bio exceptions
+        int count = Integer.parseInt(bioRequest.count);
+        int exceptionCount = (bioException != null ? bioException.length : 0);
+        int finalCount = count + exceptionCount;
+
+        switch (bioType) {
+            case Finger:
+                switch (deviceSubId) {
+                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT:
+                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT:
+                        // Max Count = 4 exception allowed
+                        if (finalCount != 4) {
+                            return false;
+                        }
+                        break;
+                    case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB:
+                        // Max Count = 2 exception allowed
+                        if (finalCount != 2) {
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case Iris:
+                switch (deviceSubId) {
+                    case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_LEFT:
+                    case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_RIGHT:
+                        // Max Count = 1 no exception allowed
+                        if (count != 1 || exceptionCount != 0) {
+                            return false;
+                        }
+                        break;
+                    case DeviceConstants.DEVICE_IRIS_DOUBLE_SUB_TYPE_ID_BOTH:
+                        // Max Count = 2 exception allowed
+                        finalCount = count + exceptionCount;
+                        if (finalCount != 2) {
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case Face:
+                // Max Face Count = 1 with or without exception
+                if (count != 1) {
+                    return false;
+                }
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+    private void startCameraActivityCapture(int captureTimeout, CaptureRequestDeviceDetailDto bio, DeviceConstants.BioType bioType, int deviceSubId) {
         Intent intent = new Intent(this, CaptureActivity.class);
         intent.putExtra("CaptureTimeout", captureTimeout);
         intent.putExtra("modality", bioType.getBioType());
         intent.putExtra("deviceSubId", deviceSubId);
         intent.putExtra("bioSubType", bio.bioSubType);
         intent.putExtra("exception", bio.exception);
-        startActivityForResult(intent, RequestCodeRCapture);
+        startActivityForResult(intent, RequestCodeCapture);
     }
 
     private void generateResponse(Object responseXml, boolean isError) {
@@ -424,7 +415,7 @@ public class MDServiceActivity extends AppCompatActivity {
         return captureResponse;
     }
 
-    private void generateRCaptureResponse(CaptureResponse captureResponse, boolean isError) {
+    private void generateCaptureResponse(CaptureResponse captureResponse, boolean isError) {
         Intent intent = new Intent();
         if (null != captureResponse) {
             try {
@@ -474,7 +465,7 @@ public class MDServiceActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         DeviceKeystore keystore = new DeviceKeystore(this);
-        if (RequestCodeRCapture == requestCode) {
+        if (RequestCodeCapture == requestCode) {
             if (Activity.RESULT_OK == resultCode) {
                 new Thread(() -> {
                     try {
@@ -494,7 +485,7 @@ public class MDServiceActivity extends AppCompatActivity {
                         captureResult.setQualityScore(data.getIntExtra("Quality", 0));
                         CaptureResponse captureResponse = responseGenHelper
                                 .getCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
-                        generateRCaptureResponse(captureResponse, false);
+                        generateCaptureResponse(captureResponse, false);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -510,7 +501,7 @@ public class MDServiceActivity extends AppCompatActivity {
 
                 CaptureResponse captureResponse = responseGenHelper
                         .getCaptureBiometricsMOSIP(captureResult, captureRequestDto, keystore);
-                generateRCaptureResponse(captureResponse, false);
+                generateCaptureResponse(captureResponse, false);
             }
         }
     }

@@ -131,34 +131,12 @@
                 </TableLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!--<com.google.android.material.button.MaterialButton
-                android:id="@+id/init"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Force Init"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/toolbar_client"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.1"/>-->
-
-            <!--<com.google.android.material.button.MaterialButton
-                android:id="@+id/discover"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Discover"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/toolbar_client"
-                app:layout_constraintEnd_toStartOf="@id/info"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.1"/>-->
-
             <Button
                 android:id="@+id/settingBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="openSettings"
-                android:text="Settings"
+                android:text="@string/settings"
                 app:layout_constraintBottom_toTopOf="@+id/card2"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.498"
@@ -186,7 +164,7 @@
                 android:layout_margin="16dp"
                 android:elevation="5dp"
                 app:cardCornerRadius="10dp"
-                app:layout_constraintBottom_toTopOf="@id/info"
+                app:layout_constraintBottom_toTopOf="@id/action_table"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/card">
@@ -211,23 +189,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
-                    <!--<TextView
-                        android:id="@+id/text_when_empty"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:paddingStart="24dp"
-                        android:paddingEnd="24dp"
-                        android:textSize="18sp"
-                        android:textAlignment="center"
-                        android:textColor="@color/nprime_primary"
-                        android:fontFamily="sans-serif-condensed"
-                        android:text="@string/no_data_text"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintVertical_bias="0.65"/>-->
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -295,46 +256,74 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/rcapture"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/deviceUsageTextView"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="192dp"
-                android:text="Rcapture"
+                android:text="@string/device_purpose_registration"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                app:layout_constraintBottom_toTopOf="@id/action_table"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/card2"
+                />
+
+            <TableLayout
+                android:id="@+id/action_table"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 app:layout_constraintBottom_toTopOf="@id/logo"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/info" />
+                app:layout_constraintStart_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/deviceUsageTextView">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/info"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="192dp"
-                android:text="Info"
-                app:layout_constraintBottom_toTopOf="@id/logo"
-                app:layout_constraintEnd_toStartOf="@id/rcapture"
-                app:layout_constraintStart_toStartOf="parent" />
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/discover"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:width="120dp"
+                        android:text="@string/discover" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:width="120dp"
+                        android:text="@string/info" />
+                </TableRow>
 
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/discover"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="132dp"
-                android:text="Discover"
-                app:layout_constraintBottom_toTopOf="@id/logo"
-                app:layout_constraintEnd_toStartOf="@id/capture"
-                app:layout_constraintStart_toStartOf="parent" />
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/capture"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="132dp"
-                android:text="Capture"
-                app:layout_constraintBottom_toTopOf="@id/logo"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/discover" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/rcapture"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:width="120dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/rcapture" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/capture"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:width="120dp"
+                        android:text="@string/capture" />
+                </TableRow>
+            </TableLayout>
 
             <ImageView
                 android:id="@+id/logo"

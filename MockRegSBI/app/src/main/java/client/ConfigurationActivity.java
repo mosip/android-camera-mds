@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 import nprime.reg.mocksbi.R;
 import nprime.reg.mocksbi.constants.ClientConstants;
+import nprime.reg.mocksbi.secureLib.DeviceKeystore;
 import nprime.reg.mocksbi.utility.DateUtil;
 import nprime.reg.mocksbi.utility.DeviceConstants;
 import nprime.reg.mocksbi.utility.FileUtils;
@@ -270,6 +271,7 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         //navigate back to previous activity
         Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
+        loadAndValidateCertificates();
         finish();
     }
 
@@ -314,5 +316,38 @@ public class ConfigurationActivity extends AppCompatActivity {
     private void setSpinner(Spinner spinner, String value) {
         int position = ((ArrayAdapter<String>) spinner.getAdapter()).getPosition(value);
         spinner.setSelection(position);
+    }
+
+    private void loadAndValidateCertificates() {
+        DeviceKeystore keystore = new DeviceKeystore(this);
+
+        String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
+        String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
+        String ftm_keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
+        String ftm_keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
+
+        if (keystore.checkCertificateCredentials(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd)) {
+            Toast.makeText(this, "Device key credentials are valid.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Device key validation failed.", Toast.LENGTH_SHORT).show();
+        }
+
+        if (keystore.checkCertificateCredentials(ClientConstants.FTM_P12_FILE_NAME, ftm_keyAlias, ftm_keystorePwd)) {
+            Toast.makeText(this, "FTM key credentials are valid.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "FTM key validation failed.", Toast.LENGTH_SHORT).show();
+        }
+
+        keystore.loadCertificateFromIDA(() -> {
+            this.runOnUiThread(() -> {
+                String certificateStr = sharedPreferences.getString(ClientConstants.CERTIFICATE_TO_ENCRYPT_BIO, "");
+
+                if (certificateStr.equals("")) {
+                    Toast.makeText(this, "Certificate to encrypt failed to load.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Certificate to encrypt loaded successfully.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
     }
 }

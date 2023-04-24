@@ -77,10 +77,6 @@ public class DeviceKeystore {
         mosipIdaServerUrl = sharedPreferences.getString(ClientConstants.MOSIP_IDA_SERVER_URL, DEFAULT_MOSIP_IDA_SERVER_URL);
     }
 
-    public String getJwt(byte[] data) {
-        return getJwt(data, false);
-    }
-
     public String getJwt(byte[] data, boolean signWithFTMKey) {
         String fileName;
         String keyAlias;

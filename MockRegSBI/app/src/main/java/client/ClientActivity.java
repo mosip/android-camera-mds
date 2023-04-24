@@ -17,6 +17,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -39,6 +40,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -65,7 +67,9 @@ public class ClientActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_PERMISSION_INTERNET = 1001;
     private static final int REQUEST_DISCOVER = 1;
     private static final int REQUEST_INFO = 2;
-    private static final int REQUEST_CAPTURE = 3;
+    private static final int REQUEST_REG_CAPTURE = 3;
+    private static final int REQUEST_AUTH_CAPTURE = 4;
+
 
     private static final int HANDLER_DISPLAY_TOAST = 0;
     private static final int HANDLER_DISPLAY_CAPTURE_RESPONSE = 1;
@@ -76,6 +80,7 @@ public class ClientActivity extends AppCompatActivity {
 
     MaterialButton btnInfo, btnRCapture, btnDiscover, btnCapture;
     MaterialTextView textBox, manufacturer, modelId, deviceId, deviceStatus, textBoxLabel;
+    TextView devicePurposeTextView;
     ImageButton btnShareResponse;
     TableRow deviceIdRow;
     ConstraintLayout emptyScreen, responseScreen, progressBarScreen;
@@ -95,6 +100,7 @@ public class ClientActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
+        devicePurposeTextView = findViewById(R.id.deviceUsageTextView);
         btnInfo = findViewById(R.id.info);
         btnRCapture = findViewById(R.id.rcapture);
         btnDiscover = findViewById(R.id.discover);
@@ -125,7 +131,7 @@ public class ClientActivity extends AppCompatActivity {
 
         btnRCapture.setOnClickListener(view -> {
             textBox.setText("");
-            rCapture();
+            capture(".rCapture", REQUEST_REG_CAPTURE);
         });
 
 
@@ -136,7 +142,7 @@ public class ClientActivity extends AppCompatActivity {
 
         btnCapture.setOnClickListener(view -> {
             textBox.setText("");
-            rCapture();
+            capture(".Capture", REQUEST_AUTH_CAPTURE);
         });
 
         btnShareResponse.setOnClickListener(view -> {
@@ -170,8 +176,24 @@ public class ClientActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        btnRCapture.setEnabled(serialNo != null);
-        btnCapture.setEnabled(serialNo != null);
+        String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
+                , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+
+        if (DeviceConstants.DeviceUsage.Registration.getDeviceUsage().equalsIgnoreCase(deviceUsage)) {
+            devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_registration));
+            btnRCapture.setEnabled(serialNo != null);
+            btnCapture.setEnabled(false);
+        } else {
+            devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_auth));
+            btnCapture.setEnabled(serialNo != null);
+            btnRCapture.setEnabled(false);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initViews();
     }
 
     private void discover() {
@@ -232,10 +254,10 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
-    private void rCapture() {
+    private void capture(String action, int requestCode) {
         try {
             Intent intent = new Intent();
-            intent.setAction(appID + ".rCapture");
+            intent.setAction(appID + action);
 
             PackageManager packageManager = this.getPackageManager();
             List<ResolveInfo> activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -260,7 +282,7 @@ public class ClientActivity extends AppCompatActivity {
                 bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
                 bio.deviceId = serialNo;
-                bio.deviceSubId = "2";
+                bio.deviceSubId = requestCode == REQUEST_AUTH_CAPTURE ? "0" : "2";
                 bio.previousHash = "";
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);
@@ -273,7 +295,7 @@ public class ClientActivity extends AppCompatActivity {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(captureRequestDto));
-                        startActivityForResult(intent, REQUEST_CAPTURE);
+                        startActivityForResult(intent, requestCode);
                         break;
                     }
                 }
@@ -284,6 +306,7 @@ public class ClientActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
 
     private void showResponse(String responseLabel, String data) {
         emptyScreen.setVisibility(View.GONE);
@@ -402,7 +425,6 @@ public class ClientActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            initViews();
         } else if (REQUEST_INFO == requestCode) {
             if (Activity.RESULT_OK == resultCode) {
                 try {
@@ -451,8 +473,7 @@ public class ClientActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            initViews();
-        } else if (REQUEST_CAPTURE == requestCode) {
+        } else if (REQUEST_REG_CAPTURE == requestCode || REQUEST_AUTH_CAPTURE == requestCode) {
             if (Activity.RESULT_OK == resultCode) {
                 if (null != data) {
                     Uri uri = data.getParcelableExtra("response");
@@ -517,7 +538,7 @@ public class ClientActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ConfigurationActivity.class);
         startActivity(intent);
     }
-    
+
     public void askPermissionAndValidateCertificates(View view) {
         // Check if we have Call permission
         int permission = ActivityCompat.checkSelfPermission(this.getApplicationContext(),

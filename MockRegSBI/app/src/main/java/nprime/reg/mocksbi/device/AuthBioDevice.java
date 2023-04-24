@@ -88,7 +88,7 @@ public class AuthBioDevice extends BioDevice {
 
     @Override
     protected Uri getBioAttributeURI(String file) {
-        byte[] isoRecord = getIsoDataFromAssets(DeviceConstants.DeviceUsage.Registration.getDeviceUsage() + "/" + file);
+        byte[] isoRecord = getIsoDataFromAssets(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage() + "/" + file);
         Uri isoUri = Uri.fromFile(getTempFile(appContext));
         saveByteArray(isoRecord, isoUri);
         return isoUri;

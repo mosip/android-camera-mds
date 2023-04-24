@@ -302,12 +302,15 @@ public class MDServiceActivity extends AppCompatActivity {
             case Finger:
                 if (bioCount < 0 || bioCount > 10)
                     return false;
+                break;
             case Iris:
                 if (bioCount < 0 || bioCount > 2)
                     return false;
+                break;
             case Face:
-                if (bioCount < 0 || bioCount > 2)
+                if (bioCount < 0 || bioCount > 1)
                     return false;
+                break;
         }
         return true;
     }

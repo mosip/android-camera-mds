@@ -1,7 +1,6 @@
 package nprime.reg.mocksbi.secureLib;
 
 import static nprime.reg.mocksbi.constants.ClientConstants.CERTIFICATE_TO_ENCRYPT_BIO;
-import static nprime.reg.mocksbi.constants.ClientConstants.DEVICE_KEY_ALIAS;
 import static nprime.reg.mocksbi.utility.CryptoUtility.getTimestamp;
 import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_APPID;
 import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_CLIENTID;
@@ -12,8 +11,6 @@ import static nprime.reg.mocksbi.utility.DeviceConstants.DEFAULT_MOSIP_IDA_SERVE
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jose4j.jws.JsonWebSignature;
@@ -36,6 +33,8 @@ import java.util.Base64;
 import java.util.List;
 
 import nprime.reg.mocksbi.constants.ClientConstants;
+import nprime.reg.mocksbi.utility.DeviceConstants;
+import nprime.reg.mocksbi.utility.Logger;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -125,7 +124,7 @@ public class DeviceKeystore {
         try {
             jwsToken = jws.getCompactSerialization();
         } catch (JoseException e) {
-            e.printStackTrace();
+            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
         }
         return jwsToken;
     }
@@ -143,6 +142,7 @@ public class DeviceKeystore {
             x509Certificate = keystore.getCertificate(keyAlias);
             return privateKey != null && x509Certificate != null;
         } catch (Exception e) {
+            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
             return false;
         }
     }
@@ -203,7 +203,7 @@ public class DeviceKeystore {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
         }
         return "";
     }

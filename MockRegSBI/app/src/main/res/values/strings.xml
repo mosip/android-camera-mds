@@ -52,4 +52,5 @@
     <string name="capture">Capture</string>
     <string name="device_purpose_registration">Device Purpose: Registration</string>
     <string name="device_purpose_auth">Device Purpose: Auth</string>
+    <string name="mosip_logo">Mosip logo</string>
 </resources>

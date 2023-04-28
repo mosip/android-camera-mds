@@ -16,9 +16,8 @@ import android.widget.TextView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import nprime.reg.mocksbi.R;
-import nprime.reg.mocksbi.constants.ClientConstants;
-import nprime.reg.mocksbi.utility.FileUtils;
+import io.mosip.mock.sbi.R;
+import io.mosip.mock.sbi.utility.utility.FileUtils;
 
 /**
  * @author Anshul.Vanawat

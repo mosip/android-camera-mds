@@ -329,34 +329,25 @@
                 android:id="@+id/logo"
                 android:layout_width="128dp"
                 android:layout_height="64dp"
-                android:onClick="nprimeWebsite"
-                android:src="@drawable/nprime_logo_transparent"
-                app:layout_constraintBottom_toTopOf="@id/nprime_name_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/nprime_name_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="nprimeWebsite"
-                android:text="NPrime Technologies Pvt Ltd"
-                android:textColor="@color/nprime_primary"
+                android:layout_marginBottom="20dp"
+                android:onClick="mosipSpecWebsite"
+                android:src="@drawable/logo"
                 app:layout_constraintBottom_toTopOf="@id/nprime_link_label"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                android:contentDescription="@string/mosip_logo" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/nprime_link_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="9dp"
-                android:onClick="nprimeWebsite"
-                android:text="www.nprime.in"
+                android:text="www.mosip.io"
                 android:textColor="@color/nprime_primary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

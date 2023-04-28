@@ -40,23 +40,22 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import nprime.reg.mocksbi.R;
-import nprime.reg.mocksbi.constants.ClientConstants;
-import nprime.reg.mocksbi.dto.CaptureDetail;
-import nprime.reg.mocksbi.dto.CaptureRequestDeviceDetailDto;
-import nprime.reg.mocksbi.dto.CaptureRequestDto;
-import nprime.reg.mocksbi.dto.CaptureResponse;
-import nprime.reg.mocksbi.dto.DeviceDiscoveryRequestDetail;
-import nprime.reg.mocksbi.dto.DeviceInfoResponse;
-import nprime.reg.mocksbi.dto.DiscoverDto;
-import nprime.reg.mocksbi.dto.Error;
-import nprime.reg.mocksbi.secureLib.DeviceKeystore;
-import nprime.reg.mocksbi.utility.DeviceConstants;
+import io.mosip.mock.sbi.R;
+import io.mosip.mock.sbi.constants.constants.ClientConstants;
+import io.mosip.mock.sbi.dto.dto.CaptureDetail;
+import io.mosip.mock.sbi.dto.dto.CaptureRequestDeviceDetailDto;
+import io.mosip.mock.sbi.dto.dto.CaptureRequestDto;
+import io.mosip.mock.sbi.dto.dto.CaptureResponse;
+import io.mosip.mock.sbi.dto.dto.DeviceDiscoveryRequestDetail;
+import io.mosip.mock.sbi.dto.dto.DeviceInfoResponse;
+import io.mosip.mock.sbi.dto.dto.DiscoverDto;
+import io.mosip.mock.sbi.dto.dto.Error;
+import io.mosip.mock.sbi.secureLib.secureLib.DeviceKeystore;
+import io.mosip.mock.sbi.utility.utility.DeviceConstants;
 
 /**
  * @author NPrime Technologies
@@ -160,7 +159,7 @@ public class ClientActivity extends AppCompatActivity {
                     fOut.flush();
                     fOut.close();
 
-                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "nprime.reg.mocksbi.fileprovider", txtFile);
+                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "io.mosip.mock.sbi.fileprovider", txtFile);
                     Intent share = new Intent(Intent.ACTION_SEND);
                     share.setType("plain/*");
                     share.putExtra(Intent.EXTRA_STREAM, uri);
@@ -208,7 +207,7 @@ public class ClientActivity extends AppCompatActivity {
             if (isIntentSafe) {
                 String packageName = null;
                 for (ResolveInfo activity : activities) {
-                    if (activity.activityInfo.applicationInfo.packageName.equals("nprime.reg.mocksbi")) {
+                    if (activity.activityInfo.applicationInfo.packageName.equals("io.mosip.mock.sbi")) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DeviceDiscoveryRequestDetail discoverRequestDto = new DeviceDiscoveryRequestDetail();
@@ -528,9 +527,9 @@ public class ClientActivity extends AppCompatActivity {
         return payLoad;
     }
 
-    public void nprimeWebsite(View view) {
+    public void mosipSpecWebsite(View view) {
         Intent updateIntent = new Intent(Intent.ACTION_VIEW);
-        updateIntent.setData(Uri.parse("https://www.nprime.in/"));
+        updateIntent.setData(Uri.parse("https://docs.mosip.io/1.1.5/biometrics/mosip-device-service-specification"));
         startActivity(updateIntent);
     }
 

@@ -190,18 +190,22 @@ public class ResponseGenHelper {
 
         try {
             jsonobject.put("serialNo", serialNumber);
-            jsonobject.put("make", DeviceConstants.DEVICE_MAKE);
-            jsonobject.put("model", DeviceConstants.DEVICE_MODEL);
             switch (bioType) {
                 case Face:
+                    jsonobject.put("make", DeviceConstants.DEVICE_MAKE_FACE);
+                    jsonobject.put("model", DeviceConstants.DEVICE_MODEL_FACE);
                     jsonobject.put("type", DeviceConstants.BioType.Face.getBioType());
                     jsonobject.put("deviceSubType", deviceUtil.FACE_DEVICE_SUBTYPE);
                     break;
                 case Finger:
+                    jsonobject.put("make", DeviceConstants.DEVICE_MAKE_FINGER);
+                    jsonobject.put("model", DeviceConstants.DEVICE_MODEL_FINGER);
                     jsonobject.put("type", DeviceConstants.BioType.Finger.getBioType());
                     jsonobject.put("deviceSubType", deviceUtil.FINGER_DEVICE_SUBTYPE);
                     break;
                 case Iris:
+                    jsonobject.put("make", DeviceConstants.DEVICE_MAKE_IRIS);
+                    jsonobject.put("model", DeviceConstants.DEVICE_MODEL_IRIS);
                     jsonobject.put("type", DeviceConstants.BioType.Iris.getBioType());
                     jsonobject.put("deviceSubType", deviceUtil.IRIS_DEVICE_SUBTYPE);
                     break;

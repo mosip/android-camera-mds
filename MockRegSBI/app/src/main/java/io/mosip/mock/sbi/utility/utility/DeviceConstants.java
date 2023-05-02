@@ -12,8 +12,12 @@ public class DeviceConstants {
     public static final String LOG_TAG = "MockAndroidSBI";
     public static final String MDS_VERSION = "0.9.5";
     public static final String FIRMWARE_VER = "1.0.1";
-    public static final String DEVICE_MODEL = "AndroidFaceCamera";
-    public static final String DEVICE_MAKE = "Android";
+    public static final String DEVICE_MODEL_FACE = "AndroidFaceCamera";
+    public static final String DEVICE_MAKE_FACE = "Android";
+    public static final String DEVICE_MODEL_FINGER = "AndroidFingerScanner";
+    public static final String DEVICE_MAKE_FINGER = "Android";
+    public static final String DEVICE_MODEL_IRIS = "AndroidIrisScanner";
+    public static final String DEVICE_MAKE_IRIS = "Android";
     public static final String PROVIDER_NAME = "MOSIP";
     public static final String PROVIDER_ID = "MOSIP_DP";
     public static final String REG_SERVER_VERSION = "0.9.5";

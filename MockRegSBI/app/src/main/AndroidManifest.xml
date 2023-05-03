@@ -1,46 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nprime.reg.mocksbi">
+    package="io.mosip.mock.sbi">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <queries android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher_camera"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_camera_round"
         android:supportsRtl="true"
         android:theme="@style/NPrimeTheme">
+        <activity
+            android:name="client.ConfigurationActivity"
+            android:exported="false" />
         <activity
             android:name="client.ClientActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name="nprime.reg.mocksbi.mds.MDServiceActivity"
+            android:name="io.mosip.mock.sbi.mds.mds.MDServiceActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="io.sbi.device" />
-                <action android:name="nprime.reg.mocksbi.face.Info" />
-                <action android:name="nprime.reg.mocksbi.face.rCapture" />
-                <action android:name="nprime.reg.mocksbi.finger.Info" />
-                <action android:name="nprime.reg.mocksbi.finger.rCapture" />
-                <action android:name="nprime.reg.mocksbi.iris.Info" />
-                <action android:name="nprime.reg.mocksbi.iris.rCapture" />
-
+                <action android:name="io.mosip.mock.sbi.face.Info" />
+                <action android:name="io.mosip.mock.sbi.face.Capture" />
+                <action android:name="io.mosip.mock.sbi.face.rCapture" />
+                <action android:name="io.mosip.mock.sbi.finger.Info" />
+                <action android:name="io.mosip.mock.sbi.finger.Capture" />
+                <action android:name="io.mosip.mock.sbi.finger.rCapture" />
+                <action android:name="io.mosip.mock.sbi.iris.Info" />
+                <action android:name="io.mosip.mock.sbi.iris.Capture" />
+                <action android:name="io.mosip.mock.sbi.iris.rCapture" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="nprime.reg.mocksbi.camera.RCaptureActivity" />
+        <activity android:name="io.mosip.mock.sbi.device.device.CaptureActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="nprime.reg.mocksbi.fileprovider"
+            android:authorities="io.mosip.mock.sbi.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true"
             android:readPermission="true">

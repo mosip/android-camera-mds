@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="nprime.reg.mocksbi.camera.RCaptureActivity">
+    tools:context="io.mosip.mock.sbi.device.device.CaptureActivity">
 
     <ImageView
         android:id="@+id/img"
@@ -18,7 +18,7 @@
         android:layout_height="0dp"
         android:layout_weight="0.05"
         android:textAlignment="center"
-        android:text="Stay steady"
+        android:text="@string/stay_steady"
         android:textColor="@android:color/holo_blue_dark"
         android:textSize="18sp"
         android:gravity="bottom|center_horizontal"/>
@@ -39,7 +39,7 @@
             android:scaleType="fitCenter"
             android:foregroundGravity="center"
             android:src="@drawable/flip_camera"
-            android:text="Flip" />
+            android:text="@string/flip" />
 
         <ImageButton
             android:id="@+id/btn_flash"
@@ -51,7 +51,7 @@
             android:padding="5dp"
             android:scaleType="fitCenter"
             android:src="@drawable/flash_off"
-            android:text="Flash" />
+            android:text="@string/flash" />
 
     </LinearLayout>
 

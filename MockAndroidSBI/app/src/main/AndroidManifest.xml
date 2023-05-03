@@ -16,7 +16,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_camera_round"
         android:supportsRtl="true"
-        android:theme="@style/NPrimeTheme">
+        android:theme="@style/MosipTheme">
         <activity
             android:name="client.ConfigurationActivity"
             android:exported="false" />

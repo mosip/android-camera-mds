@@ -20,7 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/device_config"
-                android:textColor="@color/nprime_primary"
+                android:textColor="@color/mosip_primary"
                 android:textSize="18sp" />
 
             <LinearLayout
@@ -75,7 +75,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/p12_config"
-                android:textColor="@color/nprime_primary"
+                android:textColor="@color/mosip_primary"
                 android:textSize="18sp" />
 
             <LinearLayout
@@ -93,7 +93,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/device_key"
                     android:textAlignment="center"
-                    android:textColor="@color/nprime_primary"
+                    android:textColor="@color/mosip_primary"
                     android:textSize="25sp" />
 
                 <EditText
@@ -139,7 +139,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/ftm_key"
                     android:textAlignment="center"
-                    android:textColor="@color/nprime_primary"
+                    android:textColor="@color/mosip_primary"
                     android:textSize="25sp" />
 
                 <EditText
@@ -185,7 +185,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/mosip_ida_config"
                     android:textAlignment="center"
-                    android:textColor="@color/nprime_primary"
+                    android:textColor="@color/mosip_primary"
                     android:textSize="25sp" />
 
                 <LinearLayout
@@ -321,7 +321,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/modality_config"
-                android:textColor="@color/nprime_primary"
+                android:textColor="@color/mosip_primary"
                 android:textSize="18sp" />
 
             <LinearLayout
@@ -345,7 +345,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/face"
                         android:textAlignment="center"
-                        android:textColor="@color/nprime_primary"
+                        android:textColor="@color/mosip_primary"
                         android:textSize="25sp" />
 
                     <LinearLayout
@@ -471,7 +471,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/finger"
                         android:textAlignment="center"
-                        android:textColor="@color/nprime_primary"
+                        android:textColor="@color/mosip_primary"
                         android:textSize="25sp" />
 
                     <LinearLayout
@@ -596,7 +596,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/iris"
                         android:textAlignment="center"
-                        android:textColor="@color/nprime_primary"
+                        android:textColor="@color/mosip_primary"
                         android:textSize="25sp" />
 
                     <LinearLayout

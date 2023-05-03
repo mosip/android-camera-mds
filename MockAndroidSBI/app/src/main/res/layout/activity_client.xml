@@ -10,7 +10,7 @@
         android:id="@+id/toolbar_client"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/nprime_primary"
+        android:background="@color/mosip_primary"
         android:elevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -239,7 +239,7 @@
                         android:text="share"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:tint="@color/nprime_primary" />
+                        app:tint="@color/mosip_primary" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/textbox"
@@ -332,18 +332,18 @@
                 android:layout_marginBottom="20dp"
                 android:onClick="mosipSpecWebsite"
                 android:src="@drawable/logo"
-                app:layout_constraintBottom_toTopOf="@id/nprime_link_label"
+                app:layout_constraintBottom_toTopOf="@id/mosip_link_label"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 android:contentDescription="@string/mosip_logo" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/nprime_link_label"
+                android:id="@+id/mosip_link_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="9dp"
                 android:text="www.mosip.io"
-                android:textColor="@color/nprime_primary"
+                android:textColor="@color/mosip_primary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />

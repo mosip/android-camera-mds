@@ -7,7 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="nprime_primary">#0071c5</color>
+    <color name="mosip_primary">#47458e</color>
+    <color name="mosip_secondary">#151440</color>
     <color name="cancel">#C5007D</color>
     <color name="okay">#00C587</color>
     <color name="cardBackgroundColor">#cdcdcd</color>

@@ -85,6 +85,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MDServiceActivity.this,
                     new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
+            generateResponse(null, true);
             return;
         }
         applicationContext = this.getApplicationContext();
@@ -92,13 +93,13 @@ public class MDServiceActivity extends AppCompatActivity {
 
         currentFaceStatus = DeviceConstants.getDeviceStatusEnum(
                 sharedPreferences.getString(ClientConstants.FACE_DEVICE_STATUS
-                        , DeviceConstants.ServiceStatus.READY.toString()));
+                        , DeviceConstants.ServiceStatus.READY.getStatus()));
         currentFingerStatus = DeviceConstants.getDeviceStatusEnum(
                 sharedPreferences.getString(ClientConstants.FINGER_DEVICE_STATUS
-                        , DeviceConstants.ServiceStatus.READY.toString()));
+                        , DeviceConstants.ServiceStatus.READY.getStatus()));
         currentIrisStatus = DeviceConstants.getDeviceStatusEnum(
                 sharedPreferences.getString(ClientConstants.IRIS_DEVICE_STATUS
-                        , DeviceConstants.ServiceStatus.READY.toString()));
+                        , DeviceConstants.ServiceStatus.READY.getStatus()));
 
         String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
                 , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
@@ -390,7 +391,10 @@ public class MDServiceActivity extends AppCompatActivity {
             byte[] responseBytes = ob.writeValueAsBytes(responseXml);
             intent.putExtra("response", responseBytes);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            Logger.e(DeviceConstants.LOG_TAG, "generateResponse: " + e.getMessage());
+            setResult(Activity.RESULT_CANCELED, intent);
+            finish();
+            return;
         }
 
         if (isError || (null == responseXml)) {

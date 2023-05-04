@@ -45,17 +45,17 @@ import java.util.Base64;
 import java.util.List;
 
 import io.mosip.mock.sbi.R;
-import io.mosip.mock.sbi.constants.constants.ClientConstants;
-import io.mosip.mock.sbi.dto.dto.CaptureDetail;
-import io.mosip.mock.sbi.dto.dto.CaptureRequestDeviceDetailDto;
-import io.mosip.mock.sbi.dto.dto.CaptureRequestDto;
-import io.mosip.mock.sbi.dto.dto.CaptureResponse;
-import io.mosip.mock.sbi.dto.dto.DeviceDiscoveryRequestDetail;
-import io.mosip.mock.sbi.dto.dto.DeviceInfoResponse;
-import io.mosip.mock.sbi.dto.dto.DiscoverDto;
-import io.mosip.mock.sbi.dto.dto.Error;
-import io.mosip.mock.sbi.secureLib.secureLib.DeviceKeystore;
-import io.mosip.mock.sbi.utility.utility.DeviceConstants;
+import io.mosip.mock.sbi.constants.ClientConstants;
+import io.mosip.mock.sbi.dto.CaptureDetail;
+import io.mosip.mock.sbi.dto.CaptureRequestDeviceDetailDto;
+import io.mosip.mock.sbi.dto.CaptureRequestDto;
+import io.mosip.mock.sbi.dto.CaptureResponse;
+import io.mosip.mock.sbi.dto.DeviceDiscoveryRequestDetail;
+import io.mosip.mock.sbi.dto.DeviceInfoResponse;
+import io.mosip.mock.sbi.dto.DiscoverDto;
+import io.mosip.mock.sbi.dto.Error;
+import io.mosip.mock.sbi.secureLib.DeviceKeystore;
+import io.mosip.mock.sbi.utility.DeviceConstants;
 
 /**
  * @author NPrime Technologies

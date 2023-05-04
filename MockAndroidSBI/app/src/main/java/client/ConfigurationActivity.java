@@ -1,13 +1,13 @@
 package client;
 
 import static client.FileChooserFragment.LAST_UPLOAD_DATE;
-import static io.mosip.mock.sbi.constants.constants.ClientConstants.*;
-import static io.mosip.mock.sbi.utility.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_APPID;
-import static io.mosip.mock.sbi.utility.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_CLIENTID;
-import static io.mosip.mock.sbi.utility.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_SECRETKEY;
-import static io.mosip.mock.sbi.utility.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_SERVER_URL;
-import static io.mosip.mock.sbi.utility.utility.DeviceConstants.DEFAULT_MOSIP_IDA_SERVER_URL;
-import static io.mosip.mock.sbi.utility.utility.DeviceConstants.DEFAULT_TIME_DELAY;
+import static io.mosip.mock.sbi.constants.ClientConstants.*;
+import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_APPID;
+import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_CLIENTID;
+import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_SECRETKEY;
+import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_SERVER_URL;
+import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_MOSIP_IDA_SERVER_URL;
+import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_TIME_DELAY;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -29,11 +29,11 @@ import com.google.android.material.slider.Slider;
 import java.util.ArrayList;
 
 import io.mosip.mock.sbi.R;
-import io.mosip.mock.sbi.constants.constants.ClientConstants;
-import io.mosip.mock.sbi.secureLib.secureLib.DeviceKeystore;
-import io.mosip.mock.sbi.utility.utility.DateUtil;
-import io.mosip.mock.sbi.utility.utility.DeviceConstants;
-import io.mosip.mock.sbi.utility.utility.FileUtils;
+import io.mosip.mock.sbi.constants.ClientConstants;
+import io.mosip.mock.sbi.secureLib.DeviceKeystore;
+import io.mosip.mock.sbi.utility.DateUtil;
+import io.mosip.mock.sbi.utility.DeviceConstants;
+import io.mosip.mock.sbi.utility.FileUtils;
 
 /**
  * @author Anshul.Vanawat

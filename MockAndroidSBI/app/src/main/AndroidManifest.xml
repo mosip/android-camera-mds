@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="io.mosip.mock.sbi.mds.mds.MDServiceActivity"
+            android:name="io.mosip.mock.sbi.mds.MDServiceActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="io.sbi.device" />
@@ -45,7 +45,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="io.mosip.mock.sbi.device.device.CaptureActivity" />
+        <activity android:name="io.mosip.mock.sbi.device.CaptureActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

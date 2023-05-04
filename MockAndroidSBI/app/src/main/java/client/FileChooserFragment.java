@@ -17,7 +17,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import io.mosip.mock.sbi.R;
-import io.mosip.mock.sbi.utility.utility.FileUtils;
+import io.mosip.mock.sbi.utility.FileUtils;
 
 /**
  * @author Anshul.Vanawat

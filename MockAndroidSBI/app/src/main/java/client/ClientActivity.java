@@ -77,7 +77,7 @@ public class ClientActivity extends AppCompatActivity {
     private static final int HANDLER_DISPLAY_PROGRESS_BAR_SCREEN = 4;
 
 
-    MaterialButton btnInfo, btnRCapture, btnDiscover, btnCapture;
+    MaterialButton btnInfo, btnRCapture, btnDiscover, btnCapture, btnDeviceKeyExport, btnFTMKeyExport;
     MaterialTextView textBox, manufacturer, modelId, deviceId, deviceStatus, textBoxLabel;
     TextView devicePurposeTextView;
     ImageButton btnShareResponse;
@@ -104,6 +104,8 @@ public class ClientActivity extends AppCompatActivity {
         btnRCapture = findViewById(R.id.rcapture);
         btnDiscover = findViewById(R.id.discover);
         btnCapture = findViewById(R.id.capture);
+        btnDeviceKeyExport = findViewById(R.id.deviceKeyExportBtn);
+        btnFTMKeyExport = findViewById(R.id.ftmKeyExportBtn);
         textBoxLabel = findViewById(R.id.response_label);
         textBox = findViewById(R.id.textbox);
         manufacturer = findViewById(R.id.manufacturer);
@@ -144,9 +146,22 @@ public class ClientActivity extends AppCompatActivity {
             capture(".Capture", REQUEST_AUTH_CAPTURE);
         });
 
+        btnDeviceKeyExport.setOnClickListener(view -> {
+            textBox.setText("");
+            String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
+            String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
+            exportCertificate(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd);
+        });
+
+        btnFTMKeyExport.setOnClickListener(view -> {
+            textBox.setText("");
+            String keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
+            String keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
+            exportCertificate(ClientConstants.FTM_P12_FILE_NAME, keyAlias, keystorePwd);
+        });
+
         btnShareResponse.setOnClickListener(view -> {
             try {
-                //String data = textBox.getText().toString();
                 if (null != responseData && !responseData.isEmpty()) {
                     String path = ClientActivity.this.getFilesDir().getAbsolutePath();
                     File file = new File(path);
@@ -597,5 +612,12 @@ public class ClientActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    private void exportCertificate(String fileName, String keyAlias, String password) {
+        DeviceKeystore keystore = new DeviceKeystore(this);
+        String details = keystore.getCertificateDetails(fileName, keyAlias, password);
+        showResponse("Certificate details", details);
+        responseData = details;
     }
 }

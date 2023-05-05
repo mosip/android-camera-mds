@@ -24,7 +24,7 @@ import io.mosip.mock.sbi.utility.FileUtils;
  */
 
 public class FileChooserFragment extends Fragment {
-    public static final String LAST_UPLOAD_DATE = "lastUploadDate";
+    public static final String ARG_LAST_UPLOAD_DATE = "lastUploadDate";
     private static final int MY_REQUEST_CODE_PERMISSION = 1000;
     private static final int MY_RESULT_CODE_FILE_CHOOSER = 2000;
 
@@ -37,7 +37,7 @@ public class FileChooserFragment extends Fragment {
 
         editTextPath = rootView.findViewById(R.id.last_upload_date);
         assert getArguments() != null;
-        String lastUploadedDate = getArguments().getString(LAST_UPLOAD_DATE);
+        String lastUploadedDate = getArguments().getString(ARG_LAST_UPLOAD_DATE);
         editTextPath.setText(lastUploadedDate);
 
         Button buttonBrowse = rootView.findViewById(R.id.button_browse);

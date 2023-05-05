@@ -1,6 +1,11 @@
 package client;
 
-import static client.FileChooserFragment.LAST_UPLOAD_DATE;
+import static client.FileChooserFragment.ARG_LAST_UPLOAD_DATE;
+import static client.KeyCredentialFragment.ARG_KEY_ALIAS;
+import static client.KeyCredentialFragment.ARG_KEY_LABEL;
+import static client.KeyCredentialFragment.ARG_PASSWORD;
+import static client.KeyCredentialFragment.KEY_TYPE_DEVICE;
+import static client.KeyCredentialFragment.KEY_TYPE_FTM;
 import static io.mosip.mock.sbi.constants.ClientConstants.*;
 import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_APPID;
 import static io.mosip.mock.sbi.utility.DeviceConstants.DEFAULT_MOSIP_AUTH_CLIENTID;
@@ -44,10 +49,6 @@ public class ConfigurationActivity extends AppCompatActivity {
     private static final String TAG = ConfigurationActivity.class.getName();
     private static final String LAST_UPDATE = "Last updated : ";
 
-    private EditText device_keyAliasEditText;
-    private EditText device_keyStorePasswordEditText;
-    private EditText ftm_keyAliasEditText;
-    private EditText ftm_keyStorePasswordEditText;
     private Slider faceSlider;
     private Slider fingerSlider;
     private Slider irisSlider;
@@ -66,6 +67,8 @@ public class ConfigurationActivity extends AppCompatActivity {
     private EditText mosipAuthSecretKeyEditText;
     private EditText mosipAuthServerUrlEditText;
     private EditText mosipIdaServerUrlEditText;
+    private KeyCredentialFragment deviceKeyFragment;
+    private KeyCredentialFragment ftmKeyFragment;
 
     private String device_currentKeyAlias;
     private String device_currentKeyPassword;
@@ -92,8 +95,6 @@ public class ConfigurationActivity extends AppCompatActivity {
 
 
     SharedPreferences sharedPreferences;
-    private FileChooserFragment device_fileChooserFragment;
-    private FileChooserFragment ftm_fileChooserFragment;
     DateUtil dateUtil;
 
     @Override
@@ -102,11 +103,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_configuration);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         dateUtil = new DateUtil(this);
-
-        device_keyAliasEditText = findViewById(R.id.device_key_alias);
-        device_keyStorePasswordEditText = findViewById(R.id.device_key_store_password);
-        ftm_keyAliasEditText = findViewById(R.id.ftm_key_alias);
-        ftm_keyStorePasswordEditText = findViewById(R.id.ftm_key_store_password);
 
         faceSlider = findViewById(R.id.slider_face_score);
         fingerSlider = findViewById(R.id.slider_finger_score);
@@ -175,17 +171,26 @@ public class ConfigurationActivity extends AppCompatActivity {
         mosipIdaServerUrl = sharedPreferences.getString(MOSIP_IDA_SERVER_URL, DEFAULT_MOSIP_IDA_SERVER_URL);
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
-        device_fileChooserFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.device_fragmentContainerView);
-        if (device_fileChooserFragment != null) {
+        deviceKeyFragment = (KeyCredentialFragment) fragmentManager.findFragmentById(R.id.deviceKeyFragment);
+
+        if (deviceKeyFragment != null) {
             Bundle bundle = new Bundle();
-            bundle.putString(LAST_UPLOAD_DATE, device_lastUploadDate);
-            device_fileChooserFragment.setArguments(bundle);
+            bundle.putString(ARG_KEY_LABEL, KEY_TYPE_DEVICE);
+            bundle.putString(ARG_KEY_ALIAS, device_currentKeyAlias);
+            bundle.putString(ARG_PASSWORD, device_currentKeyPassword);
+            bundle.putString(ARG_LAST_UPLOAD_DATE, device_lastUploadDate);
+            deviceKeyFragment.setArguments(bundle);
         }
-        ftm_fileChooserFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.ftm_fragmentContainerView);
-        if (ftm_fileChooserFragment != null) {
+
+        ftmKeyFragment = (KeyCredentialFragment) fragmentManager.findFragmentById(R.id.ftmKeyFragment);
+
+        if (ftmKeyFragment != null) {
             Bundle bundle = new Bundle();
-            bundle.putString(LAST_UPLOAD_DATE, ftm_lastUploadDate);
-            ftm_fileChooserFragment.setArguments(bundle);
+            bundle.putString(ARG_KEY_LABEL, KEY_TYPE_FTM);
+            bundle.putString(ARG_KEY_ALIAS, ftm_currentKeyAlias);
+            bundle.putString(ARG_PASSWORD, ftm_currentKeyPassword);
+            bundle.putString(ARG_LAST_UPLOAD_DATE, ftm_lastUploadDate);
+            ftmKeyFragment.setArguments(bundle);
         }
 
         faceSlider.addOnChangeListener((slider, value, fromUser) -> {
@@ -207,8 +212,9 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     public void onSave(View view) {
-        Uri device_fileUri = device_fileChooserFragment.getSelectedUri();
-        Uri ftm_fileUri = ftm_fileChooserFragment.getSelectedUri();
+//        Uri device_fileUri = device_fileChooserFragment.getSelectedUri();
+        Uri device_fileUri = deviceKeyFragment.getSelectedUri();
+        Uri ftm_fileUri = ftmKeyFragment.getSelectedUri();
 
         if (device_fileUri != null && !saveFile(device_fileUri, ClientConstants.DEVICE_P12_FILE_NAME)) {
             Toast.makeText(this, "Failed to save reg p.12 file! Please try again.", Toast.LENGTH_LONG).show();
@@ -224,10 +230,10 @@ public class ConfigurationActivity extends AppCompatActivity {
             ftm_lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
         }
 
-        device_currentKeyAlias = device_keyAliasEditText.getText().toString();
-        device_currentKeyPassword = device_keyStorePasswordEditText.getText().toString();
-        ftm_currentKeyAlias = ftm_keyAliasEditText.getText().toString();
-        ftm_currentKeyPassword = ftm_keyStorePasswordEditText.getText().toString();
+        device_currentKeyAlias = deviceKeyFragment.getKeyAlias();
+        device_currentKeyPassword = deviceKeyFragment.getPassword();
+        ftm_currentKeyAlias = ftmKeyFragment.getKeyAlias();
+        ftm_currentKeyPassword = ftmKeyFragment.getPassword();
         currentFaceScore = (int) faceSlider.getValue();
         currentFingerScore = (int) fingerSlider.getValue();
         currentIrisScore = (int) irisSlider.getValue();
@@ -280,15 +286,11 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     private void resetScreen() {
-        device_keyAliasEditText.setText(device_currentKeyAlias);
-        device_keyStorePasswordEditText.setText(device_currentKeyPassword);
-        ftm_keyAliasEditText.setText(ftm_currentKeyAlias);
-        ftm_keyStorePasswordEditText.setText(ftm_currentKeyPassword);
+        deviceKeyFragment.setValues(device_currentKeyAlias, device_currentKeyPassword, device_lastUploadDate);
+        ftmKeyFragment.setValues(ftm_currentKeyAlias, ftm_currentKeyPassword, ftm_lastUploadDate);
         faceSlider.setValue(currentFaceScore);
         fingerSlider.setValue(currentFingerScore);
         irisSlider.setValue(currentIrisScore);
-        device_fileChooserFragment.resetSelection(device_lastUploadDate);
-        ftm_fileChooserFragment.resetSelection(ftm_lastUploadDate);
         setSpinner(faceDeviceStatus, currentFaceDeviceStatus);
         setSpinner(fingerDeviceStatus, currentFingerDeviceStatus);
         setSpinner(irisDeviceStatus, currentIrisDeviceStatus);

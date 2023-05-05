@@ -129,6 +129,22 @@ public class DeviceKeystore {
         return jwsToken;
     }
 
+    public String getCertificateDetails(String fileName, String keyAlias, String keystorePwd) {
+        Certificate x509Certificate;
+
+        File file = new File(context.getFilesDir(), fileName);
+
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            keystore.load(inputStream, keystorePwd.toCharArray());
+            x509Certificate = keystore.getCertificate(keyAlias);
+            return x509Certificate.toString();
+        } catch (Exception e) {
+            Logger.e(DeviceConstants.LOG_TAG, "getCertificateDetails: " + e.getMessage());
+            return "Failed to export certificate.";
+        }
+    }
+
     public boolean checkCertificateCredentials(String fileName, String keyAlias, String keystorePwd) {
         PrivateKey privateKey;
         Certificate x509Certificate;

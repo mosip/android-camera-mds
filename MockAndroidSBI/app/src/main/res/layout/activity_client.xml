@@ -159,8 +159,8 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card2"
-                android:layout_width="360dp"
-                android:layout_height="207dp"
+                android:layout_width="367dp"
+                android:layout_height="291dp"
                 android:layout_margin="16dp"
                 android:elevation="5dp"
                 app:cardCornerRadius="10dp"
@@ -301,7 +301,6 @@
                         android:text="@string/info" />
                 </TableRow>
 
-
                 <TableRow
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -322,6 +321,28 @@
                         android:layout_height="wrap_content"
                         android:width="120dp"
                         android:text="@string/capture" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/deviceKeyExportBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:width="120dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="Export Device Key" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/ftmKeyExportBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:width="120dp"
+                        android:text="Export FTM Key" />
                 </TableRow>
             </TableLayout>
 

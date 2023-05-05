@@ -53,4 +53,5 @@
     <string name="device_purpose_registration">Device Purpose: Registration</string>
     <string name="device_purpose_auth">Device Purpose: Auth</string>
     <string name="mosip_logo">Mosip logo</string>
+    <string name="key_label">Key Label</string>
 </resources>

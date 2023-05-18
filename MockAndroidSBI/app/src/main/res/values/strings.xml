@@ -54,4 +54,6 @@
     <string name="device_purpose_auth">Device Purpose: Auth</string>
     <string name="mosip_logo">Mosip logo</string>
     <string name="key_label">Key Label</string>
+    <string name="export_ftm_key">Export FTM Key</string>
+    <string name="export_device_key">Export Device Key</string>
 </resources>

@@ -290,14 +290,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="10dp"
-                        android:width="120dp"
+                        android:width="150dp"
                         android:text="@string/discover" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/info"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:width="120dp"
+                        android:width="150dp"
                         android:text="@string/info" />
                 </TableRow>
 
@@ -311,7 +311,7 @@
                         android:id="@+id/rcapture"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:width="120dp"
+                        android:width="150dp"
                         android:layout_marginEnd="10dp"
                         android:text="@string/rcapture" />
 
@@ -319,7 +319,7 @@
                         android:id="@+id/capture"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:width="120dp"
+                        android:width="150dp"
                         android:text="@string/capture" />
                 </TableRow>
 
@@ -333,16 +333,16 @@
                         android:id="@+id/deviceKeyExportBtn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:width="120dp"
+                        android:width="150dp"
                         android:layout_marginEnd="10dp"
-                        android:text="Export Device Key" />
+                        android:text="@string/export_device_key" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/ftmKeyExportBtn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:width="120dp"
-                        android:text="Export FTM Key" />
+                        android:width="150dp"
+                        android:text="@string/export_ftm_key" />
                 </TableRow>
             </TableLayout>
 

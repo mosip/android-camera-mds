@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.mosip.mock.sbi">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <queries android:name="android.permission.QUERY_ALL_PACKAGES" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher_camera"
+        android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
+        android:roundIcon="@mipmap/ic_launcher_camera_round"
+        android:supportsRtl="true"
+        android:theme="@style/MosipTheme">
+        <activity
+            android:name="client.ConfigurationActivity"
+            android:exported="false" />
+        <activity
+            android:name="client.ClientActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="io.mosip.mock.sbi.mds.MDServiceActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="io.sbi.device" />
+                <action android:name="io.mosip.mock.sbi.face.Info" />
+                <action android:name="io.mosip.mock.sbi.face.Capture" />
+                <action android:name="io.mosip.mock.sbi.face.rCapture" />
+                <action android:name="io.mosip.mock.sbi.finger.Info" />
+                <action android:name="io.mosip.mock.sbi.finger.Capture" />
+                <action android:name="io.mosip.mock.sbi.finger.rCapture" />
+                <action android:name="io.mosip.mock.sbi.iris.Info" />
+                <action android:name="io.mosip.mock.sbi.iris.Capture" />
+                <action android:name="io.mosip.mock.sbi.iris.rCapture" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="io.mosip.mock.sbi.device.CaptureActivity" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="io.mosip.mock.sbi.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:readPermission="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>

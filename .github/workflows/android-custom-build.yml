@@ -14,11 +14,13 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
+    env:
+      SERVICE_LOCATION: MockAndroidSBI
     steps:
       - uses: actions/checkout@v2
       - name: Build Android camera mds
         run: |
-          cd MockAndroidSBI
+          cd "./${{env.SERVICE_LOCATION}}"
           chmod +x gradlew
           ./gradlew assembleDebug
           ls app/build/outputs/apk/debug

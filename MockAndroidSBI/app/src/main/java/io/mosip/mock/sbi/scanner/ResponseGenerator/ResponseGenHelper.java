@@ -228,11 +228,11 @@ public class ResponseGenHelper {
             CommonDeviceAPI mdCommonDeviceAPI = new CommonDeviceAPI();
 
             List<CaptureDetail> listOfBiometric = new ArrayList<>();
-            String previousHash = mdCommonDeviceAPI.digestAsPlainText(mdCommonDeviceAPI.Sha256("".getBytes()));
 
             for (CaptureRequestDeviceDetailDto bio : captureRequestDto.bio) {
                 int captureStatus = captureResult.getStatus();
                 int qualityScore = captureResult.getQualityScore();
+                String previousHash = bio.previousHash;
 
                 DeviceConstants.BioType bioType = DeviceConstants.BioType.getBioType(bio.type);
 
@@ -301,7 +301,7 @@ public class ResponseGenHelper {
         NewBioDto bioDto = getBioResponse(deviceSerialNumber, bioType, bioSubType, captureRequestDto, capturedQualityScore,
                 requestedScore, domainUri, bioValueString, timeStamp, digitalID);
         return getMinimalResponse(captureRequestDto.specVersion, bioDto,
-                previousHash, captureStatus, keystore, sessionKey, thumbprint);
+                previousHash, captureStatus, keystore, sessionKey, thumbprint, captureBioValue);
     }
 
     private NewBioDto getBioResponse(String deviceSerialNumber, String bioType, String bioSubType,
@@ -328,7 +328,7 @@ public class ResponseGenHelper {
 
     private CaptureDetail getMinimalResponse(String specVersion, NewBioDto data, String previousHash,
                                              int captureStatus, DeviceKeystore keystore,
-                                             String sessionKey, String thumbprint) {
+                                             String sessionKey, String thumbprint, byte[] nonEncryptedCapturedBioValue) {
         CaptureDetail biometricData = new CaptureDetail();
         try {
             if (CaptureResult.CAPTURE_SUCCESS == captureStatus) {
@@ -345,7 +345,8 @@ public class ResponseGenHelper {
             byte[] previousBioDataHash;
             byte[] currentBioDataHash;
 
-            currentBioDataHash = CryptoUtility.generateHash(java.util.Base64.getUrlDecoder().decode(data.getBioValue()));
+            //instead of BioData, bioValue (before encrytion in case of Capture response) is used for computing the hash.
+            currentBioDataHash = CryptoUtility.generateHash(nonEncryptedCapturedBioValue);
 
             if (previousHash == null || previousHash.trim().length() == 0) {
                 byte[] previousDataByteArr = Strings.toUTF8ByteArray("");

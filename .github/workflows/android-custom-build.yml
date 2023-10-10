@@ -1,33 +1,33 @@
 name: Android camera mds
 
-
 on:
+  release:
+    types: [published]
+  pull_request:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Message for manually triggering'
+        required: false
+        default: 'Triggered for Updates'
+        type: string
   push:
     branches:
       - '!release-branch'
-      - release-1*
+      - release*
       - master
       - 1.*
-      - develop
-      - demo
+      - develop*
+      - MOSIP*
 
 jobs:
-  build-android:
-    runs-on: ubuntu-latest
-    env:
-      SERVICE_LOCATION: MockAndroidSBI
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build Android camera mds
-        run: |
-          cd "./${{env.SERVICE_LOCATION}}"
-          chmod +x gradlew
-          ./gradlew assembleDebug
-          ls app/build/outputs/apk/debug
-          find -name '*.apk'
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: apk-output
-          path: ./MockAndroidSBI/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 5
+  build-camera-mds:
+    uses: mosip/kattu/.github/workflows/npm-andriod-build.yml@master
+    with:
+      SERVICE_LOCATION: 'MockAndroidSBI'
+      ANDROID_LOCATION: '../MockAndroidSBI'
+      BUILD_ARTIFACT: 'camera-mds'
+      GRADLEW_ARGS: 'assembleDebug'
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

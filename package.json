@@ -1,18 +1,34 @@
 {
+  "name": "android-camera-mds",
+  "version": "1.0.0",
+  "author": "MOSIP",
+  "license": "MPL 2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mosip/android-camera-mds.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mosip/android-camera-mds/issues"
+  },
+  "keywords": [
+    "android-camera-mds",
+    "mds"
+  ],
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "android:ph": "expo run:android --variant assembleDebug",
     "ios": "expo run:ios",
     "eject": "expo eject --npm",
-    "build:android:ph": "cd android && ./gradlew :assembleDebug && cd .."
-   
+    "build:android:ph": "cd android && ./gradlew :assembleDebug && cd ..",
+    "verify": ""
   },
   "dependencies": {
+    "uuid": "^9.0.1",
     "@expo-google-fonts/poppins": "^0.2.0",
     "@idpass/smartshare-react-native": "^0.2.0",
-    "@react-native-async-storage/async-storage": "~1.15.0",
-    "@react-native-community/netinfo": "6.0.2",
+    "@react-native-async-storage/async-storage": "^1.15.0",
+    "@react-native-community/netinfo": "^6.0.2",
     "@react-native-picker/picker": "^2.3.1",
     "@react-navigation/bottom-tabs": "^6.0.7",
     "@react-navigation/native": "^6.0.2",
@@ -31,7 +47,7 @@
     "expo-updates": "~0.10.13",
     "react": "17.0.1",
     "react-dom": "17.0.1",
-    "react-native": "0.64.3",
+    "react-native": "^0.64.3",
     "react-native-app-intro-slider": "^4.0.4",
     "react-native-bluetooth-state-manager": "^1.3.2",
     "react-native-device-info": "^8.4.8",
@@ -45,7 +61,7 @@
     "react-native-screens": "~3.8.0",
     "react-native-securerandom": "^1.0.0",
     "react-native-simple-markdown": "^1.1.0",
-    "react-native-svg": "12.1.1",
+    "react-native-svg": "^13.14.0",
     "react-native-system-setting": "^1.7.6",
     "react-native-vector-icons": "^8.1.0",
     "react-native-web": "0.17.1",
@@ -54,7 +70,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@types/react": "~17.0.21",
-    "@types/react-native": "~0.64.12",
+    "@types/react-native": "^0.72.3",
     "babel-plugin-inline-import": "^3.0.0",
     "eas-cli": "^0.37.0",
     "expo-cli": "^4.13.0",
@@ -62,7 +78,5 @@
     "sharp-cli": "^1.15.0",
     "typescript": "~4.3.5"
   },
-  "private": true,
-  "name": "android-camera-mds",
-  "version": "1.0.0"
+  "private": true
 }

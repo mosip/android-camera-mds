@@ -195,11 +195,11 @@ public class ClientActivity extends AppCompatActivity {
 
         if (DeviceConstants.DeviceUsage.Registration.getDeviceUsage().equalsIgnoreCase(deviceUsage)) {
             devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_registration));
-            btnRCapture.setEnabled(serialNo != null);
+            btnRCapture.setEnabled(true);
             btnCapture.setEnabled(false);
         } else {
             devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_auth));
-            btnCapture.setEnabled(serialNo != null);
+            btnCapture.setEnabled(true);
             btnRCapture.setEnabled(false);
         }
     }

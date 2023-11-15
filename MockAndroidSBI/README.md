@@ -18,7 +18,7 @@ This module contains Mock Android Device service implementation as per defined [
 To run the application the following are required:
 
 - Intellij version 2020.3.+ (or) Android Studio version 2020.3.+
-- Android SDK 26.0
+- Min Android SDK 26, Target Android SDK 30
 - JDK 1\.8 or higher
 
 ### Application Configuration
@@ -30,3 +30,6 @@ Following are the configurations in Settings.
 3. FTM Key: Upload device FTM key here with keyalias and password. Required for Auth purpose.
 4. MOSIP IDA Config: Add AppId, ClientId, SecertId, Auth Server URL and IDA Server URL here. Required for Auth purpose
 5. Modality Config: Add capture score, device status and response delay for each individual modality here.
+
+### Contribution
+The first version of mock MDS was contributed by nPrime

@@ -23,7 +23,7 @@ on:
 
 jobs:
   build-camera-mds:
-    uses: mosip/kattu/.github/workflows/npm-andriod-build.yml@master
+    uses: mosip/kattu/.github/workflows/npm-android-build.yml@master
     with:
       SERVICE_LOCATION: 'MockAndroidSBI'
       ANDROID_LOCATION: '../MockAndroidSBI'

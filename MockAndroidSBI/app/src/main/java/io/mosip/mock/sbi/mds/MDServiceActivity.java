@@ -118,7 +118,9 @@ public class MDServiceActivity extends AppCompatActivity {
                     Object responseBody = null;
                     DeviceDiscoveryRequestDetail discoverRequestDto = null;
                     byte[] input = getIntent().getByteArrayExtra("input");
-
+                    Intent i = getIntent();
+                    String data = getIntent().getDataString();
+                    String extra = getIntent().getStringExtra("input");
                     if (null != input) {
                         try {
                             discoverRequestDto = ob.readValue(input, DeviceDiscoveryRequestDetail.class);
@@ -128,24 +130,27 @@ public class MDServiceActivity extends AppCompatActivity {
                     }
 
                     if (null != discoverRequestDto) {
-                        switch (discoverRequestDto.type.toLowerCase()) {
-                            case "face":
+                        switch (discoverRequestDto.type) {
+                            case "Face":
                                 responseBody = discoverDevice(currentFaceStatus, szTs, "io.mosip.mock.sbi.face", DeviceConstants.BioType.Face);
                                 break;
-                            case "finger":
+                            case "Finger":
                                 responseBody = discoverDevice(currentFingerStatus, szTs, "io.mosip.mock.sbi.finger",
                                         DeviceConstants.BioType.Finger);
                                 break;
-                            case "iris":
+                            case "Iris":
                                 responseBody = discoverDevice(currentIrisStatus, szTs, "io.mosip.mock.sbi.iris",
                                         DeviceConstants.BioType.Iris);
                                 break;
-                            case "biometric device":
+                            case "Biometric Device":
+                                break;
+                            default:
+                                responseBody = Arrays.asList(new DeviceInfoResponse(null, new Error("501", "Invalid Type Value in Device Discovery Request")));
                                 break;
                         }
 
                     } else {
-                        responseBody = Arrays.asList(new DeviceInfoResponse(null, new Error("301", "Invalid type")));
+                        responseBody = Arrays.asList(new DeviceInfoResponse(null, new Error("501", "Invalid Type Value in Device Discovery Request")));
                     }
                     generateResponse(responseBody, false);
                     Logger.i(DeviceConstants.LOG_TAG, "Request : /device. MOSIPDISC completed");

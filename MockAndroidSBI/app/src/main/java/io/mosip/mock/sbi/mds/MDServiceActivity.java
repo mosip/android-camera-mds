@@ -118,9 +118,6 @@ public class MDServiceActivity extends AppCompatActivity {
                     Object responseBody = null;
                     DeviceDiscoveryRequestDetail discoverRequestDto = null;
                     byte[] input = getIntent().getByteArrayExtra("input");
-                    Intent i = getIntent();
-                    String data = getIntent().getDataString();
-                    String extra = getIntent().getStringExtra("input");
                     if (null != input) {
                         try {
                             discoverRequestDto = ob.readValue(input, DeviceDiscoveryRequestDetail.class);

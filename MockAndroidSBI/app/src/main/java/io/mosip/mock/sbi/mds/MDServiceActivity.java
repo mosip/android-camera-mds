@@ -125,7 +125,16 @@ public class MDServiceActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
-
+                    /*
+                     * Discovery Request is used to identify Mosip compliant devices in the system by the applications.
+                     * Structure:
+                     *  {
+                     *     "type": "type of the device"
+                     *  }
+                     * The acceptable value for Device Discovery Request are
+                     * type - "Biometric Device", "Finger", "Face", "Iris"
+                     * Refer To  <a href="https://docs.mosip.io/1.1.5/biometrics/mosip-device-service-specification#device-discovery"> Mosip Discovery Request Specification </a>
+                     */
                     if (null != discoverRequestDto) {
                         switch (discoverRequestDto.type) {
                             case "Face":
